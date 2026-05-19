@@ -3657,6 +3657,14 @@ var _sb = null;
       _sb = supabase.createClient(url, key);
       var btn = document.getElementById('supabase-status-btn');
       if (btn) { btn.textContent = '🟢 接続中'; btn.style.color = '#2d7a72'; }
+      // 接続後にデータを読み込む
+      document.addEventListener('DOMContentLoaded', function() {
+        sbLoadAll().then(function() {
+          renderAthleteTable();
+          renderRoster();
+          renderDashboard();
+        });
+      });
     } catch(e) { _sb = null; }
   }
 })();
