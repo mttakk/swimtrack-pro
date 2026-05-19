@@ -1,0 +1,3212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>選手コース ベストタイム管理システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a1628;
+  --deep: #0d2044;
+  --blue: #1a3a6e;
+  --accent: #00b4d8;
+  --accent2: #0077b6;
+  --gold: #f4b942;
+  --silver: #b0bec5;
+  --bronze: #cd7f32;
+  --white: #f0f4f8;
+  --text: #cfd8e8;
+  --muted: #7b91b0;
+  --card: rgba(255,255,255,0.04);
+  --border: rgba(0,180,216,0.2);
+  --danger: #ef5350;
+  --success: #26c6da;
+  --grade-s: #FFD700;
+  --grade-a: #C0C0C0;
+  --grade-b: #CD7F32;
+  --grade-c: #4db6ac;
+  --grade-d: #7986cb;
+  --grade-e: #a1a1aa;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Background water effect */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 120% 40% at 50% 0%, rgba(0,119,182,0.15) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 60% at 80% 100%, rgba(0,180,216,0.08) 0%, transparent 60%),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      transparent 28px,
+      rgba(0,180,216,0.03) 28px,
+      rgba(0,180,216,0.03) 30px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; }
+
+/* Header */
+header {
+  background: linear-gradient(135deg, var(--deep) 0%, rgba(10,22,40,0.95) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.logo h1 {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.05em;
+}
+
+.logo span {
+  font-size: 11px;
+  color: var(--accent);
+  display: block;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.header-nav {
+  display: flex;
+  gap: 4px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.header-nav-item {
+  padding: 7px 18px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--muted);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.header-nav-item:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.header-nav-item.active { background: var(--blue); color: var(--white); }
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Noto Sans JP', sans-serif;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: white;
+}
+
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,180,216,0.4); }
+
+.btn-ghost {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.08); }
+
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+.btn-danger { background: rgba(239,83,80,0.15); color: var(--danger); border: 1px solid rgba(239,83,80,0.3); }
+.btn-danger:hover { background: rgba(239,83,80,0.25); }
+
+/* Main layout */
+.main { display: flex; min-height: calc(100vh - 64px); }
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: rgba(13,32,68,0.5);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.sidebar-section { margin-bottom: 24px; }
+
+.sidebar-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 20px;
+  margin-bottom: 8px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 14px;
+  color: var(--muted);
+  border-left: 2px solid transparent;
+}
+
+.sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.sidebar-item.active {
+  background: rgba(0,180,216,0.1);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.sidebar-item .icon { width: 18px; text-align: center; font-size: 16px; }
+.badge {
+  margin-left: auto;
+  background: var(--accent);
+  color: var(--navy);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+/* Content */
+.content { flex: 1; overflow-y: auto; }
+
+/* Views */
+.view { display: none; padding: 28px; }
+.view.active { display: block; }
+
+/* Page header */
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--white);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Stats cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+}
+
+.stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+.stat-value { font-size: 32px; font-weight: 900; font-family: 'Rajdhani', monospace; color: var(--white); margin-top: 6px; }
+.stat-sub { font-size: 12px; color: var(--accent); margin-top: 4px; }
+
+/* Athlete table */
+.table-container {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-title { font-size: 14px; font-weight: 700; color: var(--white); }
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--text);
+  width: 220px;
+}
+
+.search-box input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+  background: rgba(0,0,0,0.2);
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+tbody tr {
+  border-top: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+tbody tr:hover { background: rgba(255,255,255,0.04); }
+
+tbody td {
+  padding: 12px 14px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.athlete-name {
+  font-weight: 700;
+  color: var(--white);
+  font-size: 14px;
+}
+
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: 'Rajdhani', monospace;
+}
+
+.grade-15 { background: rgba(255,215,0,0.2); color: #FFD700; border: 1px solid rgba(255,215,0,0.4); }
+.grade-14 { background: rgba(192,192,192,0.2); color: #E0E0E0; border: 1px solid rgba(192,192,192,0.3); }
+.grade-13, .grade-12 { background: rgba(205,127,50,0.2); color: #CD7F32; border: 1px solid rgba(205,127,50,0.3); }
+.grade-11, .grade-10, .grade-9 { background: rgba(77,182,172,0.2); color: #4db6ac; border: 1px solid rgba(77,182,172,0.3); }
+.grade-8, .grade-7, .grade-6 { background: rgba(121,134,203,0.2); color: #7986cb; border: 1px solid rgba(121,134,203,0.3); }
+.grade-5, .grade-4, .grade-3, .grade-2, .grade-1 { background: rgba(161,161,170,0.15); color: #a1a1aa; border: 1px solid rgba(161,161,170,0.2); }
+.grade-none { background: rgba(100,100,100,0.1); color: var(--muted); border: 1px solid rgba(100,100,100,0.2); }
+
+.time-chip {
+  font-family: 'Rajdhani', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.time-chip.no-time { color: var(--muted); font-style: italic; font-size: 12px; font-family: inherit; }
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: #0d1f3c;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 780px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title { font-size: 20px; font-weight: 800; color: var(--white); }
+.modal-subtitle { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 22px;
+  cursor: pointer;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+.modal-body { padding: 24px 28px; }
+.modal-footer { padding: 16px 28px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+/* Form */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+input, select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--white);
+  font-size: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+input:focus, select:focus { border-color: var(--accent); }
+select option { background: #0d2044; }
+
+/* Athlete detail */
+.athlete-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.athlete-avatar {
+  width: 60px; height: 60px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+}
+
+.athlete-info h2 { font-size: 22px; font-weight: 800; color: var(--white); }
+.athlete-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* Best times table */
+.events-section { margin-top: 20px; }
+.events-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.events-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.event-stroke-group { margin-bottom: 16px; }
+.stroke-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.event-items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+.event-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 12px;
+  position: relative;
+  transition: all 0.15s;
+}
+.event-item:hover { border-color: var(--border); background: rgba(255,255,255,0.06); }
+
+.event-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.event-time {
+  font-family: 'Rajdhani', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+}
+.event-time.empty { font-size: 14px; color: var(--muted); font-style: italic; font-family: inherit; font-weight: 400; }
+
+.event-grade-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.event-date { font-size: 11px; color: var(--muted); }
+
+.btn-edit-time {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.event-item:hover .btn-edit-time { opacity: 1; }
+
+.event-item-tappable {
+  cursor: pointer;
+}
+.event-item-tappable:hover {
+  border-color: var(--accent);
+  background: rgba(0,180,216,0.07);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,180,216,0.12);
+}
+
+.lap-indicator {
+  font-size: 10px;
+  vertical-align: middle;
+}
+
+/* Race entry */
+.race-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 4px; }
+.tab {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.tab.active { background: var(--blue); color: var(--white); }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* Grade legend */
+.grade-legend {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.grade-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Race history */
+.race-list { display: flex; flex-direction: column; gap: 8px; }
+.race-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.race-event { font-size: 13px; font-weight: 600; color: var(--white); min-width: 140px; }
+.race-date { font-size: 12px; color: var(--muted); min-width: 100px; }
+.race-time-val { font-family: 'Rajdhani', monospace; font-size: 18px; font-weight: 700; color: var(--accent); flex: 1; }
+.race-pb { font-size: 11px; background: rgba(0,180,216,0.15); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+.race-meet { font-size: 12px; color: var(--muted); flex: 1; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty-state p { font-size: 15px; }
+
+/* Notification */
+.notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: white;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s;
+  box-shadow: 0 8px 30px rgba(0,180,216,0.4);
+}
+.notification.show { transform: translateY(0); opacity: 1; }
+
+/* Grade explanation */
+.grade-info-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.grade-info-card {
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+
+.grade-info-level { font-size: 24px; font-weight: 800; font-family: 'Rajdhani', monospace; }
+.grade-info-label { font-size: 11px; margin-top: 4px; }
+.grade-info-range { font-size: 12px; margin-top: 6px; font-weight: 600; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .form-grid { grid-template-columns: 1fr; }
+  .event-items { grid-template-columns: 1fr 1fr; }
+}
+
+.top-banner {
+  background: linear-gradient(135deg, rgba(0,119,182,0.3), rgba(0,180,216,0.15));
+  border: 1px solid rgba(0,180,216,0.25);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--text);
+}
+.top-banner .icon { font-size: 24px; }
+.top-banner strong { color: var(--accent); }
+
+.section-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+.filter-row { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+.filter-row select { width: auto; }
+
+.highlight-new { animation: flash 1s ease; }
+@keyframes flash {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(0,180,216,0.1); }
+}
+
+/* ── Lap input ── */
+.lap-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.lap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.lap-cell {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: border-color 0.15s;
+}
+.lap-cell:focus-within { border-color: var(--accent); }
+
+.lap-cell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lap-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+.lap-dist-label {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.lap-input {
+  background: none !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+  border-radius: 0 !important;
+  padding: 4px 2px !important;
+  font-family: 'Rajdhani', monospace !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: var(--white) !important;
+  width: 100% !important;
+  outline: none !important;
+  transition: border-color 0.15s !important;
+}
+.lap-input:focus { border-bottom-color: var(--accent) !important; }
+.lap-input::placeholder { color: var(--muted); font-size: 14px; font-weight: 400; }
+
+.lap-split-display {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'Rajdhani', monospace;
+  min-height: 14px;
+}
+.lap-split-display.valid { color: var(--accent); }
+
+.lap-total-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(0,180,216,0.08);
+  border: 1px solid rgba(0,180,216,0.25);
+  border-radius: 10px;
+  padding: 14px 20px;
+}
+.lap-total-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.lap-total-time {
+  font-family: 'Rajdhani', monospace;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.lap-total-grade { margin-left: auto; }
+
+/* ── Race card (history) ── */
+.race-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 20px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.race-card:hover { border-color: var(--accent); background: rgba(0,180,216,0.05); transform: translateX(2px); }
+
+.race-card-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.race-card-name { font-size: 14px; font-weight: 700; color: var(--white); }
+.race-card-event { font-size: 13px; color: var(--muted); }
+.race-card-meet { font-size: 12px; color: var(--muted); }
+.race-card-date { font-size: 12px; color: var(--muted); }
+
+.race-card-time {
+  font-family: 'Rajdhani', monospace;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--accent);
+  text-align: right;
+  grid-row: 1 / 3;
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.race-card-bottom { display: flex; gap: 8px; align-items: center; }
+
+/* ── Race detail modal ── */
+.rdetail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rdetail-info h3 { font-size: 20px; font-weight: 800; color: var(--white); }
+.rdetail-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.rdetail-total {
+  margin-left: auto;
+  text-align: right;
+}
+.rdetail-total-time {
+  font-family: 'Rajdhani', monospace;
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--accent);
+}
+.rdetail-total-label { font-size: 11px; color: var(--muted); }
+
+/* Lap table in detail */
+.lap-detail-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.lap-detail-table th {
+  background: rgba(0,0,0,0.25);
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lap-detail-table td {
+  padding: 10px 12px;
+  text-align: center;
+  font-size: 14px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.lap-detail-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+.lap-number { color: var(--muted); font-size: 12px; }
+.lap-distance-col { color: var(--muted); font-size: 12px; }
+.lap-time-col { font-family: 'Rajdhani', monospace; font-size: 16px; font-weight: 700; color: var(--white); }
+.lap-split-col { font-family: 'Rajdhani', monospace; font-size: 16px; font-weight: 600; color: var(--accent); }
+.lap-diff-col { font-size: 13px; font-weight: 600; }
+.lap-diff-pos { color: #ef5350; }
+.lap-diff-neg { color: #26c6da; }
+.lap-diff-zero { color: var(--muted); }
+
+.lap-chart-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.lap-chart-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  transition: width 0.3s;
+  min-width: 2px;
+}
+
+/* half‑time badge */
+.half-badge {
+  display: inline-block;
+  background: rgba(244,185,66,0.15);
+  color: var(--gold);
+  border: 1px solid rgba(244,185,66,0.3);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+.section-tag {
+  display: inline-block;
+  background: rgba(0,180,216,0.12);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+/* ===== DASHBOARD ===== */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 1024px) { .dash-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px)  { .dash-grid { grid-template-columns: 1fr; } }
+
+.dash-col {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.dash-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.15);
+}
+.dash-section-icon { font-size: 16px; }
+.dash-section-title { font-size: 13px; font-weight: 700; color: var(--white); letter-spacing: 0.05em; flex: 1; }
+.dash-add-btn {
+  background: rgba(0,180,216,0.12);
+  border: 1px solid rgba(0,180,216,0.3);
+  color: var(--accent);
+  border-radius: 6px;
+  width: 26px; height: 26px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  font-family: inherit;
+  line-height: 1;
+}
+.dash-add-btn:hover { background: rgba(0,180,216,0.25); transform: scale(1.1); }
+
+.dash-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dash-card:last-child { border-bottom: none; }
+.dash-card:hover { background: rgba(255,255,255,0.05); }
+.dash-card-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.dash-card-body { flex: 1; min-width: 0; }
+.dash-card-title { font-size: 13px; font-weight: 700; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-card-meta  { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dash-card-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; margin-top: 2px; }
+
+.color-match    { background: rgba(0,180,216,0.2);    color:#00b4d8; }
+.color-practice { background: rgba(38,198,218,0.15);  color:#26c6da; }
+.color-event    { background: rgba(244,185,66,0.2);   color:#f4b942; }
+.color-rest     { background: rgba(161,161,170,0.15); color:#a1a1aa; }
+.color-other    { background: rgba(121,134,203,0.2);  color:#7986cb; }
+.dot-match    { background:#00b4d8; }
+.dot-practice { background:#26c6da; }
+.dot-event    { background:#f4b942; }
+.dot-rest     { background:#a1a1aa; }
+.dot-other    { background:#7986cb; }
+
+.diff-hard   { background: rgba(239,83,80,0.2);    color:#ef5350; }
+.diff-medium { background: rgba(255,167,38,0.2);   color:#ffa726; }
+.diff-easy   { background: rgba(38,198,218,0.15);  color:#26c6da; }
+
+.goal-progress-wrap { margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+.goal-progress-bar-bg { flex:1; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
+.goal-progress-bar { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--accent2),var(--accent)); transition:width 0.4s ease; }
+.goal-progress-pct { font-size:10px; font-family:'Rajdhani',monospace; font-weight:700; color:var(--accent); min-width:32px; text-align:right; }
+
+.dash-empty { padding:28px 16px; text-align:center; font-size:12px; color:var(--muted); }
+.dash-empty-icon { font-size:28px; margin-bottom:8px; opacity:0.4; }
+
+.dd-section { margin-bottom: 18px; }
+.dd-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; }
+.dd-value { font-size:14px; color:var(--text); line-height:1.7; }
+.dd-value-big { font-family:'Rajdhani',monospace; font-size:28px; font-weight:800; color:var(--accent); }
+
+.menu-set-list { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+.menu-set-item { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:10px 14px; display:flex; align-items:center; gap:12px; }
+.menu-set-num  { font-family:'Rajdhani',monospace; font-size:18px; font-weight:700; color:var(--accent); min-width:32px; }
+.menu-set-desc { font-size:13px; color:var(--text); flex:1; }
+.menu-set-dist { font-size:12px; color:var(--muted); }
+
+.form-group textarea {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--white);
+  font-size: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
+  outline: none;
+  resize: vertical;
+  width: 100%;
+  min-height: 80px;
+}
+.form-group textarea:focus { border-color: var(--accent); }
+
+.set-row { display:grid; grid-template-columns:60px 1fr 80px 28px; gap:8px; align-items:center; margin-bottom:8px; }
+.set-row input { padding:7px 10px; }
+.remove-set-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; width:28px; height:28px; border-radius:6px; transition:all 0.15s; font-family:inherit; }
+.remove-set-btn:hover { background:rgba(239,83,80,0.2); color:var(--danger); }
+
+.radio-group { display:flex; gap:8px; flex-wrap:wrap; }
+.radio-opt { padding:6px 14px; border-radius:20px; border:1px solid var(--border); font-size:12px; cursor:pointer; transition:all 0.15s; color:var(--muted); background:none; font-family:inherit; }
+.radio-opt.selected { background:rgba(0,180,216,0.15); border-color:var(--accent); color:var(--accent); font-weight:700; }
+
+.achieved-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(244,185,66,0.2); border:1px solid rgba(244,185,66,0.4); color:var(--gold); font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin-left:8px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏊</div>
+    <div>
+      <h1>SwimTrack Pro</h1>
+      <span>選手コース管理システム</span>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <button class="header-nav-item" id="hnav-dashboard" onclick="showView('dashboard')">🏠 ダッシュボード</button>
+    <button class="header-nav-item active" id="hnav-athletes" onclick="showView('athletes')">👤 ベストタイム</button>
+    <button class="header-nav-item" id="hnav-races" onclick="showView('races')">🏁 レース記録</button>
+    <button class="header-nav-item" id="hnav-grades" onclick="showView('grades')">📊 資格級</button>
+  </nav>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="openAddAthleteModal()">＋ 選手登録</button>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">メニュー</div>
+      <div class="sidebar-item sidebar-menu-item" id="snav-dashboard" onclick="showView('dashboard')">
+        <span class="icon">🏠</span> ダッシュボード
+      </div>
+      <div class="sidebar-item sidebar-menu-item active" id="snav-athletes" onclick="showView('athletes')">
+        <span class="icon">👤</span> ベストタイム
+        <span class="badge" id="athlete-count-badge">0</span>
+      </div>
+      <div class="sidebar-item sidebar-menu-item" id="snav-races" onclick="showView('races')">
+        <span class="icon">🏁</span> レース記録
+      </div>
+      <div class="sidebar-item sidebar-menu-item" id="snav-grades" onclick="showView('grades')">
+        <span class="icon">📊</span> 資格級一覧
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">フィルター</div>
+      <div class="sidebar-item" onclick="filterBySex('all'); setActive(this)" id="filter-all" style="border-left-color:transparent">
+        <span class="icon">👥</span> 全員
+      </div>
+      <div class="sidebar-item" onclick="filterBySex('男子'); setActive(this)" id="filter-male" style="border-left-color:transparent">
+        <span class="icon">♂</span> 男子
+      </div>
+      <div class="sidebar-item" onclick="filterBySex('女子'); setActive(this)" id="filter-female" style="border-left-color:transparent">
+        <span class="icon">♀</span> 女子
+      </div>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ========== DASHBOARD VIEW ========== -->
+    <div class="view" id="view-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">ダッシュボード</div>
+          <div class="page-subtitle">練習・スケジュール・目標を一元管理</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="openDashModal('schedule')">＋ スケジュール</button>
+          <button class="btn btn-ghost" onclick="openDashModal('menu')">＋ 練習メニュー</button>
+          <button class="btn btn-primary" onclick="openDashModal('goal')">＋ 目標タイム</button>
+        </div>
+      </div>
+
+      <!-- 3カラムグリッド -->
+      <div class="dash-grid">
+
+        <!-- 左: スケジュール -->
+        <div class="dash-col">
+          <div class="dash-section-header">
+            <span class="dash-section-icon">📅</span>
+            <span class="dash-section-title">スケジュール</span>
+            <button class="dash-add-btn" onclick="openDashModal('schedule')">＋</button>
+          </div>
+          <div id="dash-schedule-list">
+            <!-- JS render -->
+          </div>
+        </div>
+
+        <!-- 中: 練習メニュー -->
+        <div class="dash-col">
+          <div class="dash-section-header">
+            <span class="dash-section-icon">🏊</span>
+            <span class="dash-section-title">練習メニュー</span>
+            <button class="dash-add-btn" onclick="openDashModal('menu')">＋</button>
+          </div>
+          <div id="dash-menu-list">
+            <!-- JS render -->
+          </div>
+        </div>
+
+        <!-- 右: 目標タイム -->
+        <div class="dash-col">
+          <div class="dash-section-header">
+            <span class="dash-section-icon">🎯</span>
+            <span class="dash-section-title">目標タイム</span>
+            <button class="dash-add-btn" onclick="openDashModal('goal')">＋</button>
+          </div>
+          <div id="dash-goal-list">
+            <!-- JS render -->
+          </div>
+        </div>
+
+      </div><!-- .dash-grid -->
+    </div><!-- #view-dashboard -->
+
+    <!-- ===== DASHBOARD DETAIL MODAL ===== -->
+    <div class="modal-overlay" id="modal-dash-detail">
+      <div class="modal" style="max-width:640px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="dd-title">詳細</div>
+            <div class="modal-subtitle" id="dd-subtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('modal-dash-detail')">✕</button>
+        </div>
+        <div class="modal-body" id="dd-body"></div>
+        <div class="modal-footer" id="dd-footer">
+          <button class="btn btn-danger btn-sm" id="dd-delete-btn">🗑️ 削除</button>
+          <button class="btn btn-ghost" onclick="closeModal('modal-dash-detail')">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADD/EDIT MODAL ===== -->
+    <div class="modal-overlay" id="modal-dash-add">
+      <div class="modal" style="max-width:560px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="da-title">新規追加</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('modal-dash-add')">✕</button>
+        </div>
+        <div class="modal-body" id="da-body"></div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('modal-dash-add')">キャンセル</button>
+          <button class="btn btn-primary" id="da-save-btn">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Athletes View -->
+    <div class="view active" id="view-athletes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">選手ベストタイム</div>
+          <div class="page-subtitle">日本水泳連盟 資格級対応 | 2024年度基準</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddAthleteModal()">＋ 選手登録</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">登録選手数</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-sub">名</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">男子</div>
+          <div class="stat-value" id="stat-male">0</div>
+          <div class="stat-sub">名</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">女子</div>
+          <div class="stat-value" id="stat-female">0</div>
+          <div class="stat-sub">名</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">今月のPB更新</div>
+          <div class="stat-value" id="stat-pb">0</div>
+          <div class="stat-sub">件</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title">選手一覧</div>
+          <div class="search-box">
+            🔍 <input type="text" placeholder="選手名検索..." oninput="searchAthletes(this.value)" id="search-input">
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>選手名</th>
+              <th>性別</th>
+              <th>年齢</th>
+              <th>学年</th>
+              <th>最高資格級</th>
+              <th>自由形50m</th>
+              <th>自由形100m</th>
+              <th>背泳ぎ100m</th>
+              <th>平泳ぎ100m</th>
+              <th>バタフライ100m</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="athlete-tbody">
+          </tbody>
+        </table>
+        <div class="empty-state" id="empty-athletes">
+          <div class="empty-icon">🏊‍♂️</div>
+          <p>まだ選手が登録されていません</p>
+          <p style="font-size:13px; margin-top:8px;">「選手登録」ボタンから追加してください</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Races View -->
+    <div class="view" id="view-races">
+      <div class="page-header">
+        <div>
+          <div class="page-title">レース記録入力</div>
+          <div class="page-subtitle">25m単位ラップ入力 ／ スプリット・ラップ自動計算</div>
+        </div>
+      </div>
+
+      <div class="table-container" style="margin-bottom:24px;">
+        <div class="table-header">
+          <div class="table-title">新規レース記録</div>
+        </div>
+        <div style="padding:20px 24px;">
+          <!-- 基本情報 -->
+          <div class="race-form-grid" style="margin-bottom:20px;">
+            <div class="form-group">
+              <label>選手</label>
+              <select id="race-athlete">
+                <option value="">選手を選択...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>大会名</label>
+              <input type="text" id="race-meet" placeholder="○○春季大会">
+            </div>
+            <div class="form-group">
+              <label>日付</label>
+              <input type="date" id="race-date">
+            </div>
+            <div class="form-group">
+              <label>泳法</label>
+              <select id="race-stroke" onchange="updateDistances()">
+                <option value="自由形">自由形</option>
+                <option value="背泳ぎ">背泳ぎ</option>
+                <option value="平泳ぎ">平泳ぎ</option>
+                <option value="バタフライ">バタフライ</option>
+                <option value="個人メドレー">個人メドレー</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>距離</label>
+              <select id="race-distance" onchange="buildLapInputs()">
+                <option value="50m">50m</option>
+                <option value="100m">100m</option>
+                <option value="200m">200m</option>
+                <option value="400m">400m</option>
+                <option value="800m">800m</option>
+                <option value="1500m">1500m</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>プールサイズ</label>
+              <select id="race-pool" onchange="buildLapInputs()">
+                <option value="50">50mプール（長水路）</option>
+                <option value="25">25mプール（短水路）</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ラップ入力エリア -->
+          <div id="lap-input-area"></div>
+
+          <!-- 合計タイム表示 -->
+          <div id="total-time-display" style="display:none; margin-top:16px;">
+            <div class="lap-total-row">
+              <span class="lap-total-label">🏁 合計タイム</span>
+              <span class="lap-total-time" id="total-time-val">--:--.--</span>
+            </div>
+          </div>
+
+          <div style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="submitRace()">📝 記録を登録</button>
+            <button class="btn btn-ghost" onclick="clearLapInputs()">🔄 クリア</button>
+            <span style="font-size:12px; color:var(--muted);">※ベストタイムより速い場合は自動反映されます</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Race history -->
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title">レース記録一覧</div>
+          <div class="filter-row" style="margin:0; gap:8px;">
+            <select id="race-filter-sel" onchange="filterRaces(this.value)" style="padding:6px 12px; font-size:12px;">
+              <option value="all">全選手</option>
+            </select>
+          </div>
+        </div>
+        <div style="padding:16px;" id="race-history">
+          <div class="empty-state">
+            <div class="empty-icon">🏁</div>
+            <p>まだレース記録がありません</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Race Detail Modal -->
+    <div class="modal-overlay" id="modal-race-detail">
+      <div class="modal" style="max-width:680px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="rdetail-title">レース詳細</div>
+            <div class="modal-subtitle" id="rdetail-subtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('modal-race-detail')">✕</button>
+        </div>
+        <div class="modal-body" id="rdetail-body"></div>
+        <div class="modal-footer">
+          <button class="btn btn-danger btn-sm" id="rdetail-delete-btn">🗑️ 削除</button>
+          <button class="btn btn-ghost" onclick="closeModal('modal-race-detail')">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grades View -->
+    <div class="view" id="view-grades">
+      <div class="page-header">
+        <div>
+          <div class="page-title">資格級基準表</div>
+          <div class="page-subtitle">2024年度 日本水泳連盟 資格級 | 選手ごとの資格級状況</div>
+        </div>
+      </div>
+
+      <div class="grade-info-grid">
+        <div class="grade-info-card" style="background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.3)">
+          <div class="grade-info-level" style="color:#FFD700">15</div>
+          <div class="grade-info-label" style="color:#FFD700">最上位</div>
+          <div class="grade-info-range" style="color:var(--muted)">オリンピック級</div>
+        </div>
+        <div class="grade-info-card" style="background:rgba(192,192,192,0.1); border:1px solid rgba(192,192,192,0.2)">
+          <div class="grade-info-level" style="color:#E0E0E0">14–13</div>
+          <div class="grade-info-label" style="color:#E0E0E0">全国レベル</div>
+          <div class="grade-info-range" style="color:var(--muted)">日本選手権標準</div>
+        </div>
+        <div class="grade-info-card" style="background:rgba(205,127,50,0.1); border:1px solid rgba(205,127,50,0.2)">
+          <div class="grade-info-level" style="color:#CD7F32">12–10</div>
+          <div class="grade-info-label" style="color:#CD7F32">地域選抜</div>
+          <div class="grade-info-range" style="color:var(--muted)">地域大会入賞圏</div>
+        </div>
+        <div class="grade-info-card" style="background:rgba(77,182,172,0.1); border:1px solid rgba(77,182,172,0.2)">
+          <div class="grade-info-level" style="color:#4db6ac">9–6</div>
+          <div class="grade-info-label" style="color:#4db6ac">中上級</div>
+          <div class="grade-info-range" style="color:var(--muted)">大会参加標準</div>
+        </div>
+        <div class="grade-info-card" style="background:rgba(161,161,170,0.1); border:1px solid rgba(161,161,170,0.2)">
+          <div class="grade-info-level" style="color:#a1a1aa">5–1</div>
+          <div class="grade-info-label" style="color:#a1a1aa">初級〜中級</div>
+          <div class="grade-info-range" style="color:var(--muted)">登録・泳力認定</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchGradeTab('summary', this)">選手別サマリー</button>
+        <button class="tab" onclick="switchGradeTab('male', this)">男子基準表</button>
+        <button class="tab" onclick="switchGradeTab('female', this)">女子基準表</button>
+      </div>
+
+      <div id="grade-summary-tab">
+        <div id="grade-summary-content">
+          <div class="empty-state"><div class="empty-icon">📊</div><p>選手を登録するとここに表示されます</p></div>
+        </div>
+      </div>
+
+      <div id="grade-male-tab" style="display:none;">
+        <div id="grade-male-table"></div>
+      </div>
+
+      <div id="grade-female-tab" style="display:none;">
+        <div id="grade-female-table"></div>
+      </div>
+    </div>
+
+  </div><!-- .content -->
+</div><!-- .main -->
+
+</div><!-- .app -->
+
+<!-- Add Athlete Modal -->
+<div class="modal-overlay" id="modal-add-athlete">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">選手登録</div>
+        <div class="modal-subtitle">新しい選手情報を入力してください</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-add-athlete')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>氏名</label>
+          <input type="text" id="add-name" placeholder="山田 太郎">
+        </div>
+        <div class="form-group">
+          <label>ふりがな</label>
+          <input type="text" id="add-kana" placeholder="やまだ たろう">
+        </div>
+        <div class="form-group">
+          <label>生年月日</label>
+          <input type="date" id="add-birthday">
+        </div>
+        <div class="form-group">
+          <label>性別</label>
+          <select id="add-sex">
+            <option value="男子">男子</option>
+            <option value="女子">女子</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>学年</label>
+          <select id="add-grade">
+            <option value="小1">小学1年</option>
+            <option value="小2">小学2年</option>
+            <option value="小3">小学3年</option>
+            <option value="小4">小学4年</option>
+            <option value="小5">小学5年</option>
+            <option value="小6">小学6年</option>
+            <option value="中1">中学1年</option>
+            <option value="中2">中学2年</option>
+            <option value="中3">中学3年</option>
+            <option value="高1">高校1年</option>
+            <option value="高2">高校2年</option>
+            <option value="高3">高校3年</option>
+            <option value="一般">一般</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>主な種目</label>
+          <select id="add-main-event">
+            <option value="自由形">自由形</option>
+            <option value="背泳ぎ">背泳ぎ</option>
+            <option value="平泳ぎ">平泳ぎ</option>
+            <option value="バタフライ">バタフライ</option>
+            <option value="個人メドレー">個人メドレー</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-athlete')">キャンセル</button>
+      <button class="btn btn-primary" onclick="addAthlete()">登録する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Athlete Detail Modal -->
+<div class="modal-overlay" id="modal-athlete-detail">
+  <div class="modal" style="max-width:860px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="detail-modal-title">選手詳細</div>
+        <div class="modal-subtitle" id="detail-modal-subtitle"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-athlete-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="detail-modal-body">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" id="detail-delete-btn">削除</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-athlete-detail')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification"></div>
+
+<script>
+// =====================
+// DATA
+// =====================
+
+// =====================================================================
+// 2026年度 日本水泳連盟 水泳資格表（2026/04/10現在）
+// 配列インデックス: 0=15級, 1=14級, ... 14=1級
+// =====================================================================
+
+// 男子 年齢別資格級基準
+const MALE_AGE_DATA = {
+  19: { // 19歳以上
+    '自由形': {
+      '50m':  [20.42,20.86,21.30,21.74,22.19,22.92,23.66,24.40,25.14,25.88,26.62,27.36,28.10,28.84,29.58],
+      '100m': ['45.53','46.32','47.12','47.92','48.72','50.39','52.06','53.73','55.40','57.08','58.75','1:00.42','1:02.09','1:03.76','1:05.44'],
+      '200m': ['1:39.95','1:41.61','1:43.28','1:44.95','1:46.62','1:50.30','1:53.98','1:57.66','2:01.34','2:05.03','2:08.71','2:12.39','2:16.07','2:19.75','2:23.44'],
+      '400m': ['3:34.56','3:37.72','3:40.88','3:44.04','3:47.21','3:55.16','4:03.12','4:11.07','4:19.03','4:26.99','4:34.94','4:42.90','4:50.85','4:58.81','5:06.77'],
+      '800m': ['7:27.12','7:34.03','7:40.94','7:47.85','7:54.76','8:11.30','8:27.84','8:44.38','9:00.93','9:17.47','9:34.01','9:50.56','10:07.10','10:23.64','10:40.19'],
+      '1500m':['14:15.07','14:28.28','14:41.50','14:54.71','15:07.93','15:39.56','16:11.20','16:42.84','17:14.47','17:46.11','18:17.75','18:49.38','19:21.02','19:52.66','20:24.30'],
+    },
+    '背泳ぎ': {
+      '50m':  [22.46,23.00,23.55,24.09,24.64,25.44,26.25,27.05,27.86,28.67,29.47,30.28,31.08,31.89,32.70],
+      '100m': ['48.90','49.92','50.94','51.96','52.99','54.76','56.54','58.31','1:00.09','1:01.87','1:03.64','1:05.42','1:07.19','1:08.97','1:10.75'],
+      '200m': ['1:46.68','1:49.11','1:51.55','1:53.98','1:56.42','2:00.27','2:04.12','2:07.97','2:11.82','2:15.67','2:19.52','2:23.37','2:27.22','2:31.07','2:34.93'],
+    },
+    '平泳ぎ': {
+      '50m':  [25.43,25.88,26.33,26.78,27.23,28.16,29.09,30.02,30.96,31.89,32.82,33.76,34.69,35.62,36.56],
+      '100m': ['55.52','56.33','57.15','57.97','58.79','1:00.84','1:02.90','1:04.96','1:07.02','1:09.08','1:11.13','1:13.19','1:15.25','1:17.31','1:19.37'],
+      '200m': ['1:59.93','2:01.83','2:03.74','2:05.65','2:07.56','2:11.99','2:16.42','2:20.85','2:25.28','2:29.71','2:34.14','2:38.57','2:43.00','2:47.43','2:51.86'],
+    },
+    'バタフライ': {
+      '50m':  [21.74,22.19,22.64,23.09,23.54,24.33,25.12,25.91,26.70,27.49,28.28,29.07,29.86,30.65,31.44],
+      '100m': ['48.61','49.49','50.37','51.25','52.14','53.92','55.70','57.48','59.26','1:01.04','1:02.82','1:04.60','1:06.38','1:08.16','1:09.95'],
+      '200m': ['1:46.85','1:49.13','1:51.42','1:53.70','1:55.99','1:59.86','2:03.74','2:07.61','2:11.49','2:15.37','2:19.24','2:23.12','2:26.99','2:30.87','2:34.75'],
+    },
+    '個人メドレー': {
+      '100m': ['50.28','50.40','50.53','50.65','50.78','52.72','54.66','56.60','58.54','1:00.48','1:02.42','1:04.36','1:06.30','1:08.24','1:10.18'],
+      '200m': ['1:49.67','1:51.68','1:53.69','1:55.70','1:57.71','2:01.72','2:05.74','2:09.76','2:13.78','2:17.80','2:21.82','2:25.84','2:29.86','2:33.88','2:37.90'],
+      '400m': ['3:54.81','3:59.15','4:03.50','4:07.85','4:12.20','4:20.79','4:29.39','4:37.99','4:46.59','4:55.19','5:03.79','5:12.39','5:20.99','5:29.59','5:38.19'],
+    }
+  },
+  18: { // 17〜18歳
+    '自由形': {
+      '50m':  [21.30,21.72,22.15,22.58,23.01,23.75,24.49,25.23,25.97,26.71,27.45,28.19,28.93,29.67,30.42],
+      '100m': ['47.12','47.86','48.61','49.35','50.10','51.82','53.54','55.26','56.98','58.70','1:00.42','1:02.14','1:03.86','1:05.58','1:07.31'],
+      '200m': ['1:43.28','1:44.73','1:46.19','1:47.65','1:49.11','1:52.95','1:56.79','2:00.63','2:04.48','2:08.32','2:12.16','2:16.01','2:19.85','2:23.69','2:27.54'],
+      '400m': ['3:40.88','3:43.49','3:46.10','3:48.71','3:51.32','3:59.74','4:08.16','4:16.58','4:25.00','4:33.43','4:41.85','4:50.27','4:58.69','5:07.11','5:15.54'],
+      '800m': ['7:40.94','7:46.72','7:52.50','7:58.28','8:04.06','8:21.50','8:38.94','8:56.38','9:13.82','9:31.27','9:48.71','10:06.15','10:23.59','10:41.03','10:58.48'],
+      '1500m':['14:41.50','14:52.55','15:03.61','15:14.66','15:25.72','15:59.07','16:32.43','17:05.78','17:39.14','18:12.50','18:45.85','19:19.21','19:52.56','20:25.92','20:59.28'],
+    },
+    '背泳ぎ': {
+      '50m':  [23.55,24.05,24.55,25.05,25.56,26.36,27.17,27.98,28.79,29.60,30.40,31.21,32.02,32.83,33.64],
+      '100m': ['50.94','52.03','53.12','54.21','55.30','57.04','58.79','1:00.54','1:02.28','1:04.03','1:05.78','1:07.52','1:09.27','1:11.02','1:12.77'],
+      '200m': ['1:51.55','1:53.90','1:56.25','1:58.60','2:00.95','2:04.79','2:08.63','2:12.47','2:16.31','2:20.15','2:23.99','2:27.83','2:31.67','2:35.51','2:39.35'],
+    },
+    '平泳ぎ': {
+      '50m':  [26.33,26.84,27.36,27.87,28.39,29.31,30.23,31.15,32.07,33.00,33.92,34.84,35.76,36.68,37.61],
+      '100m': ['57.15','58.18','59.21','1:00.24','1:01.28','1:03.31','1:05.35','1:07.38','1:09.42','1:11.46','1:13.49','1:15.53','1:17.56','1:19.60','1:21.64'],
+      '200m': ['2:03.74','2:05.96','2:08.19','2:10.42','2:12.65','2:17.06','2:21.47','2:25.88','2:30.29','2:34.71','2:39.12','2:43.53','2:47.94','2:52.35','2:56.77'],
+    },
+    'バタフライ': {
+      '50m':  [22.64,23.11,23.58,24.05,24.52,25.30,26.08,26.86,27.64,28.43,29.21,29.99,30.77,31.55,32.34],
+      '100m': ['50.37','51.28','52.20','53.11','54.03','55.82','57.61','59.40','1:01.19','1:02.99','1:04.78','1:06.57','1:08.36','1:10.15','1:11.95'],
+      '200m': ['1:51.42','1:53.36','1:55.31','1:57.25','1:59.20','2:03.19','2:07.19','2:11.19','2:15.18','2:19.18','2:23.18','2:27.17','2:31.17','2:35.17','2:39.17'],
+    },
+    '個人メドレー': {
+      '200m': ['1:53.69','1:55.75','1:57.82','1:59.88','2:01.95','2:05.99','2:10.04','2:14.08','2:18.13','2:22.18','2:26.22','2:30.27','2:34.31','2:38.36','2:42.41'],
+      '400m': ['4:03.50','4:07.37','4:11.24','4:15.11','4:18.98','4:27.86','4:36.75','4:45.64','4:54.52','5:03.41','5:12.30','5:21.18','5:30.07','5:38.96','5:47.85'],
+    }
+  },
+  16: { // 15〜16歳
+    '自由形': {
+      '50m':  [22.15,22.46,22.77,23.08,23.40,24.19,24.98,25.77,26.56,27.36,28.15,28.94,29.73,30.52,31.32],
+      '100m': ['48.61','49.16','49.72','50.28','50.84','52.68','54.53','56.37','58.22','1:00.06','1:01.91','1:03.75','1:05.60','1:07.44','1:09.29'],
+      '200m': ['1:46.19','1:47.51','1:48.83','1:50.15','1:51.48','1:55.52','1:59.56','2:03.60','2:07.64','2:11.68','2:15.72','2:19.76','2:23.80','2:27.84','2:31.88'],
+      '400m': ['3:46.10','3:48.34','3:50.58','3:52.82','3:55.07','4:04.04','4:13.02','4:21.99','4:30.97','4:39.94','4:48.92','4:57.89','5:06.87','5:15.84','5:24.82'],
+      '800m': ['7:52.50','7:57.74','8:02.99','8:08.23','8:13.48','8:31.91','8:50.35','9:08.79','9:27.22','9:45.66','10:04.10','10:22.53','10:40.97','10:59.41','11:17.85'],
+      '1500m':['15:03.61','15:13.64','15:23.67','15:33.70','15:43.74','16:18.99','16:54.25','17:29.51','18:04.77','18:40.03','19:15.28','19:50.54','20:25.80','21:01.06','21:36.32'],
+    },
+    '背泳ぎ': {
+      '50m':  [24.55,24.84,25.13,25.42,25.72,26.61,27.50,28.39,29.28,30.17,31.06,31.95,32.84,33.73,34.63],
+      '100m': ['53.12','53.84','54.56','55.28','56.01','57.90','59.79','1:01.68','1:03.57','1:05.46','1:07.35','1:09.24','1:11.13','1:13.02','1:14.91'],
+      '200m': ['1:56.25','1:57.85','1:59.45','2:01.05','2:02.65','2:06.78','2:10.92','2:15.06','2:19.20','2:23.34','2:27.48','2:31.62','2:35.76','2:39.90','2:44.04'],
+    },
+    '平泳ぎ': {
+      '50m':  [27.36,27.66,27.96,28.26,28.56,29.57,30.59,31.60,32.62,33.64,34.65,35.67,36.68,37.70,38.72],
+      '100m': ['1:00.79','1:01.77','1:02.76','1:03.74','1:04.73','1:06.91','1:09.10','1:11.28','1:13.47','1:15.66','1:17.84','1:20.03','1:22.21','1:24.40','1:26.59'],
+      '200m': ['2:10.83','2:12.94','2:15.05','2:17.16','2:19.28','2:24.10','2:28.92','2:33.74','2:38.56','2:43.38','2:48.20','2:53.02','2:57.84','3:02.66','3:07.48'],
+    },
+    'バタフライ': {
+      '50m':  [24.09,24.48,24.87,25.26,25.66,26.52,27.38,28.25,29.11,29.98,30.84,31.70,32.57,33.43,34.30],
+      '100m': ['53.62','54.56','55.50','56.44','57.39','59.28','1:01.17','1:03.06','1:04.95','1:06.85','1:08.74','1:10.63','1:12.52','1:14.41','1:16.31'],
+      '200m': ['1:57.99','2:00.07','2:02.16','2:04.24','2:06.33','2:10.57','2:14.82','2:19.07','2:23.32','2:27.57','2:31.81','2:36.06','2:40.31','2:44.56','2:48.81'],
+    },
+    '個人メドレー': {
+      '200m': ['2:00.84','2:02.82','2:04.81','2:06.79','2:08.78','2:13.12','2:17.47','2:21.82','2:26.16','2:30.51','2:34.86','2:39.20','2:43.55','2:47.90','2:52.25'],
+      '400m': ['4:16.46','4:20.67','4:24.88','4:29.09','4:33.31','4:42.87','4:52.43','5:01.99','5:11.55','5:21.12','5:30.68','5:40.24','5:49.80','5:59.36','6:08.93'],
+    }
+  },
+  14: { // 13〜14歳
+    '自由形': {
+      '50m':  [23.55,23.84,24.14,24.44,24.74,25.64,26.55,27.45,28.36,29.27,30.17,31.08,31.98,32.89,33.80],
+      '100m': ['51.36','52.18','53.05','53.89','54.74','56.74','58.75','1:00.75','1:02.76','1:04.76','1:06.77','1:08.77','1:10.78','1:12.78','1:14.79'],
+      '200m': ['1:51.41','1:52.70','1:54.00','1:55.30','1:56.60','2:00.43','2:04.26','2:08.09','2:11.92','2:15.76','2:19.59','2:23.42','2:27.25','2:31.08','2:34.91'],
+      '400m': ['3:57.33','4:00.71','4:04.09','4:07.48','4:10.86','4:20.20','4:29.54','4:38.88','4:48.23','4:57.57','5:06.91','5:16.25','5:25.59','5:34.93','5:44.27'],
+      '800m': ['8:13.11','8:18.17','8:23.23','8:28.29','8:33.35','8:48.36','9:03.37','9:18.37','9:33.38','9:48.39','10:03.40','10:18.41','10:33.42','10:48.43','11:03.44'],
+      '1500m':['15:43.02','15:52.70','16:02.38','16:12.06','16:21.74','16:50.46','17:19.18','17:47.90','18:16.62','18:45.34','19:14.06','19:42.78','20:11.50','20:40.22','21:08.94'],
+    },
+    '背泳ぎ': {
+      '50m':  [26.00,26.47,26.94,27.41,27.89,28.83,29.78,30.73,31.68,32.63,33.58,34.53,35.48,36.43,37.38],
+      '100m': ['56.54','57.53','58.53','59.53','1:00.53','1:02.51','1:04.50','1:06.48','1:08.47','1:10.45','1:12.44','1:14.42','1:16.41','1:18.39','1:20.38'],
+      '200m': ['2:03.61','2:05.69','2:07.78','2:09.86','2:11.95','2:16.12','2:20.30','2:24.47','2:28.64','2:32.82','2:36.99','2:41.16','2:45.34','2:49.51','2:53.69'],
+    },
+    '平泳ぎ': {
+      '50m':  [28.80,29.22,29.64,30.06,30.48,31.52,32.57,33.62,34.66,35.71,36.76,37.80,38.85,39.90,40.94],
+      '100m': ['1:02.76','1:03.74','1:04.73','1:05.71','1:06.70','1:09.06','1:11.42','1:13.79','1:16.15','1:18.51','1:20.88','1:23.24','1:25.60','1:27.97','1:30.33'],
+      '200m': ['2:15.05','2:17.16','2:19.28','2:21.39','2:23.51','2:28.12','2:32.73','2:37.35','2:41.96','2:46.57','2:51.18','2:55.80','3:00.41','3:05.02','3:09.63'],
+    },
+    'バタフライ': {
+      '50m':  [24.87,25.22,25.57,25.92,26.28,27.24,28.21,29.17,30.14,31.10,32.07,33.03,34.00,34.96,35.93],
+      '100m': ['55.50','56.32','57.14','57.96','58.78','1:00.89','1:03.01','1:05.13','1:07.24','1:09.36','1:11.48','1:13.59','1:15.71','1:17.83','1:19.95'],
+      '200m': ['2:02.16','2:04.24','2:06.33','2:08.41','2:10.49','2:15.08','2:19.67','2:24.26','2:28.86','2:33.45','2:38.04','2:42.63','2:47.22','2:51.82','2:56.41'],
+    },
+    '個人メドレー': {
+      '200m': ['2:04.81','2:06.79','2:08.78','2:10.76','2:12.75','2:17.41','2:22.07','2:26.74','2:31.40','2:36.06','2:40.73','2:45.39','2:50.05','2:54.71','2:59.38'],
+      '400m': ['4:24.88','4:29.09','4:33.31','4:37.52','4:41.73','4:51.80','5:01.87','5:11.95','5:22.02','5:32.09','5:42.16','5:52.24','6:02.31','6:12.38','6:22.45'],
+    }
+  },
+  12: { // 11〜12歳
+    '自由形': {
+      '50m':  [24.14,24.69,25.24,25.79,26.34,27.25,28.17,29.08,30.00,30.92,31.83,32.75,33.66,34.58,35.50],
+      '100m': ['53.05','54.32','55.60','56.87','58.15','1:00.18','1:02.22','1:04.26','1:06.30','1:08.34','1:10.37','1:12.41','1:14.45','1:16.49','1:18.53'],
+      '200m': ['1:55.05','1:57.84','2:00.64','2:03.43','2:06.23','2:10.82','2:15.41','2:20.00','2:24.59','2:29.18','2:33.77','2:38.36','2:42.95','2:47.54','2:52.13'],
+      '400m': ['4:04.67','4:10.50','4:16.34','4:22.17','4:28.01','4:38.02','4:48.03','4:58.04','5:08.05','5:18.07','5:28.08','5:38.09','5:48.10','5:58.11','6:08.13'],
+      '800m': ['8:26.33','8:37.88','8:49.43','9:00.98','9:12.53','9:34.10','9:55.67','10:17.24','10:38.81','11:00.38','11:21.95','11:43.52','12:05.09','12:26.66','12:48.23'],
+      '1500m':['16:08.30','16:30.39','16:52.48','17:14.57','17:36.66','18:17.91','18:59.16','19:40.41','20:21.66','21:02.91','21:44.16','22:25.41','23:06.66','23:47.91','24:29.16'],
+    },
+    '背泳ぎ': {
+      '50m':  [26.94,27.66,28.39,29.11,29.84,30.78,31.72,32.66,33.60,34.54,35.48,36.42,37.36,38.30,39.25],
+      '100m': ['58.64','1:00.21','1:01.79','1:03.37','1:04.95','1:06.94','1:08.94','1:10.93','1:12.93','1:14.92','1:16.92','1:18.91','1:20.91','1:22.90','1:24.90'],
+      '200m': ['2:07.68','2:11.18','2:14.68','2:18.18','2:21.69','2:26.11','2:30.53','2:34.95','2:39.37','2:43.80','2:48.22','2:52.64','2:57.06','3:01.48','3:05.91'],
+    },
+    '平泳ぎ': {
+      '50m':  [29.60,30.45,31.30,32.15,33.01,34.09,35.18,36.27,37.35,38.44,39.53,40.61,41.70,42.79,43.88],
+      '100m': ['1:04.57','1:06.26','1:07.96','1:09.65','1:11.35','1:13.74','1:16.13','1:18.52','1:20.91','1:23.30','1:25.69','1:28.08','1:30.47','1:32.86','1:35.25'],
+      '200m': ['2:18.56','2:22.45','2:26.34','2:30.23','2:34.12','2:39.33','2:44.54','2:49.75','2:54.96','3:00.17','3:05.38','3:10.59','3:15.80','3:21.01','3:26.23'],
+    },
+    'バタフライ': {
+      '50m':  [25.57,26.20,26.83,27.46,28.10,29.06,30.02,30.98,31.95,32.91,33.87,34.84,35.80,36.76,37.73],
+      '100m': ['57.14','58.61','1:00.08','1:01.55','1:03.02','1:05.11','1:07.20','1:09.29','1:11.39','1:13.48','1:15.57','1:17.67','1:19.76','1:21.85','1:23.95'],
+      '200m': ['2:06.41','2:09.43','2:12.46','2:15.49','2:18.52','2:23.23','2:27.95','2:32.67','2:37.39','2:42.11','2:46.82','2:51.54','2:56.26','3:00.98','3:05.70'],
+    },
+    '個人メドレー': {
+      '200m': ['2:08.34','2:11.06','2:13.78','2:16.50','2:19.23','2:24.25','2:29.28','2:34.30','2:39.33','2:44.35','2:49.38','2:54.40','2:59.43','3:04.45','3:09.48'],
+      '400m': ['4:31.88','4:37.52','4:43.16','4:48.80','4:54.44','5:05.57','5:16.71','5:27.85','5:38.99','5:50.13','6:01.27','6:12.41','6:23.55','6:34.69','6:45.83'],
+    }
+  },
+  10: { // 9〜10歳
+    '自由形': {
+      '50m':  [29.18,29.64,30.11,30.58,31.05,32.46,33.88,35.29,36.71,38.13,39.54,40.96,42.37,43.79,45.21],
+      '100m': ['1:04.39','1:05.42','1:06.45','1:07.48','1:08.51','1:11.57','1:14.63','1:17.69','1:20.75','1:23.81','1:26.87','1:29.93','1:32.99','1:36.05','1:39.12'],
+      '200m': ['2:19.14','2:21.35','2:23.56','2:25.77','2:27.99','2:34.80','2:41.61','2:48.42','2:55.23','3:02.04','3:08.85','3:15.66','3:22.47','3:29.28','3:36.09'],
+    },
+    '背泳ぎ': {
+      '50m':  [33.08,33.58,34.08,34.58,35.08,36.55,38.02,39.49,40.97,42.44,43.91,45.39,46.86,48.33,49.81],
+      '100m': ['1:12.56','1:13.66','1:14.76','1:15.86','1:16.96','1:19.97','1:22.99','1:26.01','1:29.03','1:32.05','1:35.07','1:38.09','1:41.11','1:44.13','1:47.15'],
+    },
+    '平泳ぎ': {
+      '50m':  [36.68,37.40,38.13,38.85,39.58,41.22,42.87,44.52,46.17,47.82,49.47,51.12,52.77,54.42,56.07],
+      '100m': ['1:19.57','1:21.13','1:22.70','1:24.27','1:25.84','1:29.40','1:32.96','1:36.52','1:40.08','1:43.64','1:47.20','1:50.76','1:54.32','1:57.88','2:01.44'],
+    },
+    'バタフライ': {
+      '50m':  [31.32,31.82,32.33,32.84,33.35,34.78,36.21,37.65,39.08,40.52,41.95,43.38,44.82,46.25,47.69],
+      '100m': ['1:10.04','1:11.17','1:12.30','1:13.43','1:14.56','1:17.67','1:20.79','1:23.91','1:27.03','1:30.15','1:33.27','1:36.39','1:39.51','1:42.63','1:45.75'],
+    },
+    '個人メドレー': {
+      '200m': ['2:33.96','2:36.12','2:38.29','2:40.45','2:42.62','2:48.31','2:54.00','2:59.70','3:05.39','3:11.08','3:16.78','3:22.47','3:28.16','3:33.86','3:39.55'],
+    }
+  },
+  8: { // 8歳以下
+    '自由形': {
+      '50m':  [29.89,31.24,32.59,33.94,35.29,36.67,38.05,39.43,40.81,42.20,43.58,44.96,46.34,47.72,49.11],
+      '100m': ['1:05.96','1:08.89','1:11.82','1:14.75','1:17.69','1:20.68','1:23.68','1:26.68','1:29.67','1:32.67','1:35.67','1:38.66','1:41.66','1:44.66','1:47.66'],
+    },
+    '背泳ぎ': {
+      '50m':  [33.95,35.33,36.72,38.10,39.49,40.95,42.41,43.87,45.33,46.79,48.25,49.71,51.17,52.63,54.10],
+      '100m': ['1:14.49','1:17.37','1:20.25','1:23.13','1:26.01','1:29.04','1:32.08','1:35.12','1:38.16','1:41.20','1:44.23','1:47.27','1:50.31','1:53.35','1:56.39'],
+    },
+    '平泳ぎ': {
+      '50m':  [37.66,39.37,41.09,42.80,44.52,46.15,47.79,49.43,51.07,52.71,54.35,55.99,57.63,59.27,'1:00.91'],
+      '100m': ['1:21.68','1:25.39','1:29.10','1:32.81','1:36.52','1:40.05','1:43.59','1:47.13','1:50.67','1:54.21','1:57.75','2:01.29','2:04.83','2:08.37','2:11.91'],
+    },
+    'バタフライ': {
+      '50m':  [32.09,33.48,34.87,36.26,37.65,39.06,40.48,41.89,43.31,44.72,46.14,47.55,48.97,50.38,51.80],
+      '100m': ['1:11.75','1:14.79','1:17.83','1:20.87','1:23.91','1:27.00','1:30.10','1:33.19','1:36.29','1:39.39','1:42.48','1:45.58','1:48.67','1:51.77','1:54.87'],
+    },
+    '個人メドレー': {
+      '200m': ['2:37.35','2:44.43','2:51.52','2:58.61','3:05.70','3:13.09','3:20.49','3:27.88','3:35.28','3:42.67','3:50.07','3:57.46','4:04.86','4:12.25','4:19.65'],
+    }
+  },
+};
+
+// 女子 年齢別資格級基準
+const FEMALE_AGE_DATA = {
+  19: { // 19歳以上
+    '自由形': {
+      '50m':  [23.39,23.90,24.41,24.92,25.43,26.27,27.12,27.97,28.81,29.66,30.51,31.35,32.20,33.05,33.90],
+      '100m': ['50.77','51.90','53.04','54.17','55.31','57.14','58.98','1:00.81','1:02.65','1:04.48','1:06.32','1:08.15','1:09.99','1:11.82','1:13.66'],
+      '200m': ['1:51.00','1:53.01','1:55.02','1:57.03','1:59.05','2:03.12','2:07.19','2:11.26','2:15.33','2:19.40','2:23.47','2:27.54','2:31.61','2:35.68','2:39.75'],
+      '400m': ['3:54.83','3:59.21','4:03.59','4:07.97','4:12.35','4:20.94','4:29.54','4:38.13','4:46.73','4:55.33','5:03.92','5:12.52','5:21.11','5:29.71','5:38.31'],
+      '800m': ['8:03.49','8:12.60','8:21.72','8:30.83','8:39.95','8:57.63','9:15.32','9:33.01','9:50.70','10:08.39','10:26.07','10:43.76','11:01.45','11:19.14','11:36.83'],
+      '1500m':['15:26.54','15:44.00','16:01.47','16:18.94','16:36.41','17:10.30','17:44.20','18:18.09','18:51.99','19:25.89','19:59.78','20:33.68','21:07.57','21:41.47','22:15.37'],
+    },
+    '背泳ぎ': {
+      '50m':  [25.59,26.19,26.80,27.41,28.02,28.94,29.86,30.78,31.70,32.62,33.54,34.46,35.38,36.30,37.22],
+      '100m': ['54.62','55.98','57.34','58.70','1:00.06','1:02.01','1:03.97','1:05.93','1:07.88','1:09.84','1:11.80','1:13.75','1:15.71','1:17.67','1:19.63'],
+      '200m': ['1:58.75','2:01.65','2:04.55','2:07.45','2:10.36','2:14.62','2:18.88','2:23.14','2:27.40','2:31.67','2:35.93','2:40.19','2:44.45','2:48.71','2:52.98'],
+    },
+    '平泳ぎ': {
+      '50m':  [28.97,29.67,30.37,31.07,31.77,32.81,33.85,34.89,35.93,36.97,38.01,39.05,40.09,41.13,42.18],
+      '100m': ['1:03.18','1:04.40','1:05.63','1:06.86','1:08.09','1:10.39','1:12.70','1:15.00','1:17.31','1:19.62','1:21.92','1:24.23','1:26.53','1:28.84','1:31.15'],
+      '200m': ['2:14.13','2:17.02','2:19.91','2:22.80','2:25.69','2:30.55','2:35.41','2:40.27','2:45.13','2:50.00','2:54.86','2:59.72','3:04.58','3:09.44','3:14.31'],
+    },
+    'バタフライ': {
+      '50m':  [24.21,24.88,25.56,26.24,26.92,27.77,28.63,29.49,30.35,31.21,32.06,32.92,33.78,34.64,35.50],
+      '100m': ['53.90','55.19','56.48','57.77','59.06','1:00.99','1:02.93','1:04.87','1:06.81','1:08.75','1:10.68','1:12.62','1:14.56','1:16.50','1:18.44'],
+      '200m': ['2:01.14','2:03.28','2:05.42','2:07.56','2:09.71','2:14.15','2:18.60','2:23.05','2:27.50','2:31.95','2:36.39','2:40.84','2:45.29','2:49.74','2:54.19'],
+    },
+    '個人メドレー': {
+      '100m': ['56.43','56.59','56.76','56.92','57.09','59.26','1:01.43','1:03.61','1:05.78','1:07.96','1:10.13','1:12.30','1:14.48','1:16.65','1:18.83'],
+      '200m': ['2:02.78','2:05.31','2:07.85','2:10.38','2:12.92','2:17.38','2:21.84','2:26.31','2:30.77','2:35.24','2:39.70','2:44.16','2:48.63','2:53.09','2:57.56'],
+      '400m': ['4:19.10','4:24.59','4:30.09','4:35.59','4:41.09','4:50.49','4:59.89','5:09.29','5:18.70','5:28.10','5:37.50','5:46.91','5:56.31','6:05.71','6:15.12'],
+    }
+  },
+  18: { // 17〜18歳
+    '自由形': {
+      '50m':  [24.41,24.86,25.31,25.76,26.21,27.02,27.84,28.66,29.47,30.29,31.11,31.92,32.74,33.56,34.38],
+      '100m': ['53.04','54.02','55.00','55.98','56.97','58.74','1:00.51','1:02.28','1:04.06','1:05.83','1:07.60','1:09.38','1:11.15','1:12.92','1:14.70'],
+      '200m': ['1:55.02','1:56.92','1:58.82','2:00.72','2:02.63','2:06.56','2:10.50','2:14.44','2:18.37','2:22.31','2:26.25','2:30.18','2:34.12','2:38.06','2:42.00'],
+      '400m': ['4:03.59','4:07.04','4:10.49','4:13.94','4:17.40','4:25.96','4:34.53','4:43.10','4:51.67','5:00.24','5:08.80','5:17.37','5:25.94','5:34.51','5:43.08'],
+      '800m': ['8:21.72','8:28.70','8:35.68','8:42.66','8:49.64','9:07.34','9:25.04','9:42.74','10:00.44','10:18.14','10:35.84','10:53.54','11:11.24','11:28.94','11:46.64'],
+      '1500m':['16:01.47','16:14.84','16:28.22','16:41.59','16:54.97','17:28.89','18:02.81','18:36.73','19:10.65','19:44.57','20:18.49','20:52.41','21:26.33','22:00.25','22:34.18'],
+    },
+    '背泳ぎ': {
+      '50m':  [26.80,27.26,27.72,28.18,28.65,29.55,30.46,31.37,32.28,33.19,34.10,35.01,35.92,36.83,37.74],
+      '100m': ['57.34','58.59','59.85','1:01.11','1:02.37','1:04.20','1:06.04','1:07.88','1:09.72','1:11.56','1:13.40','1:15.24','1:17.08','1:18.92','1:20.76'],
+      '200m': ['2:04.55','2:07.02','2:09.49','2:11.96','2:14.43','2:18.52','2:22.62','2:26.72','2:30.82','2:34.92','2:39.02','2:43.12','2:47.22','2:51.32','2:55.42'],
+    },
+    '平泳ぎ': {
+      '50m':  [30.37,30.88,31.39,31.90,32.41,33.44,34.48,35.51,36.55,37.59,38.62,39.66,40.69,41.73,42.77],
+      '100m': ['1:05.63','1:06.71','1:07.80','1:08.89','1:09.98','1:12.22','1:14.47','1:16.71','1:18.96','1:21.20','1:23.45','1:25.69','1:27.94','1:30.18','1:32.43'],
+      '200m': ['2:19.91','2:22.42','2:24.94','2:27.46','2:29.98','2:34.68','2:39.39','2:44.10','2:48.80','2:53.51','2:58.22','3:02.92','3:07.63','3:12.34','3:17.05'],
+    },
+    'バタフライ': {
+      '50m':  [25.56,26.07,26.59,27.11,27.63,28.46,29.30,30.14,30.97,31.81,32.65,33.48,34.32,35.16,36.00],
+      '100m': ['56.48','57.67','58.86','1:00.05','1:01.24','1:03.07','1:04.90','1:06.73','1:08.56','1:10.39','1:12.22','1:14.05','1:15.88','1:17.71','1:19.54'],
+      '200m': ['2:05.42','2:07.60','2:09.79','2:11.98','2:14.17','2:18.41','2:22.66','2:26.91','2:31.15','2:35.40','2:39.65','2:43.89','2:48.14','2:52.39','2:56.64'],
+    },
+    '個人メドレー': {
+      '200m': ['2:07.85','2:10.21','2:12.58','2:14.94','2:17.31','2:21.58','2:25.86','2:30.13','2:34.41','2:38.69','2:42.96','2:47.24','2:51.51','2:55.79','3:00.07'],
+      '400m': ['4:30.09','4:34.67','4:39.26','4:43.84','4:48.43','4:57.62','5:06.82','5:16.02','5:25.21','5:34.41','5:43.61','5:52.80','6:02.00','6:11.20','6:20.40'],
+    }
+  },
+  16: { // 15〜16歳
+    '自由形': {
+      '50m':  [24.86,25.20,25.54,25.88,26.23,27.09,27.95,28.82,29.68,30.55,31.41,32.27,33.14,34.00,34.87],
+      '100m': ['54.02','54.80','55.58','56.36','57.14','59.00','1:00.86','1:02.72','1:04.59','1:06.45','1:08.31','1:10.18','1:12.04','1:13.90','1:15.77'],
+      '200m': ['1:56.92','1:58.44','1:59.96','2:01.48','2:03.01','2:07.14','2:11.27','2:15.40','2:19.53','2:23.66','2:27.79','2:31.92','2:36.05','2:40.18','2:44.31'],
+      '400m': ['4:07.04','4:09.77','4:12.51','4:15.24','4:17.98','4:26.98','4:35.98','4:44.98','4:53.98','5:02.98','5:11.98','5:20.98','5:29.98','5:38.98','5:47.98'],
+      '800m': ['8:28.70','8:34.52','8:40.34','8:46.16','8:51.98','9:10.45','9:28.93','9:47.40','10:05.88','10:24.36','10:42.83','11:01.31','11:19.78','11:38.26','11:56.74'],
+      '1500m':['16:14.84','16:25.99','16:37.15','16:48.30','16:59.46','17:34.86','18:10.27','18:45.67','19:21.08','19:56.49','20:31.89','21:07.30','21:42.70','22:18.11','22:53.52'],
+    },
+    '背泳ぎ': {
+      '50m':  [27.26,27.77,28.28,28.79,29.31,30.20,31.10,32.00,32.89,33.79,34.69,35.58,36.48,37.38,38.28],
+      '100m': ['58.59','59.58','1:00.58','1:01.58','1:02.58','1:04.51','1:06.44','1:08.37','1:10.31','1:12.24','1:14.17','1:16.11','1:18.04','1:19.97','1:21.91'],
+      '200m': ['2:07.02','2:08.87','2:10.73','2:12.58','2:14.44','2:18.78','2:23.13','2:27.48','2:31.83','2:36.18','2:40.52','2:44.87','2:49.22','2:53.57','2:57.92'],
+    },
+    '平泳ぎ': {
+      '50m':  [31.25,31.70,32.15,32.60,33.05,34.14,35.24,36.33,37.43,38.53,39.62,40.72,41.81,42.91,44.01],
+      '100m': ['1:07.69','1:08.79','1:09.89','1:10.99','1:12.09','1:14.39','1:16.69','1:18.99','1:21.29','1:23.60','1:25.90','1:28.20','1:30.50','1:32.80','1:35.11'],
+      '200m': ['2:24.53','2:26.95','2:29.37','2:31.79','2:34.22','2:39.07','2:43.92','2:48.78','2:53.63','2:58.49','3:03.34','3:08.19','3:13.05','3:17.90','3:22.76'],
+    },
+    'バタフライ': {
+      '50m':  [26.07,26.44,26.81,27.18,27.56,28.45,29.35,30.24,31.14,32.03,32.93,33.82,34.72,35.61,36.51],
+      '100m': ['57.67','58.59','59.51','1:00.43','1:01.36','1:03.29','1:05.22','1:07.15','1:09.08','1:11.02','1:12.95','1:14.88','1:16.81','1:18.74','1:20.68'],
+      '200m': ['2:09.34','2:11.37','2:13.40','2:15.43','2:17.47','2:21.89','2:26.32','2:30.75','2:35.18','2:39.61','2:44.04','2:48.47','2:52.90','2:57.33','3:01.76'],
+    },
+    '個人メドレー': {
+      '200m': ['2:09.34','2:12.09','2:14.85','2:17.60','2:20.36','2:24.78','2:29.21','2:33.64','2:38.07','2:42.49','2:46.92','2:51.35','2:55.78','3:00.21','3:04.63'],
+      '400m': ['4:38.29','4:42.40','4:46.52','4:50.63','4:54.75','5:04.41','5:14.08','5:23.75','5:33.42','5:43.09','5:52.75','6:02.42','6:12.09','6:21.76','6:31.43'],
+    }
+  },
+  14: { // 13〜14歳
+    '自由形': {
+      '50m':  [25.20,25.59,25.99,26.39,26.79,27.64,28.50,29.36,30.22,31.08,31.93,32.79,33.65,34.51,35.37],
+      '100m': ['54.80','55.67','56.54','57.41','58.28','1:00.13','1:01.99','1:03.85','1:05.71','1:07.57','1:09.42','1:11.28','1:13.14','1:15.00','1:16.86'],
+      '200m': ['1:58.44','2:00.18','2:01.92','2:03.66','2:05.40','2:09.52','2:13.65','2:17.78','2:21.91','2:26.04','2:30.17','2:34.30','2:38.43','2:42.56','2:46.69'],
+      '400m': ['4:09.77','4:13.28','4:16.80','4:20.32','4:23.84','4:32.75','4:41.67','4:50.59','4:59.51','5:08.43','5:17.34','5:26.26','5:35.18','5:44.10','5:53.02'],
+      '800m': ['8:34.52','8:39.50','8:44.48','8:49.46','8:54.45','9:13.71','9:32.98','9:52.25','10:11.52','10:30.79','10:50.05','11:09.32','11:28.59','11:47.86','12:07.13'],
+      '1500m':['16:25.99','16:35.54','16:45.09','16:54.64','17:04.19','17:41.11','18:18.03','18:54.96','19:31.88','20:08.81','20:45.73','21:22.65','21:59.58','22:36.50','23:13.43'],
+    },
+    '背泳ぎ': {
+      '50m':  [27.77,28.33,28.90,29.46,30.03,30.91,31.79,32.67,33.55,34.43,35.31,36.19,37.07,37.95,38.84],
+      '100m': ['59.58','1:00.71','1:01.84','1:02.97','1:04.10','1:06.00','1:07.90','1:09.80','1:11.70','1:13.60','1:15.50','1:17.40','1:19.30','1:21.20','1:23.10'],
+      '200m': ['2:08.87','2:11.00','2:13.13','2:15.26','2:17.39','2:21.70','2:26.01','2:30.32','2:34.63','2:38.94','2:43.25','2:47.56','2:51.87','2:56.18','3:00.50'],
+    },
+    '平泳ぎ': {
+      '50m':  [31.70,32.05,32.40,32.75,33.11,34.36,35.62,36.87,38.13,39.38,40.64,41.89,43.15,44.40,45.66],
+      '100m': ['1:08.79','1:09.64','1:10.50','1:11.35','1:12.21','1:14.86','1:17.51','1:20.16','1:22.80','1:25.45','1:28.10','1:30.75','1:33.40','1:36.05','1:38.70'],
+      '200m': ['2:26.95','2:28.77','2:30.59','2:32.41','2:34.24','2:39.85','2:45.47','2:51.08','2:56.70','3:02.31','3:07.93','3:13.54','3:19.16','3:24.77','3:30.39'],
+    },
+    'バタフライ': {
+      '50m':  [26.44,26.87,27.31,27.74,28.18,29.06,29.95,30.83,31.72,32.61,33.49,34.38,35.26,36.15,37.04],
+      '100m': ['58.59','59.62','1:00.66','1:01.70','1:02.74','1:04.65','1:06.56','1:08.47','1:10.41','1:12.29','1:14.20','1:16.11','1:18.02','1:19.93','1:21.85'],
+      '200m': ['2:11.37','2:13.44','2:15.51','2:17.58','2:19.66','2:24.55','2:29.44','2:34.33','2:39.23','2:44.12','2:49.01','2:53.90','2:58.79','3:03.68','3:08.57'],
+    },
+    '個人メドレー': {
+      '200m': ['2:12.09','2:14.14','2:16.19','2:18.24','2:20.29','2:24.78','2:29.28','2:33.78','2:38.28','2:42.78','2:47.28','2:51.78','2:56.28','3:00.78','3:05.28'],
+      '400m': ['4:42.40','4:46.32','4:50.25','4:54.17','4:58.10','5:08.90','5:19.71','5:30.51','5:41.32','5:52.12','6:02.93','6:13.73','6:24.54','6:35.34','6:46.15'],
+    }
+  },
+  12: { // 11〜12歳
+    '自由形': {
+      '50m':  [25.94,26.38,26.83,27.27,27.72,28.76,29.80,30.84,31.88,32.93,33.97,35.01,36.05,37.09,38.14],
+      '100m': ['56.43','57.50','58.57','59.64','1:00.71','1:02.92','1:05.14','1:07.35','1:09.57','1:11.79','1:14.00','1:16.22','1:18.43','1:20.65','1:22.87'],
+      '200m': ['2:01.85','2:04.20','2:06.56','2:08.92','2:11.28','2:16.12','2:20.96','2:25.80','2:30.65','2:35.49','2:40.33','2:45.18','2:50.02','2:54.86','2:59.71'],
+      '400m': ['4:16.43','4:21.09','4:25.76','4:30.43','4:35.10','4:45.65','4:56.20','5:06.75','5:17.30','5:27.85','5:38.40','5:48.95','5:59.50','6:10.05','6:20.60'],
+      '800m': ['8:44.28','8:52.52','9:00.76','9:09.00','9:17.25','9:39.91','10:02.58','10:25.25','10:47.92','11:10.59','11:33.25','11:55.92','12:18.59','12:41.26','13:03.93'],
+      '1500m':['16:44.70','17:00.49','17:16.28','17:32.07','17:47.87','18:31.31','19:14.75','19:58.19','20:41.63','21:25.08','22:08.52','22:51.96','23:35.40','24:18.84','25:02.29'],
+    },
+    '背泳ぎ': {
+      '50m':  [28.84,29.40,29.97,30.54,31.11,32.18,33.26,34.33,35.41,36.49,37.56,38.64,39.71,40.79,41.87],
+      '100m': ['1:01.74','1:03.09','1:04.45','1:05.80','1:07.16','1:09.40','1:11.64','1:13.88','1:16.13','1:18.37','1:20.61','1:22.86','1:25.10','1:27.34','1:29.59'],
+      '200m': ['2:13.17','2:16.38','2:19.59','2:22.80','2:26.01','2:30.86','2:35.72','2:40.58','2:45.44','2:50.30','2:55.16','3:00.02','3:04.88','3:09.74','3:14.60'],
+    },
+    '平泳ぎ': {
+      '50m':  [32.05,32.68,33.32,33.95,34.59,35.87,37.16,38.44,39.73,41.02,42.30,43.59,44.87,46.16,47.45],
+      '100m': ['1:09.64','1:10.93','1:12.22','1:13.51','1:14.81','1:17.58','1:20.35','1:23.12','1:25.90','1:28.67','1:31.44','1:34.22','1:36.99','1:39.76','1:42.54'],
+      '200m': ['2:28.77','2:31.28','2:33.79','2:36.30','2:38.82','2:44.79','2:50.77','2:56.75','3:02.73','3:08.71','3:14.68','3:20.66','3:26.64','3:32.62','3:38.60'],
+    },
+    'バタフライ': {
+      '50m':  [27.27,27.85,28.43,29.01,29.60,30.63,31.66,32.69,33.73,34.76,35.79,36.83,37.86,38.89,39.93],
+      '100m': ['1:00.56','1:01.80','1:03.04','1:04.28','1:05.53','1:07.80','1:10.07','1:12.34','1:14.61','1:16.89','1:19.16','1:21.43','1:23.70','1:25.97','1:28.25'],
+      '200m': ['2:13.44','2:16.89','2:20.35','2:23.81','2:27.27','2:32.13','2:37.00','2:41.87','2:46.74','2:51.61','2:56.48','3:01.35','3:06.22','3:11.09','3:15.96'],
+    },
+    '個人メドレー': {
+      '200m': ['2:15.95','2:18.45','2:20.95','2:23.45','2:25.95','2:31.33','2:36.71','2:42.09','2:47.47','2:52.85','2:58.23','3:03.61','3:08.99','3:14.37','3:19.76'],
+      '400m': ['4:46.32','4:51.67','4:57.02','5:02.37','5:07.73','5:19.15','5:30.58','5:42.01','5:53.44','6:04.87','6:16.29','6:27.72','6:39.15','6:50.58','7:02.01'],
+    }
+  },
+  10: { // 9〜10歳
+    '自由形': {
+      '50m':  [29.40,29.87,30.35,30.82,31.30,32.69,34.08,35.47,36.86,38.25,39.64,41.03,42.42,43.81,45.21],
+      '100m': ['1:04.34','1:05.38','1:06.42','1:07.46','1:08.51','1:11.57','1:14.63','1:17.69','1:20.75','1:23.81','1:26.87','1:29.93','1:32.99','1:36.05','1:39.12'],
+      '200m': ['2:19.36','2:21.62','2:23.88','2:26.14','2:28.41','2:35.17','2:41.94','2:48.71','2:55.48','3:02.25','3:09.01','3:15.78','3:22.55','3:29.32','3:36.09'],
+    },
+    '背泳ぎ': {
+      '50m':  [33.19,33.78,34.38,34.97,35.57,36.99,38.41,39.84,41.26,42.69,44.11,45.53,46.96,48.38,49.81],
+      '100m': ['1:12.04','1:13.34','1:14.64','1:15.94','1:17.25','1:20.24','1:23.23','1:26.22','1:29.21','1:32.20','1:35.19','1:38.18','1:41.17','1:44.16','1:47.15'],
+    },
+    '平泳ぎ': {
+      '50m':  [37.19,37.92,38.66,39.40,40.14,41.73,43.32,44.91,46.51,48.10,49.69,51.29,52.88,54.47,56.07],
+      '100m': ['1:20.66','1:22.25','1:23.85','1:25.45','1:27.05','1:30.48','1:33.92','1:37.36','1:40.80','1:44.24','1:47.68','1:51.12','1:54.56','1:58.00','2:01.44'],
+    },
+    'バタフライ': {
+      '50m':  [31.52,32.01,32.50,32.99,33.48,34.90,36.32,37.74,39.16,40.58,42.00,43.42,44.84,46.26,47.69],
+      '100m': ['1:10.26','1:11.35','1:12.45','1:13.55','1:14.65','1:17.76','1:20.87','1:23.98','1:27.09','1:30.20','1:33.31','1:36.42','1:39.53','1:42.64','1:45.75'],
+    },
+    '個人メドレー': {
+      '200m': ['2:35.89','2:38.17','2:40.45','2:42.73','2:45.01','2:50.99','2:56.97','3:02.96','3:08.94','3:14.92','3:20.90','3:26.89','3:32.87','3:38.85','3:44.83'],
+    }
+  },
+  8: { // 8歳以下
+    '自由形': {
+      '50m':  [29.90,31.29,32.68,34.08,35.29,36.87,38.05,39.19,40.35,41.52,43.81,44.96,46.34,47.72,49.11],
+      '100m': ['1:05.45','1:08.51','1:11.57','1:14.63','1:17.69','1:20.79','1:23.68','1:25.91','1:28.47','1:31.03','1:35.67','1:38.66','1:41.66','1:44.66','1:47.15'],
+    },
+    '背泳ぎ': {
+      '50m':  [33.87,35.36,36.85,38.10,39.49,40.99,42.41,43.36,44.55,43.93,48.25,49.71,51.17,52.63,54.10],
+      '100m': ['1:13.56','1:16.72','1:19.89','1:23.13','1:26.01','1:29.99','1:33.44','1:34.99','1:37.92','1:38.41','1:44.23','1:47.27','1:50.31','1:53.35','1:56.39'],
+    },
+    '平泳ぎ': {
+      '50m':  [38.01,39.73,41.46,42.80,44.52,46.09,47.44,48.79,50.14,51.49,54.35,55.99,57.63,59.27,'1:00.91'],
+      '100m': ['1:22.44','1:26.17','1:29.90','1:32.81','1:36.52','1:40.88','1:44.51','1:47.43','1:50.47','1:51.52','1:57.75','2:01.29','2:04.83','2:08.37','2:11.91'],
+    },
+    'バタフライ': {
+      '50m':  [32.13,33.53,34.93,36.26,37.65,39.13,40.52,41.46,42.63,43.80,46.14,47.55,48.97,50.38,51.80],
+      '100m': ['1:11.64','1:14.72','1:17.83','1:20.87','1:23.91','1:27.09','1:30.10','1:32.02','1:34.57','1:37.12','1:42.48','1:45.58','1:48.67','1:51.77','1:54.87'],
+    },
+    '個人メドレー': {
+      '200m': ['2:41.00','2:47.68','2:54.37','2:58.61','3:05.70','3:14.32','3:20.49','3:25.07','3:29.82','3:39.53','3:50.07','3:57.46','4:04.86','4:12.25','4:19.65'],
+    }
+  },
+};
+
+// getGradeForTime で使う：年齢→データを選ぶ関数
+function getStdData(sex, age) {
+  const data = sex === '男子' ? MALE_AGE_DATA : FEMALE_AGE_DATA;
+  if (!age || age >= 19) return data[19];
+  if (age >= 17) return data[18];
+  if (age >= 15) return data[16];
+  if (age >= 13) return data[14];
+  if (age >= 11) return data[12];
+  if (age >= 9)  return data[10];
+  return data[8];
+}
+
+// =====================
+// STATE
+// =====================
+let athletes = JSON.parse(localStorage.getItem('swim_athletes') || '[]');
+let races = JSON.parse(localStorage.getItem('swim_races') || '[]');
+let currentFilter = 'all';
+let searchQuery = '';
+
+// =====================
+// HELPERS
+// =====================
+
+function calcAge(birthday) {
+  if (!birthday) return null;
+  const b = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - b.getFullYear();
+  const m = today.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
+  return age;
+}
+
+function getAgeGroup(age, sex) {
+  if (!age) return 19;
+  if (age <= 8) return 8;
+  if (age >= 19) return 19;
+  return age;
+}
+
+function getGradeForTime(sex, age, stroke, distance, timeStr) {
+  const timeSec = parseTime(timeStr);
+  if (!isFinite(timeSec)) return null;
+
+  const stdData = getStdData(sex, age);
+  if (!stdData || !stdData[stroke] || !stdData[stroke][distance]) return null;
+  const standards = stdData[stroke][distance]; // index 0 = 15級, 14 = 1級
+
+  for (let i = 0; i < standards.length; i++) {
+    const stdSec = parseTime(String(standards[i]));
+    if (timeSec <= stdSec) {
+      return 15 - i;
+    }
+  }
+  return null;
+}
+
+function getBestGrade(athlete) {
+  let best = 0;
+  const age = calcAge(athlete.birthday);
+  const strokes = ['自由形','背泳ぎ','平泳ぎ','バタフライ','個人メドレー'];
+  const dists = ['50m','100m','200m','400m','800m','1500m'];
+  for (const s of strokes) {
+    for (const d of dists) {
+      const t = athlete.bestTimes?.[s]?.[d];
+      if (t) {
+        const g = getGradeForTime(athlete.sex, age, s, d, t.time);
+        if (g && g > best) best = g;
+      }
+    }
+  }
+  return best || null;
+}
+
+function gradeBadgeHtml(grade) {
+  if (!grade) return `<span class="grade-badge grade-none">-</span>`;
+  return `<span class="grade-badge grade-${grade}">${grade}</span>`;
+}
+
+function saveData() {
+  localStorage.setItem('swim_athletes', JSON.stringify(athletes));
+  localStorage.setItem('swim_races', JSON.stringify(races));
+}
+
+function showNotification(msg) {
+  const n = document.getElementById('notification');
+  n.textContent = msg;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+// =====================
+// VIEWS
+// =====================
+
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  // Update header nav
+  document.querySelectorAll('.header-nav-item').forEach(b => b.classList.remove('active'));
+  const hnavId = { athletes:'hnav-athletes', races:'hnav-races', grades:'hnav-grades', dashboard:'hnav-dashboard' }[name];
+  if (hnavId) document.getElementById(hnavId).classList.add('active');
+  // Update sidebar menu items
+  document.querySelectorAll('.sidebar-menu-item').forEach(i => i.classList.remove('active'));
+  const sideId = { athletes:'snav-athletes', races:'snav-races', grades:'snav-grades', dashboard:'snav-dashboard' }[name];
+  if (sideId) document.getElementById(sideId).classList.add('active');
+
+  if (name === 'athletes')  renderAthleteTable();
+  if (name === 'races')     renderRaceHistory();
+  if (name === 'grades')    renderGradeSummary();
+  if (name === 'dashboard') renderDashboard();
+}
+
+function setActive(el) {
+  // Only used for filter items now
+  el.closest('.sidebar-section').querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function filterBySex(sex) {
+  currentFilter = sex;
+  renderAthleteTable();
+}
+
+function searchAthletes(q) {
+  searchQuery = q;
+  renderAthleteTable();
+}
+
+// =====================
+// ATHLETE TABLE
+// =====================
+
+function renderAthleteTable() {
+  const tbody = document.getElementById('athlete-tbody');
+  const empty = document.getElementById('empty-athletes');
+
+  let list = athletes;
+  if (currentFilter !== 'all') list = list.filter(a => a.sex === currentFilter);
+  if (searchQuery) list = list.filter(a => a.name.includes(searchQuery) || (a.kana && a.kana.includes(searchQuery)));
+
+  // Update stats
+  document.getElementById('stat-total').textContent = athletes.length;
+  document.getElementById('stat-male').textContent = athletes.filter(a => a.sex === '男子').length;
+  document.getElementById('stat-female').textContent = athletes.filter(a => a.sex === '女子').length;
+  document.getElementById('athlete-count-badge').textContent = athletes.length;
+
+  // PBs this month
+  const now = new Date();
+  const pbCount = races.filter(r => {
+    const d = new Date(r.date);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && r.isPB;
+  }).length;
+  document.getElementById('stat-pb').textContent = pbCount;
+
+  if (list.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = list.map(a => {
+    const age = calcAge(a.birthday);
+    const grade = getBestGrade(a);
+    const f50 = a.bestTimes?.['自由形']?.['50m']?.time;
+    const f100 = a.bestTimes?.['自由形']?.['100m']?.time;
+    const b100 = a.bestTimes?.['背泳ぎ']?.['100m']?.time;
+    const br100 = a.bestTimes?.['平泳ぎ']?.['100m']?.time;
+    const fly100 = a.bestTimes?.['バタフライ']?.['100m']?.time;
+
+    return `<tr onclick="openAthleteDetail('${a.id}')">
+      <td><span class="athlete-name">${a.name}</span>${a.kana ? `<br><span style="font-size:11px;color:var(--muted)">${a.kana}</span>` : ''}</td>
+      <td>${a.sex}</td>
+      <td>${age ?? '-'}歳</td>
+      <td>${a.grade || '-'}</td>
+      <td>${gradeBadgeHtml(grade)}</td>
+      <td><span class="${f50 ? 'time-chip' : 'time-chip no-time'}">${f50 || '未登録'}</span></td>
+      <td><span class="${f100 ? 'time-chip' : 'time-chip no-time'}">${f100 || '-'}</span></td>
+      <td><span class="${b100 ? 'time-chip' : 'time-chip no-time'}">${b100 || '-'}</span></td>
+      <td><span class="${br100 ? 'time-chip' : 'time-chip no-time'}">${br100 || '-'}</span></td>
+      <td><span class="${fly100 ? 'time-chip' : 'time-chip no-time'}">${fly100 || '-'}</span></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openAthleteDetail('${a.id}')">詳細</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// =====================
+// ADD ATHLETE
+// =====================
+
+function openAddAthleteModal() {
+  document.getElementById('modal-add-athlete').classList.add('open');
+  // Set default date
+  const today = new Date();
+  const d = new Date(today.getFullYear() - 12, today.getMonth(), today.getDate());
+  document.getElementById('add-birthday').value = d.toISOString().split('T')[0];
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function addAthlete() {
+  const name = document.getElementById('add-name').value.trim();
+  if (!name) { alert('氏名を入力してください'); return; }
+
+  const a = {
+    id: Date.now().toString(),
+    name,
+    kana: document.getElementById('add-kana').value.trim(),
+    birthday: document.getElementById('add-birthday').value,
+    sex: document.getElementById('add-sex').value,
+    grade: document.getElementById('add-grade').value,
+    mainEvent: document.getElementById('add-main-event').value,
+    bestTimes: {},
+    createdAt: new Date().toISOString()
+  };
+
+  athletes.push(a);
+  saveData();
+  closeModal('modal-add-athlete');
+  renderAthleteTable();
+  updateRaceAthleteSelect();
+  showNotification(`✅ ${name} を登録しました`);
+
+  // Reset
+  document.getElementById('add-name').value = '';
+  document.getElementById('add-kana').value = '';
+}
+
+// =====================
+// ATHLETE DETAIL
+// =====================
+
+function openAthleteDetail(id) {
+  const a = athletes.find(x => x.id === id);
+  if (!a) return;
+
+  const age = calcAge(a.birthday);
+  const grade = getBestGrade(a);
+  document.getElementById('detail-modal-title').textContent = a.name;
+  document.getElementById('detail-modal-subtitle').textContent =
+    `${a.sex} | ${age ?? '-'}歳 | ${a.grade || '-'} | 主種目: ${a.mainEvent || '-'} | 最高資格級: ${grade ? grade + '級' : '未取得'}`;
+
+  document.getElementById('detail-delete-btn').onclick = () => deleteAthlete(id);
+
+  const strokes = ['自由形','背泳ぎ','平泳ぎ','バタフライ','個人メドレー'];
+  const distMap = {
+    '自由形': ['50m','100m','200m','400m','800m','1500m'],
+    '背泳ぎ': ['50m','100m','200m'],
+    '平泳ぎ': ['50m','100m','200m'],
+    'バタフライ': ['50m','100m','200m'],
+    '個人メドレー': ['100m','200m','400m'],
+  };
+
+  let html = `<div class="athlete-detail-header">
+    <div class="athlete-avatar">${a.name[0]}</div>
+    <div class="athlete-info">
+      <h2>${a.name}${a.kana ? ` <span style="font-size:14px;color:var(--muted);font-weight:400">${a.kana}</span>` : ''}</h2>
+      <div class="athlete-meta">${a.sex} ・ ${age ?? '-'}歳 ・ ${a.grade || '-'} ・ 生年月日: ${a.birthday || '-'}</div>
+    </div>
+    <div style="margin-left:auto">${gradeBadgeHtml(grade)} <span style="font-size:12px;color:var(--muted);margin-left:4px">最高資格級</span></div>
+  </div>`;
+
+  html += `<div class="events-section">`;
+  html += `<div class="events-title">ベストタイム一覧</div>`;
+
+  for (const stroke of strokes) {
+    const dists = distMap[stroke];
+    html += `<div class="event-stroke-group">
+      <div class="stroke-label">🏊 ${stroke}</div>
+      <div class="event-items">`;
+    for (const dist of dists) {
+      const entry = a.bestTimes?.[stroke]?.[dist];
+      const timeStr = entry?.time;
+      const dateStr = entry?.date;
+      const g = timeStr ? getGradeForTime(a.sex, age, stroke, dist, timeStr) : null;
+      // PBレースを探す
+      const pbRace = races.find(r => r.athleteId === id && r.stroke === stroke && r.distance === dist && r.isPB && r.lapData?.length);
+      const hasLap = !!pbRace;
+      html += `<div class="event-item ${hasLap ? 'event-item-tappable' : ''}" ${hasLap ? `onclick="openRaceDetail('${pbRace.id}')" title="タップでラップ/スプリット詳細"` : ''}>
+        <button class="btn-edit-time" onclick="event.stopPropagation(); editTime('${id}','${stroke}','${dist}')">✏️</button>
+        <div class="event-label">${dist}${hasLap ? ' <span class="lap-indicator">📊</span>' : ''}</div>
+        <div class="event-time ${timeStr ? '' : 'empty'}">${timeStr || '未登録'}</div>
+        <div class="event-grade-row">
+          ${gradeBadgeHtml(g)}
+          <div class="event-date">${dateStr || ''}</div>
+        </div>
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+  html += `</div>`;
+
+  // 直近レース（タップで詳細）
+  const myRaces = races.filter(r => r.athleteId === id).slice(0, 8);
+  if (myRaces.length > 0) {
+    html += `<div class="section-divider"></div>`;
+    html += `<div class="events-title">直近のレース記録 <span style="font-size:11px;color:var(--muted);font-weight:400;text-transform:none">（タップで詳細）</span></div>`;
+    html += myRaces.map(r => {
+      const g = getGradeForTime(a.sex, age, r.stroke, r.distance, r.time);
+      const hasLap = r.lapData?.length > 0;
+      return `<div class="race-card" style="margin-bottom:8px" onclick="openRaceDetail('${r.id}')">
+        <div>
+          <div class="race-card-top">
+            <span class="race-card-event" style="color:var(--white);font-weight:700">${r.stroke} ${r.distance}</span>
+            ${r.isPB ? '<span class="race-pb">🏆 PB</span>' : ''}
+            ${hasLap ? '<span class="section-tag">📊 ラップあり</span>' : ''}
+          </div>
+          <div class="race-card-bottom" style="margin-top:5px;">
+            <span class="race-card-date">📅 ${r.date}</span>
+            ${r.meet ? `<span class="race-card-meet">🏟 ${r.meet}</span>` : ''}
+          </div>
+        </div>
+        <div class="race-card-time">
+          <span>${r.time}</span>
+          ${g ? gradeBadgeHtml(g) : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('detail-modal-body').innerHTML = html;
+  document.getElementById('modal-athlete-detail').classList.add('open');
+}
+
+function editTime(athleteId, stroke, distance) {
+  const a = athletes.find(x => x.id === athleteId);
+  if (!a) return;
+  const current = a.bestTimes?.[stroke]?.[distance]?.time || '';
+  const newTime = prompt(`${a.name} の ${stroke} ${distance} のベストタイムを入力\n例: 1:05.23 または 28.45`, current);
+  if (newTime === null) return;
+  if (newTime === '') {
+    // Clear
+    if (a.bestTimes?.[stroke]?.[distance]) {
+      delete a.bestTimes[stroke][distance];
+    }
+  } else {
+    if (!a.bestTimes) a.bestTimes = {};
+    if (!a.bestTimes[stroke]) a.bestTimes[stroke] = {};
+    a.bestTimes[stroke][distance] = { time: newTime.trim(), date: new Date().toISOString().split('T')[0] };
+  }
+  saveData();
+  openAthleteDetail(athleteId);
+  showNotification(`✅ ${stroke} ${distance} のタイムを更新しました`);
+}
+
+function deleteAthlete(id) {
+  const a = athletes.find(x => x.id === id);
+  if (!confirm(`${a?.name} を削除しますか？`)) return;
+  athletes = athletes.filter(x => x.id !== id);
+  races = races.filter(r => r.athleteId !== id);
+  saveData();
+  closeModal('modal-athlete-detail');
+  renderAthleteTable();
+  showNotification('🗑️ 削除しました');
+}
+
+// =====================
+// RACES – LAP SYSTEM
+// =====================
+
+function updateDistances() {
+  const stroke = document.getElementById('race-stroke').value;
+  const distSel = document.getElementById('race-distance');
+  const opts = {
+    '自由形':    ['50m','100m','200m','400m','800m','1500m'],
+    '背泳ぎ':   ['50m','100m','200m'],
+    '平泳ぎ':   ['50m','100m','200m'],
+    'バタフライ':['50m','100m','200m'],
+    '個人メドレー':['100m','200m','400m'],
+  };
+  distSel.innerHTML = (opts[stroke] || ['50m','100m']).map(d => `<option>${d}</option>`).join('');
+  buildLapInputs();
+}
+
+// 距離文字列→メートル数
+function distToM(str) { return parseInt(str.replace('m', '')); }
+
+// プールサイズに合わせた折り返しごとのチェックポイント生成
+// 個人メドレーは泳法ごとに色分けのためラベルを付ける
+function buildLapInputs() {
+  const distance = document.getElementById('race-distance').value;
+  const poolSize = parseInt(document.getElementById('race-pool').value);
+  const stroke = document.getElementById('race-stroke').value;
+  const totalM = distToM(distance);
+  const lapCount = totalM / 25; // 常に25m単位
+
+  const imStrokes = ['バタフライ','背泳ぎ','平泳ぎ','自由形'];
+
+  const area = document.getElementById('lap-input-area');
+  let html = `<div class="lap-section-title">⏱ スプリットタイム入力（25m毎の通過タイム / ${lapCount}本）</div>`;
+  html += `<div class="lap-grid" id="lap-grid">`;
+
+  for (let i = 0; i < lapCount; i++) {
+    const cumM = (i + 1) * 25;
+    let strokeLabel = '';
+    if (stroke === '個人メドレー') {
+      const segLen = totalM / 4;
+      const segIdx = Math.floor(i * 25 / segLen);
+      strokeLabel = imStrokes[Math.min(segIdx, 3)];
+    }
+
+    html += `<div class="lap-cell" id="lap-cell-${i}">
+      <div class="lap-cell-header">
+        <span class="lap-num">${cumM}m通過</span>
+        <span class="lap-dist-label">${strokeLabel || (i === lapCount - 1 ? 'FINISH' : '')}</span>
+      </div>
+      <input class="lap-input" type="text" id="lap-${i}"
+        placeholder="${i === 0 ? '例: 28.45' : '例: 1:05.23'}"
+        oninput="onLapInput(${i})"
+        onkeydown="lapKeyNav(event, ${i}, ${lapCount})"
+      >
+      <div class="lap-split-display" id="lap-split-${i}">ラップ —</div>
+    </div>`;
+  }
+  html += `</div>`;
+  area.innerHTML = html;
+  document.getElementById('total-time-display').style.display = 'none';
+}
+
+function lapKeyNav(e, idx, total) {
+  if (e.key === 'Enter' || e.key === 'Tab') {
+    e.preventDefault();
+    const next = document.getElementById(`lap-${idx + 1}`);
+    if (next) next.focus();
+  }
+}
+
+function onLapInput(idx) {
+  recalcLaps();
+}
+
+// スプリット入力値（秒）を配列で取得
+function getSplitSecs() {
+  const area = document.getElementById('lap-grid');
+  if (!area) return [];
+  const inputs = area.querySelectorAll('.lap-input');
+  return Array.from(inputs).map(inp => {
+    const v = inp.value.trim();
+    if (!v) return null;
+    const s = parseTime(v);
+    return isFinite(s) && s > 0 ? s : null;
+  });
+}
+
+// 後方互換のエイリアス（submitRace が呼ぶ）
+function getLapSecs() {
+  // スプリットから区間ラップを導出して返す
+  const splits = getSplitSecs();
+  return splits.map((sec, i) => {
+    if (sec === null) return null;
+    const prev = i > 0 ? splits[i - 1] : null;
+    if (prev === null && i > 0) return null; // 前が未入力なら算出不可
+    return i === 0 ? sec : sec - prev;
+  });
+}
+
+function recalcLaps() {
+  const splits = getSplitSecs();
+  const anyFilled = splits.some(v => v !== null);
+  const allFilled = splits.length > 0 && splits.every(v => v !== null);
+
+  splits.forEach((splitSec, i) => {
+    const splitEl = document.getElementById(`lap-split-${i}`);
+    const cell = document.getElementById(`lap-cell-${i}`);
+    if (!splitEl) return;
+
+    if (splitSec !== null) {
+      // ラップタイム = このスプリット − 前のスプリット
+      const prevSplit = i > 0 ? splits[i - 1] : null;
+      if (i === 0) {
+        splitEl.textContent = `ラップ ${formatTime(splitSec)}`;
+        splitEl.className = 'lap-split-display valid';
+      } else if (prevSplit !== null) {
+        const lapSec = splitSec - prevSplit;
+        if (lapSec > 0) {
+          splitEl.textContent = `ラップ ${formatTime(lapSec)}`;
+          splitEl.className = 'lap-split-display valid';
+        } else {
+          splitEl.textContent = 'タイムが前より小さい';
+          splitEl.className = 'lap-split-display';
+        }
+      } else {
+        splitEl.textContent = '前のスプリットを入力';
+        splitEl.className = 'lap-split-display';
+      }
+      cell.style.borderColor = 'rgba(0,180,216,0.35)';
+    } else {
+      splitEl.textContent = 'ラップ —';
+      splitEl.className = 'lap-split-display';
+      cell.style.borderColor = '';
+    }
+  });
+
+  const display = document.getElementById('total-time-display');
+  if (anyFilled) {
+    display.style.display = 'block';
+    const lastFilled = [...splits].reverse().find(v => v !== null);
+    document.getElementById('total-time-val').textContent =
+      allFilled ? formatTime(lastFilled) : `(${formatTime(lastFilled)} …入力中)`;
+  } else {
+    display.style.display = 'none';
+  }
+}
+
+function clearLapInputs() {
+  const area = document.getElementById('lap-grid');
+  if (!area) return;
+  area.querySelectorAll('.lap-input').forEach(inp => { inp.value = ''; });
+  area.querySelectorAll('.lap-split-display').forEach(el => {
+    el.textContent = 'スプリット —';
+    el.className = 'lap-split-display';
+  });
+  area.querySelectorAll('.lap-cell').forEach(el => el.style.borderColor = '');
+  document.getElementById('total-time-display').style.display = 'none';
+}
+
+function updateRaceAthleteSelect() {
+  const sel = document.getElementById('race-athlete');
+  const val = sel ? sel.value : '';
+  if (sel) {
+    sel.innerHTML = '<option value="">選手を選択...</option>' +
+      athletes.map(a => `<option value="${a.id}">${a.name} (${a.sex})</option>`).join('');
+    sel.value = val;
+  }
+  const filt = document.getElementById('race-filter-sel');
+  if (filt) {
+    filt.innerHTML = '<option value="all">全選手</option>' +
+      athletes.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+  }
+}
+
+function submitRace() {
+  const athleteId = document.getElementById('race-athlete').value;
+  const meet = document.getElementById('race-meet').value.trim();
+  const date = document.getElementById('race-date').value;
+  const stroke = document.getElementById('race-stroke').value;
+  const distance = document.getElementById('race-distance').value;
+  const pool = parseInt(document.getElementById('race-pool').value);
+
+  if (!athleteId) { alert('選手を選択してください'); return; }
+
+  const splits = getSplitSecs();
+  if (splits.some(v => v === null)) { alert('全スプリットのタイムを入力してください'); return; }
+  if (splits.length === 0) { alert('スプリットタイムを入力してください'); return; }
+
+  // 最後のスプリット = 合計タイム
+  const totalSec = splits[splits.length - 1];
+  const time = formatTime(totalSec);
+
+  const a = athletes.find(x => x.id === athleteId);
+  if (!a) return;
+
+  // PB check
+  const prev = a.bestTimes?.[stroke]?.[distance];
+  const prevSec = prev ? parseTime(prev.time) : Infinity;
+  const isPB = totalSec < prevSec;
+
+  if (isPB) {
+    if (!a.bestTimes) a.bestTimes = {};
+    if (!a.bestTimes[stroke]) a.bestTimes[stroke] = {};
+    a.bestTimes[stroke][distance] = { time, date };
+  }
+
+  // lapData: スプリットからラップを導出
+  const lapData = splits.map((splitSec, i) => {
+    const prevSplit = i > 0 ? splits[i - 1] : 0;
+    return {
+      lap: i + 1,
+      distM: (i + 1) * 25,
+      lapSec: splitSec - prevSplit,
+      splitSec
+    };
+  });
+
+  const race = {
+    id: Date.now().toString(),
+    athleteId,
+    athleteName: a.name,
+    meet,
+    date,
+    stroke,
+    distance,
+    pool,
+    time,
+    totalSec,
+    lapData,
+    isPB,
+    createdAt: new Date().toISOString()
+  };
+
+  races.unshift(race);
+  saveData();
+  renderRaceHistory();
+  renderAthleteTable();
+
+  const age = calcAge(a.birthday);
+  const g = getGradeForTime(a.sex, age, stroke, distance, time);
+  const gradeStr = g ? `（資格級: ${g}級）` : '';
+
+  if (isPB) {
+    showNotification(`🏆 ${a.name} が ${stroke}${distance} でPB更新！ ${time} ${gradeStr}`);
+  } else {
+    showNotification(`📝 ${a.name} の ${stroke}${distance} を記録しました`);
+  }
+
+  clearLapInputs();
+  document.getElementById('race-meet').value = '';
+}
+
+function renderRaceHistory(filter = 'all') {
+  const container = document.getElementById('race-history');
+  let list = filter === 'all' ? races : races.filter(r => r.athleteId === filter);
+
+  if (list.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏁</div><p>まだレース記録がありません</p></div>';
+    return;
+  }
+
+  container.innerHTML = list.slice(0, 60).map(r => {
+    const age = calcAge(athletes.find(a => a.id === r.athleteId)?.birthday);
+    const sex = athletes.find(a => a.id === r.athleteId)?.sex;
+    const g = getGradeForTime(sex, age, r.stroke, r.distance, r.time);
+    const lapCount = r.lapData?.length || 0;
+    return `<div class="race-card" onclick="openRaceDetail('${r.id}')">
+      <div>
+        <div class="race-card-top">
+          <span class="race-card-name">${r.athleteName}</span>
+          <span class="race-card-event">${r.stroke} ${r.distance}</span>
+          ${r.isPB ? '<span class="race-pb">🏆 PB更新</span>' : ''}
+        </div>
+        <div class="race-card-bottom" style="margin-top:6px;">
+          <span class="race-card-date">📅 ${r.date}</span>
+          ${r.meet ? `<span class="race-card-meet">🏟 ${r.meet}</span>` : ''}
+          ${lapCount ? `<span style="font-size:11px;color:var(--muted)">${r.pool}mプール / ${lapCount}ラップ</span>` : ''}
+        </div>
+      </div>
+      <div class="race-card-time">
+        <span>${r.time}</span>
+        ${g ? gradeBadgeHtml(g) : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterRaces(val) { renderRaceHistory(val); }
+
+function openRaceDetail(raceId) {
+  const r = races.find(x => x.id === raceId);
+  if (!r) return;
+
+  const athlete = athletes.find(a => a.id === r.athleteId);
+  const age = calcAge(athlete?.birthday);
+  const g = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
+
+  document.getElementById('rdetail-title').textContent = `${r.athleteName} — ${r.stroke} ${r.distance}`;
+  document.getElementById('rdetail-subtitle').textContent =
+    `${r.date}${r.meet ? ' ／ ' + r.meet : ''} ／ ${r.pool ?? 50}mプール`;
+
+  document.getElementById('rdetail-delete-btn').onclick = () => deleteRace(raceId);
+
+  const laps = r.lapData || [];
+  const avgLap = laps.length ? (r.totalSec / laps.length) : 0;
+  const maxLapSec = laps.length ? Math.max(...laps.map(l => l.lapSec)) : 1;
+
+  // Half-time (50m split if exists)
+  const halfIdx = laps.findIndex(l => l.distM === distToM(r.distance) / 2);
+  const halfSplit = halfIdx >= 0 ? laps[halfIdx].splitSec : null;
+  const secondHalf = halfSplit !== null ? r.totalSec - halfSplit : null;
+  const halfDiff = (halfSplit !== null && secondHalf !== null) ? secondHalf - halfSplit : null;
+
+  let html = `
+  <div class="rdetail-header">
+    <div class="rdetail-info">
+      <h3>${r.stroke} ${r.distance}</h3>
+      <div class="rdetail-meta">${r.date}${r.meet ? ' — ' + r.meet : ''}</div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        ${r.isPB ? '<span class="race-pb">🏆 PB更新</span>' : ''}
+        ${g ? `${gradeBadgeHtml(g)} <span style="font-size:12px;color:var(--muted)">資格級 ${g}級</span>` : ''}
+        <span class="section-tag">${r.pool ?? 50}mプール</span>
+      </div>
+    </div>
+    <div class="rdetail-total">
+      <div class="rdetail-total-label">FINISH TIME</div>
+      <div class="rdetail-total-time">${r.time}</div>
+      ${avgLap ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">平均ラップ: ${formatTime(avgLap)}/25m</div>` : ''}
+    </div>
+  </div>`;
+
+  // Half time analysis
+  if (halfSplit !== null) {
+    const diffStr = halfDiff >= 0
+      ? `<span style="color:#ef5350">+${formatTime(Math.abs(halfDiff))}</span>`
+      : `<span style="color:#26c6da">−${formatTime(Math.abs(halfDiff))}</span>`;
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">前半 ${distToM(r.distance)/2}m</div>
+        <div style="font-family:'Rajdhani',monospace;font-size:22px;font-weight:800;color:var(--white)">${formatTime(halfSplit)}</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">後半 ${distToM(r.distance)/2}m <span style="margin-left:4px">${diffStr}</span></div>
+        <div style="font-family:'Rajdhani',monospace;font-size:22px;font-weight:800;color:var(--white)">${formatTime(secondHalf)}</div>
+      </div>
+    </div>`;
+  }
+
+  // Lap detail table
+  if (laps.length > 0) {
+    html += `<div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">ラップ詳細</div>`;
+    html += `<div class="table-container"><table class="lap-detail-table">
+      <thead><tr>
+        <th>LAP</th><th>距離</th><th>ラップタイム</th><th>スプリット</th><th>前ラップ差</th><th style="min-width:80px">ペース</th>
+      </tr></thead><tbody>`;
+
+    laps.forEach((l, i) => {
+      const prev = i > 0 ? laps[i - 1].lapSec : null;
+      const diff = prev !== null ? l.lapSec - prev : null;
+      let diffHtml = '<span class="lap-diff-zero">—</span>';
+      if (diff !== null) {
+        if (diff > 0.05) diffHtml = `<span class="lap-diff-pos">+${formatTime(diff)}</span>`;
+        else if (diff < -0.05) diffHtml = `<span class="lap-diff-neg">${formatTime(diff)}</span>`;
+        else diffHtml = `<span class="lap-diff-zero">±0.00</span>`;
+      }
+      const barW = Math.round((l.lapSec / maxLapSec) * 80);
+      const isHalf = l.distM === distToM(r.distance) / 2;
+
+      html += `<tr>
+        <td class="lap-number">${l.lap}${isHalf ? '<span class="half-badge">折返</span>' : ''}</td>
+        <td class="lap-distance-col">${l.distM}m</td>
+        <td class="lap-time-col">${formatTime(l.lapSec)}</td>
+        <td class="lap-split-col">${formatTime(l.splitSec)}</td>
+        <td>${diffHtml}</td>
+        <td>
+          <div class="lap-chart-bar-wrap">
+            <div class="lap-chart-bar" style="width:${barW}px"></div>
+            <span style="font-size:11px;color:var(--muted)">${formatTime(l.lapSec)}</span>
+          </div>
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  document.getElementById('rdetail-body').innerHTML = html;
+  document.getElementById('modal-race-detail').classList.add('open');
+}
+
+function deleteRace(raceId) {
+  const r = races.find(x => x.id === raceId);
+  if (!confirm(`${r?.athleteName} のレース記録を削除しますか？`)) return;
+  races = races.filter(x => x.id !== raceId);
+  saveData();
+  closeModal('modal-race-detail');
+  renderRaceHistory();
+  showNotification('🗑️ レース記録を削除しました');
+}
+
+// =====================
+// GRADES
+// =====================
+
+function switchGradeTab(tab, el) {
+  document.querySelectorAll('#view-grades .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('grade-summary-tab').style.display = tab === 'summary' ? 'block' : 'none';
+  document.getElementById('grade-male-tab').style.display = tab === 'male' ? 'block' : 'none';
+  document.getElementById('grade-female-tab').style.display = tab === 'female' ? 'block' : 'none';
+  if (tab === 'male') renderGradeRefTable('男子');
+  if (tab === 'female') renderGradeRefTable('女子');
+}
+
+function renderGradeSummary() {
+  const container = document.getElementById('grade-summary-content');
+  if (athletes.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>選手を登録するとここに表示されます</p></div>';
+    return;
+  }
+
+  const strokes = ['自由形','背泳ぎ','平泳ぎ','バタフライ','個人メドレー'];
+  const distMap = {'自由形':['50m','100m','200m'],'背泳ぎ':['50m','100m'],'平泳ぎ':['50m','100m'],'バタフライ':['50m','100m'],'個人メドレー':['200m']};
+
+  let html = `<div class="table-container"><table>
+    <thead><tr>
+      <th>選手名</th><th>性別</th><th>年齢</th><th>最高級</th>
+      ${strokes.flatMap(s => distMap[s].map(d => `<th style="font-size:10px">${s}<br>${d}</th>`)).join('')}
+    </tr></thead><tbody>`;
+
+  for (const a of athletes) {
+    const age = calcAge(a.birthday);
+    const topGrade = getBestGrade(a);
+    html += `<tr>
+      <td class="athlete-name" style="cursor:pointer" onclick="openAthleteDetail('${a.id}')">${a.name}</td>
+      <td>${a.sex}</td>
+      <td>${age ?? '-'}</td>
+      <td>${gradeBadgeHtml(topGrade)}</td>
+      ${strokes.flatMap(s => distMap[s].map(d => {
+        const t = a.bestTimes?.[s]?.[d]?.time;
+        const g = t ? getGradeForTime(a.sex, age, s, d, t) : null;
+        return `<td>${t ? `<span class="time-chip" style="font-size:12px">${t}</span><br>${gradeBadgeHtml(g)}` : '<span style="color:var(--muted);font-size:11px">-</span>'}</td>`;
+      })).join('')}
+    </tr>`;
+  }
+
+  html += `</tbody></table></div>`;
+  container.innerHTML = html;
+}
+
+function renderGradeRefTable(sex) {
+  const containerId = sex === '男子' ? 'grade-male-table' : 'grade-female-table';
+  const container = document.getElementById(containerId);
+
+  const stdData = sex === '男子' ? MALE_AGE_DATA[19] : FEMALE_AGE_DATA[19];
+  const strokes = ['自由形','背泳ぎ','平泳ぎ','バタフライ'];
+
+  let html = `<div style="margin-bottom:12px;font-size:12px;color:var(--muted)">
+    19歳以上 基準タイム（2026年度 日本水泳連盟）
+  </div>`;
+
+  for (const stroke of strokes) {
+    const dists = Object.keys(stdData[stroke] || {});
+    if (!dists.length) continue;
+    html += `<div style="margin-bottom:20px;">
+      <div class="stroke-label">🏊 ${stroke}</div>
+      <div class="table-container">
+      <table><thead><tr><th>級</th>${dists.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>`;
+    for (let g = 15; g >= 1; g--) {
+      const idx = 15 - g;
+      html += `<tr><td>${gradeBadgeHtml(g)}</td>`;
+      for (const d of dists) {
+        const v = stdData[stroke][d]?.[idx];
+        html += `<td><span class="time-chip" style="font-size:13px">${v || '-'}</span></td>`;
+      }
+      html += `</tr>`;
+    }
+    html += `</tbody></table></div></div>`;
+  }
+  container.innerHTML = html;
+}
+
+// =====================================================================
+// DASHBOARD
+// =====================================================================
+
+let schedules = JSON.parse(localStorage.getItem('swim_schedules') || '[]');
+let menus     = JSON.parse(localStorage.getItem('swim_menus')     || '[]');
+let goals     = JSON.parse(localStorage.getItem('swim_goals')     || '[]');
+
+function saveDashData() {
+  localStorage.setItem('swim_schedules', JSON.stringify(schedules));
+  localStorage.setItem('swim_menus',     JSON.stringify(menus));
+  localStorage.setItem('swim_goals',     JSON.stringify(goals));
+}
+
+// ── RENDER ──────────────────────────────────────────────────────────
+
+function renderDashboard() {
+  renderScheduleList();
+  renderMenuList();
+  renderGoalList();
+}
+
+/* ---- スケジュール ---- */
+function renderScheduleList() {
+  const el = document.getElementById('dash-schedule-list');
+  if (!schedules.length) {
+    el.innerHTML = `<div class="dash-empty"><div class="dash-empty-icon">📅</div>スケジュールはまだありません</div>`;
+    return;
+  }
+  // 日付昇順
+  const sorted = [...schedules].sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  el.innerHTML = sorted.map(s => {
+    const typeColor = { '試合':'match','練習':'practice','大会':'event','休み':'rest' }[s.type] || 'other';
+    return `<div class="dash-card" onclick="openDashDetail('schedule','${s.id}')">
+      <div class="dash-card-dot dot-${typeColor}"></div>
+      <div class="dash-card-body">
+        <div class="dash-card-title">${s.title}</div>
+        <div class="dash-card-meta">${s.date ? fmtDate(s.date) : ''}${s.location ? ' · ' + s.location : ''}</div>
+      </div>
+      <span class="dash-card-badge color-${typeColor}">${s.type || 'その他'}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ---- 練習メニュー ---- */
+function renderMenuList() {
+  const el = document.getElementById('dash-menu-list');
+  if (!menus.length) {
+    el.innerHTML = `<div class="dash-empty"><div class="dash-empty-icon">🏊</div>練習メニューはまだありません</div>`;
+    return;
+  }
+  el.innerHTML = menus.map(m => {
+    const diffClass = { 'ハード':'hard','ミディアム':'medium','イージー':'easy' }[m.difficulty] || 'medium';
+    const totalM = (m.sets || []).reduce((a,s) => a + (parseInt(s.count||0) * parseInt(s.dist||0)), 0);
+    return `<div class="dash-card" onclick="openDashDetail('menu','${m.id}')">
+      <div class="dash-card-dot" style="background:var(--accent)"></div>
+      <div class="dash-card-body">
+        <div class="dash-card-title">${m.title}</div>
+        <div class="dash-card-meta">${totalM ? totalM.toLocaleString()+'m' : ''}${m.category ? ' · ' + m.category : ''}</div>
+      </div>
+      <span class="dash-card-badge diff-${diffClass}">${m.difficulty || 'ミディアム'}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ---- 目標タイム ---- */
+function renderGoalList() {
+  const el = document.getElementById('dash-goal-list');
+  if (!goals.length) {
+    el.innerHTML = `<div class="dash-empty"><div class="dash-empty-icon">🎯</div>目標タイムはまだありません</div>`;
+    return;
+  }
+  el.innerHTML = goals.map(g => {
+    const athlete = athletes.find(a => a.id === g.athleteId);
+    const current = athlete?.bestTimes?.[g.stroke]?.[g.distance]?.time;
+    const pct = calcGoalPct(g.baseline, current, g.goalTime);
+    const achieved = current && parseTime(current) <= parseTime(g.goalTime);
+    return `<div class="dash-card" onclick="openDashDetail('goal','${g.id}')">
+      <div class="dash-card-dot" style="background:${achieved ? '#f4b942' : 'var(--accent)'}"></div>
+      <div class="dash-card-body">
+        <div class="dash-card-title">${g.athleteName || '?'} ${g.stroke} ${g.distance}
+          ${achieved ? '<span class="achieved-badge">🏆 達成</span>' : ''}
+        </div>
+        <div class="dash-card-meta">目標: ${g.goalTime}${g.deadline ? ' · 期限:'+fmtDate(g.deadline) : ''}</div>
+        <div class="goal-progress-wrap">
+          <div class="goal-progress-bar-bg"><div class="goal-progress-bar" style="width:${pct}%"></div></div>
+          <span class="goal-progress-pct">${pct}%</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calcGoalPct(baseline, current, goal) {
+  const b = parseTime(baseline), c = parseTime(current || baseline), g = parseTime(goal);
+  if (!isFinite(b) || !isFinite(g) || b <= g) return 0;
+  const pct = Math.round(((b - c) / (b - g)) * 100);
+  return Math.min(100, Math.max(0, pct));
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  return `${dt.getMonth()+1}/${dt.getDate()}(${['日','月','火','水','木','金','土'][dt.getDay()]})`;
+}
+
+// ── DETAIL MODAL ─────────────────────────────────────────────────────
+
+function openDashDetail(type, id) {
+  let item, title, body;
+  if (type === 'schedule') {
+    item = schedules.find(s => s.id === id);
+    if (!item) return;
+    title = item.title;
+    const typeColor = { '試合':'match','練習':'practice','大会':'event','休み':'rest' }[item.type] || 'other';
+    body = `
+      <div class="dd-section">
+        <div class="dd-label">種別</div>
+        <span class="dash-card-badge color-${typeColor}" style="font-size:13px;padding:4px 14px">${item.type||'その他'}</span>
+      </div>
+      <div class="dd-section">
+        <div class="dd-label">日時</div>
+        <div class="dd-value">${item.date ? fmtDateFull(item.date) : '未設定'}${item.time ? ' ' + item.time : ''}</div>
+      </div>
+      ${item.location ? `<div class="dd-section"><div class="dd-label">場所</div><div class="dd-value">${item.location}</div></div>` : ''}
+      ${item.target ? `<div class="dd-section"><div class="dd-label">対象選手</div><div class="dd-value">${item.target}</div></div>` : ''}
+      ${item.memo ? `<div class="dd-section"><div class="dd-label">メモ</div><div class="dd-value" style="white-space:pre-wrap">${item.memo}</div></div>` : ''}
+    `;
+    document.getElementById('dd-subtitle').textContent = item.date ? fmtDateFull(item.date) : '';
+  } else if (type === 'menu') {
+    item = menus.find(m => m.id === id);
+    if (!item) return;
+    title = item.title;
+    const totalM = (item.sets||[]).reduce((a,s) => a+(parseInt(s.count||0)*parseInt(s.dist||0)),0);
+    const diffClass = { 'ハード':'hard','ミディアム':'medium','イージー':'easy' }[item.difficulty]||'medium';
+    body = `
+      <div class="dd-section" style="display:flex;gap:16px;flex-wrap:wrap">
+        <div><div class="dd-label">難易度</div><span class="dash-card-badge diff-${diffClass}" style="font-size:13px;padding:4px 14px">${item.difficulty||'-'}</span></div>
+        <div><div class="dd-label">カテゴリ</div><div class="dd-value">${item.category||'-'}</div></div>
+        <div><div class="dd-label">総距離</div><div class="dd-value-big">${totalM ? totalM.toLocaleString()+'m' : '-'}</div></div>
+      </div>
+      ${item.sets?.length ? `
+        <div class="dd-section">
+          <div class="dd-label">セット内容</div>
+          <div class="menu-set-list">
+            ${item.sets.map((s,i) => `
+              <div class="menu-set-item">
+                <span class="menu-set-num">${s.count}×</span>
+                <span class="menu-set-desc">${s.desc || s.stroke || ''}</span>
+                <span class="menu-set-dist">${s.dist ? s.dist+'m' : ''}</span>
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+      ${item.memo ? `<div class="dd-section"><div class="dd-label">コーチメモ</div><div class="dd-value" style="white-space:pre-wrap">${item.memo}</div></div>` : ''}
+    `;
+    document.getElementById('dd-subtitle').textContent = item.category || '';
+  } else if (type === 'goal') {
+    item = goals.find(g => g.id === id);
+    if (!item) return;
+    title = `${item.athleteName} — 目標タイム`;
+    const athlete = athletes.find(a => a.id === item.athleteId);
+    const current = athlete?.bestTimes?.[item.stroke]?.[item.distance]?.time;
+    const pct = calcGoalPct(item.baseline, current, item.goalTime);
+    const achieved = current && parseTime(current) <= parseTime(item.goalTime);
+    const age = calcAge(athlete?.birthday);
+    const g = current ? getGradeForTime(athlete?.sex, age, item.stroke, item.distance, item.goalTime) : null;
+    body = `
+      <div class="dd-section" style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end">
+        <div><div class="dd-label">種目</div><div class="dd-value" style="font-size:16px;font-weight:700">${item.stroke} ${item.distance}</div></div>
+        <div><div class="dd-label">目標タイム</div><div class="dd-value-big">${item.goalTime}${g ? ` <span style="font-size:14px">${gradeBadgeHtml(g)}</span>` : ''}</div></div>
+        ${achieved ? '<div><span class="achieved-badge" style="font-size:13px;padding:6px 14px">🏆 達成済み！</span></div>' : ''}
+      </div>
+      <div class="dd-section">
+        <div class="dd-label">進捗</div>
+        <div style="margin-top:8px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
+            <span>ベースライン: ${item.baseline||'-'}</span>
+            <span>現在: ${current||'未記録'}</span>
+            <span>目標: ${item.goalTime}</span>
+          </div>
+          <div class="goal-progress-bar-bg" style="height:8px;border-radius:4px">
+            <div class="goal-progress-bar" style="width:${pct}%;height:100%;border-radius:4px"></div>
+          </div>
+          <div style="text-align:right;margin-top:4px;font-family:'Rajdhani',monospace;font-size:20px;font-weight:800;color:var(--accent)">${pct}%</div>
+        </div>
+      </div>
+      ${item.deadline ? `<div class="dd-section"><div class="dd-label">目標期限</div><div class="dd-value">${fmtDateFull(item.deadline)}</div></div>` : ''}
+      ${item.memo ? `<div class="dd-section"><div class="dd-label">メモ</div><div class="dd-value" style="white-space:pre-wrap">${item.memo}</div></div>` : ''}
+    `;
+    document.getElementById('dd-subtitle').textContent = `${item.stroke} ${item.distance}`;
+  }
+
+  document.getElementById('dd-title').textContent = title;
+  document.getElementById('dd-body').innerHTML = body;
+  document.getElementById('dd-delete-btn').onclick = () => deleteDashItem(type, id);
+  document.getElementById('modal-dash-detail').classList.add('open');
+}
+
+function deleteDashItem(type, id) {
+  if (!confirm('削除しますか？')) return;
+  if (type === 'schedule') schedules = schedules.filter(s => s.id !== id);
+  if (type === 'menu')     menus     = menus.filter(m => m.id !== id);
+  if (type === 'goal')     goals     = goals.filter(g => g.id !== id);
+  saveDashData();
+  closeModal('modal-dash-detail');
+  renderDashboard();
+  showNotification('🗑️ 削除しました');
+}
+
+function fmtDateFull(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  const days = ['日','月','火','水','木','金','土'];
+  return `${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日(${days[dt.getDay()]})`;
+}
+
+// ── ADD MODAL ─────────────────────────────────────────────────────────
+
+let _dashAddType = null;
+
+function openDashModal(type) {
+  _dashAddType = type;
+  const titleMap = { schedule:'スケジュール追加', menu:'練習メニュー追加', goal:'目標タイム設定' };
+  document.getElementById('da-title').textContent = titleMap[type];
+  document.getElementById('da-body').innerHTML = buildAddForm(type);
+  document.getElementById('modal-dash-add').classList.add('open');
+  // ラジオボタン初期選択
+  document.querySelectorAll('#da-body .radio-opt').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.closest('.radio-group').querySelectorAll('.radio-opt').forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+  if (type === 'menu') syncSetRows();
+}
+
+function buildAddForm(type) {
+  if (type === 'schedule') {
+    return `<div class="form-grid">
+      <div class="form-group full"><label>タイトル</label><input id="da-s-title" type="text" placeholder="春季大会 / 朝練 など"></div>
+      <div class="form-group"><label>日付</label><input id="da-s-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="form-group"><label>時刻</label><input id="da-s-time" type="time"></div>
+      <div class="form-group"><label>場所</label><input id="da-s-location" type="text" placeholder="○○プール"></div>
+      <div class="form-group"><label>種別</label>
+        <div class="radio-group">
+          ${['練習','試合','大会','休み','その他'].map((t,i) => `<button class="radio-opt${i===0?' selected':''}" data-val="${t}">${t}</button>`).join('')}
+        </div>
+      </div>
+      <div class="form-group"><label>対象選手</label><input id="da-s-target" type="text" placeholder="全員 / 個人名"></div>
+      <div class="form-group full"><label>メモ</label><textarea id="da-s-memo" placeholder="補足メモ"></textarea></div>
+    </div>`;
+  }
+  if (type === 'menu') {
+    return `<div class="form-grid">
+      <div class="form-group full"><label>メニュー名</label><input id="da-m-title" type="text" placeholder="有酸素基礎メニュー など"></div>
+      <div class="form-group"><label>カテゴリ</label>
+        <div class="radio-group">
+          ${['有酸素','無酸素','スプリント','テクニック','ドリル'].map((c,i) => `<button class="radio-opt${i===0?' selected':''}" data-val="${c}">${c}</button>`).join('')}
+        </div>
+      </div>
+      <div class="form-group"><label>難易度</label>
+        <div class="radio-group">
+          ${['イージー','ミディアム','ハード'].map((d,i) => `<button class="radio-opt${i===1?' selected':''}" data-val="${d}">${d}</button>`).join('')}
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>セット内容 <span style="font-size:10px;color:var(--muted)">（本数 × 説明 × 距離）</span></label>
+        <div id="set-rows"></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addSetRow()">＋ セット追加</button>
+      </div>
+      <div class="form-group full"><label>コーチメモ</label><textarea id="da-m-memo" placeholder="ポイントや注意事項"></textarea></div>
+    </div>`;
+  }
+  if (type === 'goal') {
+    const athleteOpts = athletes.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+    return `<div class="form-grid">
+      <div class="form-group"><label>選手</label>
+        <select id="da-g-athlete" onchange="onGoalAthleteChange()">${athleteOpts || '<option>選手未登録</option>'}</select>
+      </div>
+      <div class="form-group"><label>泳法</label>
+        <select id="da-g-stroke" onchange="onGoalStrokeChange()">
+          ${['自由形','背泳ぎ','平泳ぎ','バタフライ','個人メドレー'].map(s=>`<option>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>距離</label>
+        <select id="da-g-dist">
+          ${['50m','100m','200m','400m'].map(d=>`<option>${d}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>ベースライン（現在のベスト）</label><input id="da-g-baseline" type="text" placeholder="自動入力 or 手入力"></div>
+      <div class="form-group"><label>目標タイム</label><input id="da-g-goal" type="text" placeholder="例: 55.00"></div>
+      <div class="form-group"><label>目標期限</label><input id="da-g-deadline" type="date"></div>
+      <div class="form-group full"><label>メモ</label><textarea id="da-g-memo" placeholder="目標の背景など"></textarea></div>
+    </div>`;
+  }
+}
+
+// セット行
+let _setRows = [];
+function syncSetRows() {
+  _setRows = [{ count:'', desc:'', dist:'' }];
+  renderSetRows();
+}
+function addSetRow() {
+  _setRows.push({ count:'', desc:'', dist:'' });
+  renderSetRows();
+}
+function removeSetRow(i) {
+  _setRows.splice(i,1);
+  renderSetRows();
+}
+function renderSetRows() {
+  const el = document.getElementById('set-rows');
+  if (!el) return;
+  el.innerHTML = _setRows.map((r,i) => `
+    <div class="set-row">
+      <input type="number" min="1" value="${r.count}" placeholder="本数" oninput="_setRows[${i}].count=this.value">
+      <input type="text" value="${r.desc}" placeholder="内容 (例: Fr, easy)" oninput="_setRows[${i}].desc=this.value">
+      <input type="number" min="25" step="25" value="${r.dist}" placeholder="m" oninput="_setRows[${i}].dist=this.value">
+      <button class="remove-set-btn" onclick="removeSetRow(${i})">✕</button>
+    </div>`).join('');
+}
+
+// 目標タイム：選手・種目変更で現在ベストを自動入力
+function onGoalAthleteChange() { fillBaseline(); }
+function onGoalStrokeChange()  { fillBaseline(); }
+function fillBaseline() {
+  const aId    = document.getElementById('da-g-athlete')?.value;
+  const stroke = document.getElementById('da-g-stroke')?.value;
+  const dist   = document.getElementById('da-g-dist')?.value;
+  const baseEl = document.getElementById('da-g-baseline');
+  if (!baseEl) return;
+  const a = athletes.find(x => x.id === aId);
+  const t = a?.bestTimes?.[stroke]?.[dist]?.time;
+  baseEl.value = t || '';
+}
+
+function getSelectedRadio(container) {
+  const sel = container.querySelector('.radio-opt.selected');
+  return sel ? sel.getAttribute('data-val') : null;
+}
+
+function saveDashItem() {
+  const type = _dashAddType;
+  if (type === 'schedule') {
+    const title = document.getElementById('da-s-title').value.trim();
+    if (!title) { alert('タイトルを入力してください'); return; }
+    const typeVal = getSelectedRadio(document.querySelector('#da-body')) || 'その他';
+    schedules.unshift({
+      id: Date.now().toString(),
+      title,
+      date: document.getElementById('da-s-date').value,
+      time: document.getElementById('da-s-time').value,
+      location: document.getElementById('da-s-location').value.trim(),
+      type: typeVal,
+      target: document.getElementById('da-s-target').value.trim(),
+      memo: document.getElementById('da-s-memo').value.trim(),
+    });
+    showNotification('📅 スケジュールを追加しました');
+  } else if (type === 'menu') {
+    const title = document.getElementById('da-m-title').value.trim();
+    if (!title) { alert('メニュー名を入力してください'); return; }
+    const catGroup  = document.querySelectorAll('#da-body .radio-group')[0];
+    const diffGroup = document.querySelectorAll('#da-body .radio-group')[1];
+    menus.unshift({
+      id: Date.now().toString(),
+      title,
+      category:   getSelectedRadio(catGroup)  || '有酸素',
+      difficulty: getSelectedRadio(diffGroup) || 'ミディアム',
+      sets: _setRows.filter(r => r.count && r.desc),
+      memo: document.getElementById('da-m-memo').value.trim(),
+    });
+    showNotification('🏊 練習メニューを追加しました');
+  } else if (type === 'goal') {
+    const aId  = document.getElementById('da-g-athlete').value;
+    const goal = document.getElementById('da-g-goal').value.trim();
+    if (!aId || !goal) { alert('選手と目標タイムを入力してください'); return; }
+    const a = athletes.find(x => x.id === aId);
+    goals.unshift({
+      id: Date.now().toString(),
+      athleteId:   aId,
+      athleteName: a?.name || '',
+      stroke:   document.getElementById('da-g-stroke').value,
+      distance: document.getElementById('da-g-dist').value,
+      baseline: document.getElementById('da-g-baseline').value.trim(),
+      goalTime: goal,
+      deadline: document.getElementById('da-g-deadline').value,
+      memo: document.getElementById('da-g-memo').value.trim(),
+    });
+    showNotification('🎯 目標タイムを設定しました');
+  }
+  saveDashData();
+  closeModal('modal-dash-add');
+  renderDashboard();
+}
+
+// save ボタンにバインド（DOMReady後）
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('da-save-btn').addEventListener('click', saveDashItem);
+});
+
+// Set today's date for race form
+document.getElementById('race-date').value = new Date().toISOString().split('T')[0];
+
+// Build initial lap inputs
+buildLapInputs();
+
+// Load sample data if empty
+if (athletes.length === 0) {
+  const samples = [
+    { id: '1', name: '田中 健太', kana: 'たなか けんた', birthday: '2009-04-15', sex: '男子', grade: '中2', mainEvent: '自由形',
+      bestTimes: {
+        '自由形': { '50m': {time:'26.34', date:'2024-03-10'}, '100m': {time:'57.80', date:'2024-03-10'} },
+        '背泳ぎ': { '100m': {time:'1:05.20', date:'2024-01-20'} }
+      }},
+    { id: '2', name: '佐藤 あかり', kana: 'さとう あかり', birthday: '2010-08-22', sex: '女子', grade: '中1', mainEvent: '平泳ぎ',
+      bestTimes: {
+        '平泳ぎ': { '50m': {time:'36.10', date:'2024-02-15'}, '100m': {time:'1:19.30', date:'2024-02-15'} },
+        '自由形': { '100m': {time:'1:08.50', date:'2024-01-10'} }
+      }},
+    { id: '3', name: '鈴木 拓海', kana: 'すずき たくみ', birthday: '2007-11-05', sex: '男子', grade: '高1', mainEvent: 'バタフライ',
+      bestTimes: {
+        'バタフライ': { '50m': {time:'27.15', date:'2024-03-20'}, '100m': {time:'58.40', date:'2024-03-20'} },
+        '自由形': { '50m': {time:'24.80', date:'2024-03-20'}, '100m': {time:'54.30', date:'2024-03-15'} },
+        '個人メドレー': { '200m': {time:'2:10.50', date:'2024-02-28'} }
+      }},
+  ];
+  athletes = samples;
+  saveData();
+}
+
+// Init
+renderAthleteTable();
+updateRaceAthleteSelect();
+
+// Prevent modal close on inner click
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => e.stopPropagation()));
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', function() {
+  this.classList.remove('open');
+}));
+</script>
+</body>
+</html>
