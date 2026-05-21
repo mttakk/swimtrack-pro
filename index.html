@@ -1794,39 +1794,39 @@ select option { background: #f4f6f8; color: var(--white); }
   transition: all 0.15s;
 }
 .cal-view-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-.cal-month-block { margin-bottom: 24px; }
-.cal-month-title { font-size: 0.9rem; font-weight: 800; color: var(--white); margin-bottom: 8px; padding: 0 4px; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-.cal-dow { text-align: center; font-size: 0.65rem; font-weight: 700; color: var(--muted); padding: 4px 0; }
+.cal-month-block { flex:1; min-width:0; }
+.cal-month-title { font-size: 0.82rem; font-weight: 800; color: var(--white); margin-bottom: 6px; padding: 0 2px; text-align:center; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-dow { text-align: center; font-size: 0.58rem; font-weight: 700; color: var(--muted); padding: 3px 0; }
 .cal-dow.sun { color: #c0392b; }
 .cal-dow.sat { color: #2563eb; }
 .cal-cell {
-  min-height: 52px;
-  border-radius: 6px;
-  padding: 3px 4px;
+  min-height: 36px;
+  border-radius: 4px;
+  padding: 2px 2px;
   background: var(--tap-bg);
   border: 1px solid var(--tap-border);
-  cursor: default;
+  cursor: pointer;
   transition: background 0.12s;
   overflow: hidden;
 }
-.cal-cell.empty   { background: transparent; border-color: transparent; }
+.cal-cell.empty   { background: transparent; border-color: transparent; cursor:default; }
 .cal-cell.today   { border: 2px solid var(--accent); background: rgba(59,110,165,0.07); }
+.cal-cell:not(.empty):hover { background: var(--tap-bg-hover); }
 .cal-cell.has-event { cursor: pointer; }
-.cal-cell.has-event:hover { background: var(--tap-bg-hover); }
-.cal-day-num { font-size: 0.72rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+.cal-day-num { font-size: 0.62rem; font-weight: 700; color: var(--text); line-height: 1.2; text-align:center; }
 .cal-day-num.sun { color: #c0392b; }
 .cal-day-num.sat { color: #2563eb; }
 .cal-day-num.today-num {
   background: var(--accent); color: #fff; border-radius: 50%;
-  width: 18px; height: 18px;
+  width: 16px; height: 16px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 0.68rem;
+  font-size: 0.60rem; margin: 0 auto;
 }
 .cal-event-dot {
-  font-size: 0.6rem; font-weight: 700;
-  padding: 1px 4px; border-radius: 3px; margin-top: 2px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
+  font-size: 0.52rem; font-weight: 700;
+  padding: 1px 2px; border-radius: 2px; margin-top: 1px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
 }
 .cal-event-dot.match    { background: rgba(192,57,43,0.15);  color:#c0392b; }
 .cal-event-dot.practice { background: rgba(38,198,218,0.15); color:#1a7a8a; }
@@ -2192,6 +2192,7 @@ select option { background: #f4f6f8; color: var(--white); }
 .achieved-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(244,185,66,0.2); border:1px solid rgba(244,185,66,0.4); color:var(--gold); font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin-left:8px; }
 </style>
   <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 </head>
@@ -2274,13 +2275,7 @@ select option { background: #f4f6f8; color: var(--white); }
       <div class="page-header">
         <div>
           <div class="page-title">ダッシュボード</div>
-          <div class="page-subtitle">練習・スケジュール・目標・練習データを一元管理</div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn btn-ghost btn-sm" onclick="openDashModal('schedule')">＋ スケジュール</button>
-          <button class="btn btn-ghost btn-sm" onclick="openDashModal('menu')">＋ 練習メニュー</button>
-          <button class="btn btn-ghost btn-sm" onclick="openPracticeEntryModal()">＋ 練習データ</button>
-          <button class="btn btn-primary btn-sm" onclick="openDashModal('goal')">＋ 目標タイム</button>
+          <div class="page-subtitle">スケジュール・練習メニュー・目標・練習データを一元管理</div>
         </div>
       </div>
 
@@ -2290,16 +2285,11 @@ select option { background: #f4f6f8; color: var(--white); }
           <span class="dash-section-icon">📅</span>
           <span class="dash-section-title">スケジュール</span>
           <div style="display:flex;gap:6px;margin-left:auto;">
-            <button class="cal-view-btn active" id="cal-btn-calendar" onclick="calSetView('calendar')">📆 カレンダー</button>
-            <button class="cal-view-btn" id="cal-btn-list" onclick="calSetView('list')">📋 リスト</button>
             <button class="dash-add-btn" onclick="openDashModal('schedule')">＋</button>
           </div>
         </div>
         <div id="dash-calendar-view">
-          <div id="dash-schedule-calendars"></div>
-        </div>
-        <div id="dash-list-view" style="display:none;">
-          <div id="dash-schedule-list"></div>
+          <div id="dash-schedule-calendars" style="display:flex;gap:12px;align-items:flex-start;"></div>
         </div>
       </div>
 
@@ -2323,22 +2313,12 @@ select option { background: #f4f6f8; color: var(--white); }
         </div>
       </div>
 
-      <!-- 下段: 練習データ（幅広） -->
+      <!-- 下段: 練習データ（個人名一覧・名前タップで詳細） -->
       <div class="dash-col" style="width:100%;margin-bottom:20px;">
         <div class="dash-section-header">
           <span class="dash-section-icon">📈</span>
           <span class="dash-section-title">練習データ</span>
-          <div style="display:flex;gap:6px;margin-left:auto;">
-            <select id="practice-filter-athlete" onchange="renderPracticeList()" style="padding:4px 10px;font-size:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;color:var(--text);">
-              <option value="all">全選手</option>
-            </select>
-            <select id="practice-filter-type" onchange="renderPracticeList()" style="padding:4px 10px;font-size:12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;color:var(--text);">
-              <option value="all">全項目</option>
-              <option value="time">タイム計測</option>
-              <option value="dist">泳距離</option>
-              <option value="drill">ドリル</option>
-              <option value="note">メモ</option>
-            </select>
+          <div style="display:flex;gap:6px;margin-left:auto;align-items:center;">
             <button class="dash-add-btn" onclick="openPracticeEntryModal()">＋</button>
           </div>
         </div>
@@ -2348,70 +2328,113 @@ select option { background: #f4f6f8; color: var(--white); }
     </div><!-- #view-dashboard -->
 
     <!-- ===== PRACTICE ENTRY MODAL ===== -->
-    <div class="modal-overlay" id="modal-practice-entry">
-      <div class="modal" style="max-width:580px;">
+    <div class="modal-overlay" id="modal-practice-entry" style="z-index:210;">
+      <div class="modal" style="max-width:900px;">
         <div class="modal-header">
-          <div><div class="modal-title">練習データ入力</div></div>
+          <div>
+            <div class="modal-title">練習データ入力</div>
+            <div class="modal-subtitle">セッション情報を設定 → 選手ごとにタイムを入力</div>
+          </div>
           <button class="modal-close" onclick="closeModal('modal-practice-entry')">✕</button>
         </div>
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>選手</label>
-              <select id="pe-athlete">
-                <option value="">選手を選択...</option>
-              </select>
+        <div class="modal-body" style="overflow-y:auto;max-height:75vh;">
+
+          <!-- セッション情報 -->
+          <div class="table-container" style="margin-bottom:20px;">
+            <div class="table-header">
+              <div class="table-title">📋 セッション情報</div>
+              <div id="practice-session-badge" style="display:none;font-size:12px;color:var(--accent);font-weight:700;padding:4px 12px;background:rgba(0,180,216,0.12);border-radius:20px;"></div>
             </div>
-            <div class="form-group">
-              <label>日付</label>
-              <input type="date" id="pe-date">
-            </div>
-            <div class="form-group">
-              <label>種別</label>
-              <select id="pe-type" onchange="updatePracticeFields()">
-                <option value="time">タイム計測</option>
-                <option value="dist">泳距離</option>
-                <option value="drill">ドリル</option>
-                <option value="note">メモ</option>
-              </select>
-            </div>
-            <div class="form-group" id="pe-stroke-group">
-              <label>種目</label>
-              <select id="pe-stroke">
-                <option value="自由形">自由形</option>
-                <option value="背泳ぎ">背泳ぎ</option>
-                <option value="平泳ぎ">平泳ぎ</option>
-                <option value="バタフライ">バタフライ</option>
-                <option value="個人メドレー">個人メドレー</option>
-              </select>
-            </div>
-            <div class="form-group" id="pe-dist-group">
-              <label>距離</label>
-              <select id="pe-dist">
-                <option>50m</option><option>100m</option><option>200m</option>
-                <option>400m</option><option>800m</option><option>1500m</option>
-              </select>
-            </div>
-            <div class="form-group" id="pe-value-group">
-              <label id="pe-value-label">タイム</label>
-              <input type="text" id="pe-value" placeholder="例: 0:58.34 または 3200m">
-            </div>
-            <div class="form-group full">
-              <label>メモ</label>
-              <textarea id="pe-memo" placeholder="練習内容・コーチコメントなど"></textarea>
+            <div style="padding:18px 24px;">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;">
+                <div class="form-group">
+                  <label>日付</label>
+                  <input type="date" id="pr-date" onchange="updatePracticeSessionBadge();rebuildPracticeCards()">
+                </div>
+                <div class="form-group">
+                  <label>AM / PM</label>
+                  <select id="pr-ampm" onchange="updatePracticeSessionBadge()">
+                    <option value="AM">AM（午前）</option>
+                    <option value="PM">PM（午後）</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>サークル</label>
+                  <div style="display:flex;gap:6px;align-items:center;">
+                    <input type="number" id="pr-circle-min" min="0" max="59" placeholder="分" style="width:60px;">
+                    <span style="color:var(--muted);font-size:0.85rem;">分</span>
+                    <input type="number" id="pr-circle-sec" min="0" max="59" placeholder="秒" style="width:60px;">
+                    <span style="color:var(--muted);font-size:0.85rem;">秒</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end;">
+                <div class="form-group">
+                  <label>泳法</label>
+                  <select id="pr-stroke" onchange="updatePracticeStrokeDist();rebuildPracticeCards()">
+                    <option value="自由形">自由形</option>
+                    <option value="背泳ぎ">背泳ぎ</option>
+                    <option value="平泳ぎ">平泳ぎ</option>
+                    <option value="バタフライ">バタフライ</option>
+                    <option value="個人メドレー">個人メドレー</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>距離</label>
+                  <select id="pr-dist" onchange="updatePracticeSessionBadge();rebuildPracticeCards()">
+                    <option>50m</option><option>100m</option><option>200m</option>
+                    <option>400m</option><option>800m</option><option>1500m</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>本数</label>
+                  <input type="number" id="pr-sets" min="1" max="20" value="1" placeholder="本数"
+                    onchange="updatePracticeSessionBadge();rebuildPracticeCards()"
+                    oninput="updatePracticeSessionBadge();rebuildPracticeCards()">
+                </div>
+                <div>
+                  <button class="btn btn-ghost btn-sm" onclick="rebuildPracticeCards()" style="white-space:nowrap;">↺ 反映</button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-ghost" onclick="closeModal('modal-practice-entry')">キャンセル</button>
-          <button class="btn btn-primary" onclick="savePracticeEntry()">保存</button>
+
+          <!-- 選手タイム入力 -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:14px;font-weight:700;color:var(--white);">👤 選手タイム入力</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost btn-sm" onclick="addPracticeCard()">＋ 選手を追加</button>
+              <button class="btn btn-primary" onclick="submitAllPractices()">📝 まとめて登録</button>
+            </div>
+          </div>
+          <div id="practice-cards"></div>
+          <div style="margin-top:12px;display:flex;gap:10px;">
+            <button class="btn btn-primary" onclick="submitAllPractices()">📝 まとめて登録</button>
+            <button class="btn btn-ghost" onclick="resetPracticeForm()">🔄 リセット</button>
+          </div>
+
         </div>
       </div>
     </div>
 
-    <!-- ===== PRACTICE DETAIL MODAL ===== -->
-    <div class="modal-overlay" id="modal-practice-detail">
-      <div class="modal" style="max-width:640px;">
+    <!-- ===== ATHLETE PRACTICE HISTORY MODAL ===== -->
+    <div class="modal-overlay" id="modal-athlete-practice" style="z-index:216;">
+      <div class="modal" style="max-width:720px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="aph-title">練習履歴</div>
+            <div class="modal-subtitle" id="aph-subtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('modal-athlete-practice')">✕</button>
+        </div>
+        <div class="modal-body" id="aph-body" style="overflow-y:auto;max-height:75vh;"></div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('modal-athlete-practice')">閉じる</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay" id="modal-practice-detail" style="z-index:215;">
+      <div class="modal" style="max-width:820px;">
         <div class="modal-header">
           <div>
             <div class="modal-title" id="pd-title">練習データ詳細</div>
@@ -2419,10 +2442,33 @@ select option { background: #f4f6f8; color: var(--white); }
           </div>
           <button class="modal-close" onclick="closeModal('modal-practice-detail')">✕</button>
         </div>
-        <div class="modal-body" id="pd-body"></div>
+        <!-- タブ -->
+        <div style="display:flex;border-bottom:1px solid var(--border);background:#edf0f4;padding:0 20px;">
+          <button class="be-tab active" id="pd-tab-detail" onclick="switchPdTab('detail')">📊 ラップ詳細</button>
+          <button class="be-tab" id="pd-tab-pace"   onclick="switchPdTab('pace')">⚡ ペース分析</button>
+        </div>
+        <div class="modal-body" id="pd-body" style="overflow-y:auto;max-height:72vh;"></div>
+        <div class="modal-body" id="pd-body-pace"   style="display:none;overflow-y:auto;max-height:72vh;"></div>
         <div class="modal-footer">
           <button class="btn btn-danger btn-sm" id="pd-delete-btn">🗑️ 削除</button>
           <button class="btn btn-ghost" onclick="closeModal('modal-practice-detail')">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GROWTH RECORD MODAL ===== -->
+    <div class="modal-overlay" id="modal-growth-record" style="z-index:217;">
+      <div class="modal" style="max-width:860px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="gr-title">成長記録</div>
+            <div class="modal-subtitle" id="gr-subtitle"></div>
+          </div>
+          <button class="modal-close" onclick="closeModal('modal-growth-record')">✕</button>
+        </div>
+        <div class="modal-body" id="gr-body" style="overflow-y:auto;max-height:75vh;"></div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('modal-growth-record')">閉じる</button>
         </div>
       </div>
     </div>
@@ -2605,15 +2651,13 @@ select option { background: #f4f6f8; color: var(--white); }
       <!-- ② 選手カード一覧 -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <span style="font-size:14px;font-weight:700;color:var(--white);">👤 選手・種目入力</span>
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost btn-sm" onclick="addAthleteCard()">＋ 選手を追加</button>
-          <button class="btn btn-primary" onclick="submitAllRaces()">📝 まとめて登録</button>
-        </div>
+        <button class="btn btn-primary" onclick="submitAllRaces()">📝 まとめて登録</button>
       </div>
 
       <div id="athlete-cards"></div>
 
       <div style="margin:16px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="addAthleteCard()">＋ 選手を追加</button>
         <button class="btn btn-primary" onclick="submitAllRaces()">📝 まとめて登録</button>
         <button class="btn btn-ghost" onclick="resetRaceForm()">🔄 セッションをリセット</button>
         <span style="font-size:12px;color:var(--muted);">※PB更新時は自動でベストタイムに反映</span>
@@ -4879,22 +4923,17 @@ function renderRaceHistory() {
     }).join('');
 
       return `<div class="meet-group">
-      <div class="meet-group-header" style="flex-direction:column;align-items:flex-start;">
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:10px;
-          cursor:pointer;padding:4px 0;"
-          data-midx="${idx}" onclick="rrhOpenMeet(this)">
-          <div>
-            <div class="meet-group-title">
-              ${m.meet || m.date}
-              ${m.meet ? `<span class="meet-group-date">${m.date}</span>` : ''}
-            </div>
-            <div class="meet-group-meta">
-              ${m.venue ? '📍 ' + m.venue + '　' : ''}${m.pool}mプール　${m.races.length}件
-            </div>
+      <div class="meet-group-header" style="cursor:pointer;padding:4px 0;"
+        data-midx="${idx}" onclick="rrhOpenMeet(this)">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <div style="display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;">
+            <span style="font-size:22px;font-weight:800;color:var(--muted);">${m.date}</span>
+            <span style="font-size:22px;font-weight:800;color:var(--white);">${m.meet||'—'}</span>
+            <span style="font-size:22px;font-weight:800;color:var(--muted);">${m.venue||'—'}</span>
+            <span style="font-size:22px;font-weight:800;color:var(--muted);">${m.pool}mプール</span>
           </div>
-          <span style="font-size:0.85rem;color:var(--muted);">詳細 ▶</span>
+          <span style="font-size:0.85rem;color:var(--muted);flex-shrink:0;margin-left:12px;">詳細 ▶</span>
         </div>
-        <div class="meet-participants-list">${participantRows}</div>
       </div>
     </div>`;
   }).join('');
@@ -4961,6 +5000,26 @@ function openMeetModal(key) {
   document.getElementById('mp-subtitle').textContent =
     [date, venue].filter(Boolean).join('　／　') + `　${pool}mプール　${meetRaces.length}件`;
 
+  // ★ 追加入力ボタン
+  let addBtn = document.getElementById('mp-add-athlete-btn');
+  if (!addBtn) {
+    const footer = document.querySelector('#modal-meet-participants .modal-footer');
+    if (footer) {
+      addBtn = document.createElement('button');
+      addBtn.id = 'mp-add-athlete-btn';
+      addBtn.className = 'btn btn-primary btn-sm';
+      addBtn.style.marginRight = 'auto';
+      addBtn.textContent = '＋ 選手・種目を追加入力';
+      footer.insertBefore(addBtn, footer.firstChild);
+    }
+  }
+  if (addBtn) {
+    addBtn.onclick = function() {
+      closeModal('modal-meet-participants');
+      openRaceEntryWithSession(date, meet, venue, pool);
+    };
+  }
+
   // 選手ごとのレースIDをグローバルに保存
   window.__mpAids    = Object.keys(athMap);
   window.__mpRaceIds = {}; // {aidx: [raceId, ...]}
@@ -5007,6 +5066,29 @@ function openMeetModal(key) {
     }).join('');
 
   document.getElementById('modal-meet-participants').classList.add('open');
+}
+
+// 登録済みレースからセッション情報を引き継いで追加入力
+function openRaceEntryWithSession(date, meet, venue, pool) {
+  // レース結果入力タブに切り替え
+  showView('view-race-entry');
+  document.querySelectorAll('.nav-item').forEach(function(el){
+    el.classList.toggle('active', el.dataset.view === 'view-race-entry');
+  });
+  // セッション情報をセット
+  setTimeout(function() {
+    var dateEl  = document.getElementById('race-date');
+    var meetEl  = document.getElementById('race-meet');
+    var venueEl = document.getElementById('race-venue');
+    var poolEl  = document.getElementById('race-pool');
+    if (dateEl)  dateEl.value  = date;
+    if (meetEl)  meetEl.value  = meet;
+    if (venueEl) venueEl.value = venue;
+    if (poolEl)  poolEl.value  = String(pool);
+    updateSessionBadge && updateSessionBadge();
+    updateDistances && updateDistances();
+    showNotification('\ud83d\udcdd '+meet+' \u306e\u8ffd\u52a0\u5165\u529b\u6a21\u5f0f\u3067\u3059');
+  }, 100);
 }
 
 // 参加者名タップ → 個人結果モーダル
@@ -7022,170 +7104,958 @@ function openPracticeEntryModal() {
   document.getElementById('modal-practice-entry').classList.add('open');
 }
 
-function updatePracticeFields() {
-  const type = document.getElementById('pe-type').value;
-  const showStroke = ['time','drill'].includes(type);
-  const showDist   = ['time','dist'].includes(type);
-  document.getElementById('pe-stroke-group').style.display = showStroke ? '' : 'none';
-  document.getElementById('pe-dist-group').style.display   = showDist   ? '' : 'none';
-  document.getElementById('pe-value-group').style.display  = type !== 'note' ? '' : 'none';
-  const labelMap = { time:'タイム', dist:'総距離 (m)', drill:'本数 / 内容' };
-  const lbl = document.getElementById('pe-value-label');
-  if (lbl) lbl.textContent = labelMap[type] || '値';
-  const ph = { time:'例: 0:58.34', dist:'例: 3200', drill:'例: 10×50m' };
-  const inp = document.getElementById('pe-value');
-  if (inp) inp.placeholder = ph[type] || '';
+// =====================================================================
+// 練習データ入力（レース結果入力と同仕様）
+// =====================================================================
+var _practiceCards = [];
+var _practiceCardCounter = 0;
+
+function openPracticeEntryModal() {
+  // 選手セレクト更新
+  resetPracticeForm();
+  document.getElementById('pr-date').value = new Date().toISOString().split('T')[0];
+  updatePracticeSessionBadge();
+  document.getElementById('modal-practice-entry').classList.add('open');
 }
 
-function savePracticeEntry() {
-  const athleteId = document.getElementById('pe-athlete').value;
-  if (!athleteId) { alert('選手を選択してください'); return; }
-  const type  = document.getElementById('pe-type').value;
-  const value = document.getElementById('pe-value')?.value.trim();
-  const a = athletes.find(x => x.id === athleteId);
-  const entry = {
-    id:          Date.now().toString(),
-    athleteId,
-    athleteName: a?.name || '',
-    date:        document.getElementById('pe-date').value,
-    type,
-    stroke:      document.getElementById('pe-stroke')?.value || '',
-    dist:        document.getElementById('pe-dist')?.value   || '',
-    value:       value || '',
-    memo:        document.getElementById('pe-memo').value.trim(),
-    createdAt:   new Date().toISOString(),
+function updatePracticeStrokeDist() {
+  var stroke = document.getElementById('pr-stroke')?.value;
+  var distSel = document.getElementById('pr-dist');
+  if (!distSel) return;
+  var opts = {
+    '\u81ea\u7531\u5f62':['50m','100m','200m','400m','800m','1500m'],
+    '\u80cc\u6cf3\u304e':['50m','100m','200m'],
+    '\u5e73\u6cf3\u304e':['50m','100m','200m'],
+    '\u30d0\u30bf\u30d5\u30e9\u30a4':['50m','100m','200m'],
+    '\u500b\u4eba\u30e1\u30c9\u30ec\u30fc':['100m','200m','400m'],
   };
-  practices.unshift(entry);
+  var list = opts[stroke] || ['50m','100m','200m'];
+  distSel.innerHTML = list.map(function(d){ return '<option>'+d+'<\/option>'; }).join('');
+  updatePracticeSessionBadge();
+}
+
+function updatePracticeSessionBadge() {
+  var date   = document.getElementById('pr-date')?.value || '';
+  var ampm   = document.getElementById('pr-ampm')?.value || '';
+  var stroke = document.getElementById('pr-stroke')?.value || '';
+  var dist   = document.getElementById('pr-dist')?.value || '';
+  var sets   = document.getElementById('pr-sets')?.value || '';
+  var badge  = document.getElementById('practice-session-badge');
+  if (!badge) return;
+  if (date) {
+    badge.textContent = [date, ampm, sets ? sets+'\u672c\u00d7'+stroke+dist : stroke+dist].filter(Boolean).join('\u3000');
+    badge.style.display = 'block';
+  } else { badge.style.display = 'none'; }
+}
+
+function rebuildPracticeCards() {
+  var stroke = document.getElementById('pr-stroke')?.value || '\u81ea\u7531\u5f62';
+  var dist   = document.getElementById('pr-dist')?.value || '100m';
+  var sets   = parseInt(document.getElementById('pr-sets')?.value || '1');
+  if (isNaN(sets)||sets<1) sets=1; if(sets>20) sets=20;
+  _practiceCards = _practiceCards.map(function(c){ return { cardId:c.cardId, athleteId:c.athleteId }; });
+  if (!_practiceCards.length) _practiceCards = [{ cardId:++_practiceCardCounter, athleteId:'' }];
+  renderPracticeCards();
+}
+
+function openPracticeEntryModal() {
+  resetPracticeForm();
+  document.getElementById('pr-date').value = new Date().toISOString().split('T')[0];
+  updatePracticeStrokeDist();
+  updatePracticeSessionBadge();
+  document.getElementById('modal-practice-entry').classList.add('open');
+}
+
+function resetPracticeForm() {
+  _practiceCards = [{ cardId:++_practiceCardCounter, athleteId:'' }];
+  renderPracticeCards();
+}
+
+function addPracticeCard() {
+  _practiceCards.push({ cardId:++_practiceCardCounter, athleteId:'' });
+  renderPracticeCards();
+}
+
+function removePracticeCard(cid) {
+  _practiceCards = _practiceCards.filter(function(c){ return c.cardId !== cid; });
+  renderPracticeCards();
+}
+
+function onPracticeCardAthleteChange(cid, val) {
+  var card = _practiceCards.find(function(c){ return c.cardId === cid; });
+  if (card) card.athleteId = val;
+}
+
+function renderPracticeCards() {
+  var container = document.getElementById('practice-cards');
+  if (!container) return;
+  var stroke = document.getElementById('pr-stroke')?.value || '\u81ea\u7531\u5f62';
+  var dist   = document.getElementById('pr-dist')?.value || '100m';
+  var sets   = parseInt(document.getElementById('pr-sets')?.value || '1');
+  if (isNaN(sets)||sets<1) sets=1; if(sets>20) sets=20;
+  var distM  = distToM(dist);
+  var use50  = distM > 50;
+  var splitCount = use50 ? Math.floor(distM/50) : 1;
+
+  var sortedAthletes = [...athletes].sort(function(a,b){
+    var so={'\u7537\u5b50':0,'\u5973\u5b50':1};
+    var sd=((so[a.sex]??2)-(so[b.sex]??2));
+    return sd!==0?sd:(a.birthday||'9999').localeCompare(b.birthday||'9999');
+  });
+
+  container.innerHTML = _practiceCards.map(function(card,ci){
+    var opts='<option value="">\u9078\u624b\u3092\u9078\u629e...</option>'+
+      sortedAthletes.map(function(a){
+        var age=calcAge(a.birthday);
+        return '<option value="'+a.id+'"'+(a.id===card.athleteId?' selected':'')+'>'+
+          (a.sex==='\u7537\u5b50'?'\u2642':'\u2640')+' '+a.name+
+          '\uff08'+(a.grade||'')+' '+(age??'-')+'\u6b73\uff09<\/option>';
+      }).join('');
+
+    var setsHtml='';
+    for(var s=1;s<=sets;s++){
+      var inputs='';
+      if(use50){
+        for(var li=0;li<splitCount;li++){
+          var cumM=(li+1)*50;
+          var isFin=cumM===distM;
+          inputs+='<div class="lap-cell">'+
+            '<div class="lap-cell-header"><span class="lap-num">'+cumM+'m'+(isFin?' \ud83c\udfc1':'')+' \u901a\u904e<\/span><\/div>'+
+            '<input class="lap-input" type="text" inputmode="text"'+
+            ' id="prc-'+card.cardId+'-'+s+'-'+li+'"'+
+            ' placeholder="'+(li===0?'0:28.45':'0:58.30')+'"'+
+            ' oninput="onPrc50Input('+card.cardId+','+s+','+li+','+splitCount+')">'+
+            '<div class="lap-split-display" id="prc-sp-'+card.cardId+'-'+s+'-'+li+'">\u2014<\/div>'+
+            '<\/div>';
+        }
+      } else {
+        inputs='<div class="lap-cell">'+
+          '<div class="lap-cell-header"><span class="lap-num">\ud83c\udfc1 \u30d5\u30a3\u30cb\u30c3\u30b7\u30e5<\/span><\/div>'+
+          '<input class="lap-input" type="text" inputmode="text"'+
+          ' id="prc-'+card.cardId+'-'+s+'-0"'+
+          ' placeholder="0:28.45"'+
+          ' oninput="onPrc50Input('+card.cardId+','+s+',0,1)">'+
+          '<div class="lap-split-display" id="prc-sp-'+card.cardId+'-'+s+'-0">\u2014<\/div>'+
+          '<\/div>';
+      }
+      setsHtml+='<div style="background:'+(s%2===0?'#f8fafc;':'')+';border-radius:8px;padding:10px 12px;margin-bottom:8px;">'+
+        '<div style="font-size:0.78rem;font-weight:800;color:var(--accent);margin-bottom:8px;">'+
+        s+'\u672c\u76ee'+
+        '<span id="prc-finish-'+card.cardId+'-'+s+'" style="font-family:\'Rajdhani\',monospace;font-size:1rem;font-weight:900;margin-left:12px;color:var(--white);"><\/span>'+
+        '<\/div>'+
+        '<div class="lap-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));">'+inputs+'<\/div>'+
+        '<\/div>';
+    }
+
+    return '<div class="athlete-card" id="practice-card-'+card.cardId+'" style="margin-bottom:16px;">'+
+      '<div class="athlete-card-header">'+
+      '<span class="athlete-card-num">\u9078\u624b '+(ci+1)+'<\/span>'+
+      '<div class="athlete-card-sel"><select id="prc-sel-'+card.cardId+'" onchange="onPracticeCardAthleteChange('+card.cardId+',this.value)">'+opts+'<\/select><\/div>'+
+      (_practiceCards.length>1?'<button class="athlete-card-remove" onclick="removePracticeCard('+card.cardId+')">✕<\/button>':'')+
+      '<\/div>'+
+      '<div class="athlete-card-body">'+
+      '<div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;padding:0 4px;">'+
+      stroke+' '+dist+' \u00d7 '+sets+'\u672c'+
+      (use50?'\uff0850m\u5358\u4f4d\u30b9\u30d7\u30ea\u30c3\u30c8\uff09':'\uff08\u30d5\u30a3\u30cb\u30c3\u30b7\u30e5\u306e\u307f\uff09')+
+      '<\/div>'+setsHtml+'<\/div><\/div>';
+  }).join('');
+}
+
+function onPrc50Input(cid,setNum,li,splitCount){
+  var inp=document.getElementById('prc-'+cid+'-'+setNum+'-'+li);
+  if(inp) inp.value=inp.value.replace(/[^\d:.]/g,'');
+  var splits=[];
+  for(var i=0;i<splitCount;i++){
+    var v=document.getElementById('prc-'+cid+'-'+setNum+'-'+i)?.value.trim();
+    var s=v?parseTime(v):null;
+    splits.push(s&&isFinite(s)?s:null);
+  }
+  splits.forEach(function(sp,i){
+    var el=document.getElementById('prc-sp-'+cid+'-'+setNum+'-'+i);
+    if(!el) return;
+    if(sp!==null){
+      var prev=i>0?splits[i-1]:null;
+      var lap=i===0?sp:(prev!==null?sp-prev:null);
+      if(lap!==null&&lap>0){ el.textContent='\u30e9\u30c3\u30d7 '+formatTime(lap); el.className='lap-split-display valid'; }
+      else { el.textContent='\u26a0 \u30a8\u30e9\u30fc'; el.className='lap-split-display'; }
+    } else { el.textContent='\u2014'; el.className='lap-split-display'; }
+  });
+  var last=splits[splitCount-1];
+  var finEl=document.getElementById('prc-finish-'+cid+'-'+setNum);
+  if(finEl) finEl.textContent=last!==null?formatTime(last):'';
+  var v2=inp?.value.trim()||'';
+  if(v2.includes(':')&&v2.length>=7&&li<splitCount-1) document.getElementById('prc-'+cid+'-'+setNum+'-'+(li+1))?.focus();
+}
+
+function getPracticeSession(){
+  return {
+    date:document.getElementById('pr-date')?.value||'',
+    ampm:document.getElementById('pr-ampm')?.value||'AM',
+    circleMin:document.getElementById('pr-circle-min')?.value||'0',
+    circleSec:document.getElementById('pr-circle-sec')?.value||'0',
+  };
+}
+
+function submitAllPractices(){
+  var session=getPracticeSession();
+  if(!session.date){ alert('\u65e5\u4ed8\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044'); return; }
+  var stroke=document.getElementById('pr-stroke')?.value||'\u81ea\u7531\u5f62';
+  var dist=document.getElementById('pr-dist')?.value||'100m';
+  var sets=parseInt(document.getElementById('pr-sets')?.value||'1');
+  if(isNaN(sets)||sets<1) sets=1;
+  var distM=distToM(dist);
+  var use50=distM>50;
+  var splitCount=use50?Math.floor(distM/50):1;
+  var circle=(parseInt(session.circleMin||0)*60+parseInt(session.circleSec||0))||null;
+  var total=0;
+
+  for(var ci=0;ci<_practiceCards.length;ci++){
+    var card=_practiceCards[ci];
+    var athleteId=document.getElementById('prc-sel-'+card.cardId)?.value||card.athleteId;
+    if(!athleteId){ alert('\u9078\u624b '+(ci+1)+' \u304c\u672a\u9078\u629e\u3067\u3059'); return; }
+    var a=athletes.find(function(x){ return x.id===athleteId; });
+    if(!a) continue;
+    var setResults=[];
+    for(var s=1;s<=sets;s++){
+      var splits=[];
+      for(var li=0;li<splitCount;li++){
+        var v=document.getElementById('prc-'+card.cardId+'-'+s+'-'+li)?.value.trim();
+        var sv=v?parseTime(v):null;
+        if(!sv||!isFinite(sv)||sv<=0){ alert(a.name+' '+s+'\u672c\u76ee\u306e\u30bf\u30a4\u30e0\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044'); return; }
+        splits.push(sv);
+      }
+      var totalSec=splits[splits.length-1];
+      var lapData=use50
+        ?splits.map(function(sp,j){ return {distM:(j+1)*50,splitSec:sp,lapSec:sp-(j>0?splits[j-1]:0)}; })
+        :[{distM:distM,splitSec:totalSec,lapSec:totalSec}];
+      setResults.push({setNum:s,totalSec:totalSec,time:formatTime(totalSec),lapData:lapData});
+    }
+    var entry={
+      id:Date.now().toString()+'-'+card.cardId,
+      athleteId:a.id, athleteName:a.name,
+      date:session.date, ampm:session.ampm,
+      sets:sets, sessionDist:dist, stroke:stroke, dist:dist,
+      circle:circle, type:'time',
+      value:setResults.map(function(r){ return r.time; }).join(' / '),
+      setResults:setResults,
+      lapData:setResults[0]?.lapData||[],
+      totalSec:setResults[0]?.totalSec||0,
+      memo:'', createdAt:new Date().toISOString(),
+    };
+    practices.unshift(entry);
+    sbUpsertPractice(entry);
+    total++;
+  }
   savePractices();
-  closeModal('modal-practice-entry');
+  resetPracticeForm();
   renderPracticeList();
   updatePracticeAthleteFilter();
-  showNotification(`📈 ${a?.name} の練習データを記録しました`);
+  closeModal('modal-practice-entry');
+  showNotification('\ud83d\udcc8 '+total+'\u540d\u5206\u306e\u7df4\u7fd2\u30c7\u30fc\u30bf\u3092\u767b\u9332\u3057\u307e\u3057\u305f');
+}
+
+
+var _practiceGroupMode = 'athlete';
+
+function setPracticeGroupMode(mode) {
+  _practiceGroupMode = mode;
+  ['session','date','athlete'].forEach(function(m){
+    var btn = document.getElementById('pg-btn-'+m);
+    if (btn) btn.classList.toggle('active', m===mode);
+  });
+  renderPracticeList();
 }
 
 function renderPracticeList() {
-  const container = document.getElementById('dash-practice-list');
+  var container = document.getElementById('dash-practice-list');
   if (!container) return;
-  const athleteF = document.getElementById('practice-filter-athlete')?.value || 'all';
-  const typeF    = document.getElementById('practice-filter-type')?.value    || 'all';
 
-  let list = [...practices];
-  if (athleteF !== 'all') list = list.filter(p => p.athleteId === athleteF);
-  if (typeF    !== 'all') list = list.filter(p => p.type === typeF);
-
-  if (!list.length) {
+  if (!practices.length) {
     container.innerHTML = '<div class="dash-empty"><div class="dash-empty-icon">📈</div>練習データはまだありません</div>';
     return;
   }
 
-  // 比較ビュー：同選手・同種目・タイム計測のデータを抽出してトレンド表示
-  const compareMap = {};
-  practices.filter(p => p.type === 'time' && p.value).forEach(p => {
-    const key = `${p.athleteId}__${p.stroke}__${p.dist}`;
-    if (!compareMap[key]) compareMap[key] = [];
-    compareMap[key].push(p);
+  // 選手ごとに集計（件数・最終日）
+  var athMap = {};
+  practices.forEach(function(p) {
+    if (!athMap[p.athleteId]) {
+      athMap[p.athleteId] = { name:p.athleteName, count:0, lastDate:'' };
+    }
+    athMap[p.athleteId].count++;
+    if (!athMap[p.athleteId].lastDate || p.date > athMap[p.athleteId].lastDate) {
+      athMap[p.athleteId].lastDate = p.date;
+    }
   });
 
-  container.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px;padding:0 16px 12px;">` +
-    list.slice(0, 40).map(p => {
-      const typeColor = PRACTICE_TYPE_COLOR[p.type] || PRACTICE_TYPE_COLOR.note;
-      const typeText  = PRACTICE_TYPE_TEXT[p.type]  || PRACTICE_TYPE_TEXT.note;
-      const typeLabel = PRACTICE_TYPE_LABEL[p.type] || p.type;
+  // あいうえお順でソート
+  var sorted = Object.entries(athMap).sort(function(a,b){
+    var athA = athletes.find(function(x){ return x.id===a[0]; });
+    var athB = athletes.find(function(x){ return x.id===b[0]; });
+    return (athA?.kana||athA?.name||'').localeCompare(athB?.kana||athB?.name||'');
+  });
 
-      // タイム計測なら前回比を計算
-      let trendHtml = '';
-      if (p.type === 'time' && p.value) {
-        const key = `${p.athleteId}__${p.stroke}__${p.dist}`;
-        const history = (compareMap[key] || []).filter(x => x.date < p.date || (x.date === p.date && x.id < p.id));
-        if (history.length > 0) {
-          const prev = history[0];
-          const diff = parseTime(p.value) - parseTime(prev.value);
-          const sign = diff < 0 ? '▼' : '▲';
-          const col  = diff < 0 ? '#26c6da' : '#ef5350';
-          trendHtml = `<span style="font-size:11px;color:${col};font-weight:700;margin-left:6px">${sign}${Math.abs(diff).toFixed(2)}</span>`;
-        }
-      }
-
-      return `<div class="dash-card" onclick="openPracticeDetail('${p.id}')">
-        <div class="dash-card-dot" style="background:${typeText}"></div>
-        <div class="dash-card-body">
-          <div class="dash-card-title">${p.athleteName}
-            ${p.type === 'time' ? `<span style="color:var(--muted);font-weight:400;font-size:12px"> ${p.stroke} ${p.dist}</span>` : ''}
-          </div>
-          <div class="dash-card-meta">${p.date}${p.memo ? ' · ' + p.memo.slice(0,30) : ''}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;">
-          <span style="font-family:'Rajdhani',monospace;font-size:16px;font-weight:700;color:var(--accent)">${p.value || '—'}${trendHtml}</span><br>
-          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${typeColor};color:${typeText}">${typeLabel}</span>
-        </div>
-      </div>`;
-    }).join('') + `</div>`;
+  container.innerHTML = '<div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;">' +
+    sorted.map(function(pair) {
+      var aid  = pair[0];
+      var info = pair[1];
+      var ath  = athletes.find(function(x){ return x.id===aid; });
+      var sex  = ath ? (ath.sex==='男子'?'♂':'♀') : '';
+      return '<div onclick="openAthletePracticeHistory(\''+aid+'\',\''+info.name+'\')" style="'
+        + 'display:flex;flex-direction:column;align-items:center;gap:6px;'
+        + 'padding:14px 18px;background:var(--card);border:1px solid var(--border);'
+        + 'border-radius:12px;cursor:pointer;min-width:90px;transition:background 0.15s;"'
+        + ' onmouseover="this.style.background=\'var(--tap-bg)\'" onmouseout="this.style.background=\'var(--card)\'">'
+        + '<div style="font-size:1.4rem;">'+(ath?.sex==='男子'?'🏊‍♂️':'🏊‍♀️')+'</div>'
+        + '<div style="font-size:0.85rem;font-weight:800;color:var(--white);">'+info.name+'</div>'
+        + '<div style="font-size:0.7rem;color:var(--muted);">'+info.count+'件</div>'
+        + '<div style="font-size:0.65rem;color:var(--muted);">'+info.lastDate+'</div>'
+        + '</div>';
+    }).join('')
+  + '</div>';
 }
 
+function buildPracticeChip(p) {
+  var hasLap = p.setResults && p.setResults.length > 0;
+  var best   = p.setResults ? Math.min.apply(null, p.setResults.map(function(r){ return r.totalSec||Infinity; })) : (p.totalSec||0);
+  var bestStr = best && isFinite(best) ? formatTime(best) : (p.value||'—');
+  return '<span class="participant-event-chip" style="cursor:pointer;" onclick="openPracticeDetail(\''+p.id+'\')">'
+    + (p.stroke && _practiceGroupMode !== 'session' ? p.stroke+' '+p.dist+' ' : '')
+    + (p.date && _practiceGroupMode === 'athlete' ? '<span style="font-size:0.68rem;color:var(--muted);">'+p.date+'</span> ' : '')
+    + '<span style="font-family:\'Rajdhani\',monospace;font-weight:800;">'+bestStr+'</span>'
+    + (p.sets > 1 ? '<span style="font-size:0.65rem;color:var(--muted);margin-left:3px;">\u00d7'+p.sets+'</span>' : '')
+    + (hasLap ? '<span class="section-tag" style="margin-left:4px;font-size:0.62rem;">\u30e9\u30c3\u30d7</span>' : '')
+    + '</span>';
+}
+
+var _currentPractice = null;
+
 function openPracticeDetail(id) {
-  const p = practices.find(x => x.id === id);
+  var p = practices.find(function(x){ return x.id === id; });
   if (!p) return;
+  _currentPractice = p;
+  document.getElementById('pd-title').textContent    = p.athleteName+' — '+p.stroke+' '+p.dist;
+  document.getElementById('pd-subtitle').textContent = p.date+' '+p.ampm+(p.sets>1?' × '+p.sets+'\u672c':'');
+  document.getElementById('pd-delete-btn').onclick   = function(){ deletePractice(id); };
+  switchPdTab('detail');
+  document.getElementById('modal-practice-detail').classList.add('open');
+  renderPdDetail(p);
+}
 
-  document.getElementById('pd-title').textContent    = `${p.athleteName} — ${PRACTICE_TYPE_LABEL[p.type] || p.type}`;
-  document.getElementById('pd-subtitle').textContent = p.date;
-  document.getElementById('pd-delete-btn').onclick   = () => deletePractice(id);
+function switchPdTab(tab) {
+  ['detail','pace'].forEach(function(t){
+    var btn  = document.getElementById('pd-tab-'+t);
+    var body = document.getElementById(t==='detail'?'pd-body':'pd-body-'+t);
+    if (btn)  btn.classList.toggle('active', t===tab);
+    if (body) body.style.display = t===tab ? '' : 'none';
+  });
+  if (!_currentPractice) return;
+  if (tab === 'pace') renderPdPace(_currentPractice);
+}
 
-  // 同選手・同種目の履歴
-  let historyHtml = '';
-  if (p.type === 'time' && p.value) {
-    const key     = `${p.athleteId}__${p.stroke}__${p.dist}`;
-    const history = practices.filter(x => x.type === 'time' && x.athleteId === p.athleteId && x.stroke === p.stroke && x.dist === p.dist)
-                             .sort((a,b) => a.date.localeCompare(b.date));
-    if (history.length > 1) {
-      historyHtml = `<div class="dd-section">
-        <div class="dd-label">過去データ比較（${p.stroke} ${p.dist}）</div>
-        <div class="menu-set-list">
-          ${history.map((h, i) => {
-            const prev = i > 0 ? history[i-1] : null;
-            const diff = prev ? parseTime(h.value) - parseTime(prev.value) : null;
-            const diffHtml = diff !== null
-              ? `<span style="font-size:12px;color:${diff<0?'#26c6da':'#ef5350'};font-weight:700">${diff<0?'▼':'▲'}${Math.abs(diff).toFixed(2)}</span>`
-              : '';
-            const isThis = h.id === p.id;
-            return `<div class="menu-set-item" style="${isThis?'border-color:var(--accent);background:rgba(0,180,216,0.08)':''}">
-              <span class="menu-set-num" style="font-size:14px">${h.date}</span>
-              <span class="menu-set-desc" style="font-family:'Rajdhani',monospace;font-size:18px;font-weight:700;color:var(--accent)">${h.value}</span>
-              <span class="menu-set-dist">${diffHtml}</span>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>`;
-    }
+// 成長記録モーダルを開く
+function openGrowthRecord(athleteId, athleteName, stroke, dist, sets, circle) {
+  // 同選手・同種目・同本数・同サークルの履歴
+  var history = practices
+    .filter(function(x){
+      return x.athleteId===athleteId && x.stroke===stroke && x.dist===dist
+        && (x.sets||1)==sets && (x.circle||0)==circle;
+    })
+    .sort(function(a,b){ return a.date.localeCompare(b.date)||(a.ampm||'').localeCompare(b.ampm||''); });
+
+  var circleStr = circle ? Math.floor(circle/60)+'\u5206'+('0'+(circle%60)).slice(-2)+'\u79d2\u30b5\u30fc\u30af\u30eb' : '\u30b5\u30fc\u30af\u30eb\u306a\u3057';
+  document.getElementById('gr-title').textContent    = athleteName+' — '+stroke+' '+dist+' \u6210\u9577\u8a18\u9332';
+  document.getElementById('gr-subtitle').textContent = sets+'\u672c \u00d7 '+circleStr+'\uff08'+history.length+'\u56de\u5206\uff09';
+
+  // _currentPractice に代わる擬似オブジェクトで renderPdGrowth を流用
+  var pseudo = { athleteId:athleteId, athleteName:athleteName, stroke:stroke, dist:dist, _filterSets:sets, _filterCircle:circle };
+  renderGrowthInto('gr-body', pseudo, history);
+  document.getElementById('modal-growth-record').classList.add('open');
+}
+
+function renderGrowthInto(bodyId, p, history) {
+  var body = document.getElementById(bodyId);
+  if (!body) return;
+
+  if (history.length < 2) {
+    body.innerHTML = '<div class="dash-empty" style="padding:40px;"><div class="dash-empty-icon">\u{1F4C8}</div>2\u56de\u4ee5\u4e0a\u306e\u30c7\u30fc\u30bf\u304c\u3042\u308b\u3068\u8868\u793a\u3067\u304d\u307e\u3059</div>';
+    return;
   }
 
-  document.getElementById('pd-body').innerHTML = `
-    <div class="dd-section" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;">
-      <div><div class="dd-label">選手</div><div class="dd-value" style="font-size:16px;font-weight:700">${p.athleteName}</div></div>
-      ${p.stroke ? `<div><div class="dd-label">種目</div><div class="dd-value">${p.stroke} ${p.dist||''}</div></div>` : ''}
-      ${p.value  ? `<div><div class="dd-label">記録</div><div class="dd-value-big">${p.value}</div></div>` : ''}
-    </div>
-    ${p.memo ? `<div class="dd-section"><div class="dd-label">メモ</div><div class="dd-value" style="white-space:pre-wrap">${p.memo}</div></div>` : ''}
-    ${historyHtml}
-  `;
-  document.getElementById('modal-practice-detail').classList.add('open');
+  var distM = distToM(p.dist);
+  var use50 = distM > 50;
+  var splitPoints = use50 ? (function(){ var a=[]; for(var i=50;i<=distM;i+=50) a.push(i); return a; })() : [distM];
+  var colors = ['#00b4d8','#ff6b6b','#51cf66','#ffd43b','#cc5de8','#74c0fc','#ff922b','#a9e34b','#f06595','#94d82d'];
+
+  function getSessionBestLap(h) {
+    var sets = h.setResults && h.setResults.length > 0
+      ? h.setResults : [{ setNum:1, totalSec:h.totalSec, lapData:h.lapData||[] }];
+    var best = sets.reduce(function(b,s){ return (!b||s.totalSec<b.totalSec)?s:b; }, null);
+    return best ? best.lapData||[] : [];
+  }
+
+  var sessionData = history.map(function(h){
+    var ld = getSessionBestLap(h);
+    var splits={}, laps={};
+    ld.forEach(function(l){ splits[l.distM]=l.splitSec; laps[l.distM]=l.lapSec; });
+    if (!ld.length && h.totalSec){ splits[distM]=h.totalSec; laps[distM]=h.totalSec; }
+    return { label:h.date.slice(5)+(h.ampm?' '+h.ampm:''), splits:splits, laps:laps };
+  });
+
+  var bestSplit={}, bestLap={};
+  splitPoints.forEach(function(d){
+    var sv=sessionData.map(function(s){ return s.splits[d]||null; }).filter(Boolean);
+    var lv=sessionData.map(function(s){ return s.laps[d]||null; }).filter(Boolean);
+    bestSplit[d]=sv.length?Math.min.apply(null,sv):null;
+    bestLap[d]=lv.length?Math.min.apply(null,lv):null;
+  });
+
+  var xLabels = splitPoints.map(function(d){ return d+'m'; });
+
+  var html = '<div style="padding:16px 20px;">';
+  html += '<div style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">'+history.length+'\u56de\u5206\u306e\u30c7\u30fc\u30bf\u3092\u6bd4\u8f03</div>';
+
+  html += '<div style="font-size:0.78rem;font-weight:700;color:var(--white);margin-bottom:6px;">\u2460 \u30b9\u30d7\u30ea\u30c3\u30c8\u6bd4\u8f03\uff0850m\u901a\u904e\u30bf\u30a4\u30e0\uff09</div>';
+  html += '<canvas id="gr-split-chart" style="width:100%;max-height:240px;margin-bottom:20px;"></canvas>';
+  html += '<div style="font-size:0.78rem;font-weight:700;color:var(--white);margin-bottom:6px;">\u2461 \u30e9\u30c3\u30d7\u6bd4\u8f03\uff0850m\u30e9\u30c3\u30d7\u30bf\u30a4\u30e0\uff09</div>';
+  html += '<canvas id="gr-lap-chart" style="width:100%;max-height:240px;margin-bottom:20px;"></canvas>';
+
+  // 凡例
+  html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">';
+  sessionData.forEach(function(s,i){
+    html += '<span style="font-size:0.72rem;display:flex;align-items:center;gap:4px;">'
+      + '<span style="display:inline-block;width:24px;height:3px;background:'+colors[i%colors.length]+';border-radius:2px;"></span>'
+      + s.label+'</span>';
+  });
+  html += '</div>';
+
+  // 比較表
+  html += '<div style="overflow-x:auto;">';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:0.80rem;">';
+  html += '<thead><tr style="background:var(--tap-bg);">';
+  html += '<th style="padding:5px 8px;text-align:left;white-space:nowrap;">\u5730\u70b9</th>';
+  html += '<th style="padding:5px 6px;text-align:center;background:rgba(0,180,216,0.12);color:var(--accent);" colspan="2">\u6700\u901f</th>';
+  sessionData.forEach(function(s,i){
+    html += '<th style="padding:5px 6px;text-align:center;border-left:2px solid '+colors[i%colors.length]+'44;" colspan="2">'
+      + '<span style="display:inline-block;width:10px;height:3px;background:'+colors[i%colors.length]+';border-radius:2px;margin-right:3px;vertical-align:middle;"></span>'
+      + s.label+'</th>';
+  });
+  html += '</tr><tr style="background:var(--tap-bg);border-bottom:1px solid var(--border);">';
+  html += '<th style="padding:3px 8px;"></th>';
+  html += '<th style="padding:3px 5px;text-align:center;font-size:0.65rem;color:var(--accent);background:rgba(0,180,216,0.08);">S</th>';
+  html += '<th style="padding:3px 5px;text-align:center;font-size:0.65rem;color:var(--accent);background:rgba(0,180,216,0.08);">L</th>';
+  sessionData.forEach(function(s,i){
+    html += '<th style="padding:3px 5px;text-align:center;font-size:0.65rem;color:var(--muted);border-left:2px solid '+colors[i%colors.length]+'44;">S</th>';
+    html += '<th style="padding:3px 5px;text-align:center;font-size:0.65rem;color:var(--muted);">L</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  splitPoints.forEach(function(d){
+    var isFinish = d===distM;
+    var bs=bestSplit[d], bl=bestLap[d];
+    html += '<tr style="border-bottom:1px solid var(--border);">';
+    html += '<td style="padding:4px 8px;font-size:0.78rem;white-space:nowrap;font-weight:600;">'+(isFinish?'\ud83c\udfc1 ':'')+d+'m</td>';
+    html += '<td style="padding:4px 5px;text-align:center;font-family:\'Rajdhani\',monospace;font-size:0.80rem;font-weight:800;color:#26c6da;background:rgba(0,180,216,0.06);">'+(bs?formatTime(bs):'—')+'</td>';
+    html += '<td style="padding:4px 5px;text-align:center;font-family:\'Rajdhani\',monospace;font-size:0.80rem;font-weight:800;color:#26c6da;background:rgba(0,180,216,0.06);">'+(bl?formatTime(bl):'—')+'</td>';
+    sessionData.forEach(function(s,i){
+      var sv=s.splits[d]||null, lv=s.laps[d]||null;
+      var sBest=bs&&sv&&Math.abs(sv-bs)<0.01, lBest=bl&&lv&&Math.abs(lv-bl)<0.01;
+      html += '<td style="padding:4px 5px;text-align:center;font-family:\'Rajdhani\',monospace;font-size:0.80rem;font-weight:'+(sBest?'900':'600')+';color:'+(sBest?'#26c6da':'var(--text)')+';border-left:2px solid '+colors[i%colors.length]+'22;">'+(sv?formatTime(sv):'—')+'</td>';
+      html += '<td style="padding:4px 5px;text-align:center;font-family:\'Rajdhani\',monospace;font-size:0.80rem;font-weight:'+(lBest?'900':'600')+';color:'+(lBest?'#26c6da':'var(--muted)')+';">'+(lv?formatTime(lv):'—')+'</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+  body.innerHTML = html;
+
+  setTimeout(function(){
+    if (typeof Chart==='undefined') return;
+    function ds(key){ return sessionData.map(function(s,i){ return { label:s.label, data:splitPoints.map(function(d){ return s[key][d]||null; }), borderColor:colors[i%colors.length], backgroundColor:colors[i%colors.length]+'22', pointBackgroundColor:colors[i%colors.length], pointRadius:5, tension:0.3, spanGaps:true }; }); }
+    function opts(datasets){ var vals=datasets.flatMap(function(d){ return d.data.filter(Boolean); }); var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),pd=(mx-mn)*0.12||1; return { responsive:true, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:function(c){ return c.dataset.label+': '+formatTime(c.parsed.y); }}} }, scales:{ y:{reverse:true,min:mn-pd,max:mx+pd,ticks:{color:'#7b8fa1',callback:function(v){return formatTime(v);}},grid:{color:'rgba(255,255,255,0.06)'}}, x:{ticks:{color:'#7b8fa1'},grid:{color:'rgba(255,255,255,0.06)'}} } }; }
+    var c1=document.getElementById('gr-split-chart'); if(c1){ if(c1._ci)c1._ci.destroy(); var d1=ds('splits'); c1._ci=new Chart(c1.getContext('2d'),{type:'line',data:{labels:xLabels,datasets:d1},options:opts(d1)}); }
+    var c2=document.getElementById('gr-lap-chart');   if(c2){ if(c2._ci)c2._ci.destroy(); var d2=ds('laps');   c2._ci=new Chart(c2.getContext('2d'),{type:'line',data:{labels:xLabels,datasets:d2},options:opts(d2)}); }
+  }, 100);
+}
+
+
+
+function renderPdDetail(p) {
+  var body = document.getElementById('pd-body');
+  if (!body) return;
+  // storeId for tab switching
+  document.getElementById('pd-delete-btn')._practiceId = p.id;
+
+  var sets = p.setResults && p.setResults.length > 0 ? p.setResults : [{ setNum:1, time:p.value, totalSec:p.totalSec, lapData:p.lapData||[] }];
+  var distM = distToM(p.dist);
+  var use50 = distM > 50;
+
+  var html = '<div style="padding:16px 20px;">';
+
+  // セッション情報
+  html += '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:var(--card);border-radius:10px;border:1px solid var(--border);">'
+    + '<div><div style="font-size:0.7rem;color:var(--muted);">\u65e5\u4ed8</div><div style="font-weight:700;">'+p.date+' '+p.ampm+'</div></div>'
+    + '<div><div style="font-size:0.7rem;color:var(--muted);">\u7a2e\u76ee</div><div style="font-weight:700;">'+p.stroke+' '+p.dist+'</div></div>'
+    + '<div><div style="font-size:0.7rem;color:var(--muted);">\u672c\u6570</div><div style="font-weight:700;">'+sets.length+'\u672c</div></div>'
+    + (p.circle ? '<div><div style="font-size:0.7rem;color:var(--muted);">\u30b5\u30fc\u30af\u30eb</div><div style="font-weight:700;">'+Math.floor(p.circle/60)+'\u5206'+('0'+(p.circle%60)).slice(-2)+'\u79d2</div></div>' : '')
+    + '</div>';
+
+  // 各本のラップ表
+  sets.forEach(function(sr) {
+    var lapData = sr.lapData || [];
+    html += '<div style="margin-bottom:16px;">'
+      + '<div style="font-size:0.82rem;font-weight:800;color:var(--accent);margin-bottom:8px;">'
+      + sr.setNum+'\u672c\u76ee'
+      + '<span style="font-family:\'Rajdhani\',monospace;font-size:1.1rem;font-weight:900;margin-left:12px;color:var(--white);">'+(sr.time||formatTime(sr.totalSec))+'</span>'
+      + '</div>';
+
+    if (lapData.length > 0) {
+      html += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">'
+        + '<thead><tr style="background:var(--tap-bg);">'
+        + '<th style="padding:7px 10px;text-align:left;">\u5730\u70b9</th>'
+        + '<th style="padding:7px 10px;text-align:right;">\u30b9\u30d7\u30ea\u30c3\u30c8</th>'
+        + '<th style="padding:7px 10px;text-align:right;">\u30e9\u30c3\u30d7</th>'
+        + '<th style="padding:7px 10px;text-align:right;">\u524d\u30e9\u30c3\u30d7\u6bd4</th>'
+        + '</tr></thead><tbody>';
+      lapData.forEach(function(lap, i) {
+        var prevLap = i > 0 ? lapData[i-1].lapSec : null;
+        var diff    = prevLap ? lap.lapSec - prevLap : null;
+        var diffStr = diff !== null
+          ? '<span style="color:'+(diff<0?'#26c6da':'#ef5350')+';">'+(diff<0?'▼':'▲')+Math.abs(diff).toFixed(2)+'</span>'
+          : '—';
+        var isFinish = lap.distM === distM;
+        html += '<tr style="border-bottom:1px solid var(--border);">'
+          + '<td style="padding:7px 10px;">'+(isFinish?'\ud83c\udfc1 ':'')+lap.distM+'m'+(isFinish?' \u30d5\u30a3\u30cb\u30c3\u30b7\u30e5':'')+'</td>'
+          + '<td style="padding:7px 10px;text-align:right;font-family:\'Rajdhani\',monospace;font-weight:700;color:var(--accent);">'+formatTime(lap.splitSec)+'</td>'
+          + '<td style="padding:7px 10px;text-align:right;font-family:\'Rajdhani\',monospace;font-weight:700;">'+formatTime(lap.lapSec)+'</td>'
+          + '<td style="padding:7px 10px;text-align:right;font-size:0.8rem;">'+diffStr+'</td>'
+          + '</tr>';
+      });
+      html += '</tbody></table>';
+    } else {
+      html += '<div style="color:var(--muted);font-size:0.82rem;padding:8px;">\u30e9\u30c3\u30d7\u30c7\u30fc\u30bf\u306a\u3057</div>';
+    }
+    html += '</div>';
+  });
+
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function renderPdGrowth(p) {
+  var body = document.getElementById('pd-body-growth');
+  if (!body) return;
+
+  var history = practices
+    .filter(function(x){ return x.athleteId===p.athleteId && x.stroke===p.stroke && x.dist===p.dist; })
+    .sort(function(a,b){ return a.date.localeCompare(b.date)||(a.ampm||'').localeCompare(b.ampm||''); });
+
+  if (history.length < 2) {
+    body.innerHTML = '<div class="dash-empty" style="padding:40px;"><div class="dash-empty-icon">\u{1F4C8}</div>2\u56de\u4ee5\u4e0a\u306e\u30c7\u30fc\u30bf\u304c\u3042\u308b\u3068\u8868\u793a\u3067\u304d\u307e\u3059</div>';
+    return;
+  }
+
+  var distM = distToM(p.dist);
+  var use50 = distM > 50;
+  var splitPoints = use50 ? (function(){ var a=[]; for(var i=50;i<=distM;i+=50) a.push(i); return a; })() : [distM];
+  var colors = ['#00b4d8','#ff6b6b','#51cf66','#ffd43b','#cc5de8','#74c0fc','#ff922b','#a9e34b','#f06595','#94d82d'];
+
+  var maxSets = Math.max.apply(null, history.map(function(h){ return h.setResults ? h.setResults.length : 1; }));
+
+  // 各セッションラベル
+  var sessionLabels = history.map(function(h){ return h.date.slice(5)+(h.ampm?' '+h.ampm:''); });
+
+  // グラフデータ生成
+  // 横軸：距離(50m単位)、縦軸：タイム、色：セッション（最速本のみ）
+  function getSessionBestLap(h) {
+    var sets = h.setResults && h.setResults.length > 0
+      ? h.setResults
+      : [{ setNum:1, totalSec:h.totalSec, lapData:h.lapData||[] }];
+    // 最速本
+    var best = sets.reduce(function(b,s){ return (!b||s.totalSec<b.totalSec)?s:b; }, null);
+    return best ? best.lapData||[] : [];
+  }
+
+  // 各セッションの最速本のスプリット・ラップ
+  var sessionData = history.map(function(h){
+    var ld = getSessionBestLap(h);
+    var splits = {}; var laps = {};
+    ld.forEach(function(l){ splits[l.distM]=l.splitSec; laps[l.distM]=l.lapSec; });
+    if (!ld.length && h.totalSec) { splits[distM]=h.totalSec; laps[distM]=h.totalSec; }
+    return { label:h.date.slice(5)+(h.ampm?' '+h.ampm:''), splits:splits, laps:laps };
+  });
+
+  // 過去最速（地点別）
+  var bestSplit = {}; var bestLap = {};
+  splitPoints.forEach(function(d){
+    var sv = sessionData.map(function(s){ return s.splits[d]||null; }).filter(function(v){ return v!==null; });
+    var lv = sessionData.map(function(s){ return s.laps[d]||null; }).filter(function(v){ return v!==null; });
+    bestSplit[d] = sv.length ? Math.min.apply(null,sv) : null;
+    bestLap[d]   = lv.length ? Math.min.apply(null,lv) : null;
+  });
+
+  var xLabels = splitPoints.map(function(d){ return d+'m'; });
+
+  var html = '<div style="padding:16px 20px;">';
+  html += '<div style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">'+p.athleteName+' — '+p.stroke+' '+p.dist+' \u6210\u9577\u8a18\u9332\uff08'+history.length+'\u56de\u5206\uff09</div>';
+
+  // ===== グラフ① スプリット =====
+  html += '<div style="font-size:0.78rem;font-weight:700;color:var(--white);margin-bottom:6px;">\u2460 \u30b9\u30d7\u30ea\u30c3\u30c8\u6bd4\u8f03\uff0850m\u901a\u904e\u30bf\u30a4\u30e0\uff09</div>';
+  html += '<canvas id="pd-growth-split-chart" style="width:100%;max-height:240px;margin-bottom:20px;"></canvas>';
+
+  // ===== グラフ② ラップ =====
+  html += '<div style="font-size:0.78rem;font-weight:700;color:var(--white);margin-bottom:6px;">\u2461 \u30e9\u30c3\u30d7\u6bd4\u8f03\uff0850m\u30e9\u30c3\u30d7\u30bf\u30a4\u30e0\uff09</div>';
+  html += '<canvas id="pd-growth-lap-chart" style="width:100%;max-height:240px;margin-bottom:20px;"></canvas>';
+
+  // ===== 凡例 =====
+  html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">';
+  sessionData.forEach(function(s,i){
+    html += '<span style="font-size:0.72rem;display:flex;align-items:center;gap:4px;">'
+      + '<span style="display:inline-block;width:24px;height:3px;background:'+colors[i%colors.length]+';border-radius:2px;"></span>'
+      + s.label+'</span>';
+  });
+  html += '</div>';
+
+  // ===== 比較表 =====
+  html += '<div style="overflow-x:auto;">';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:0.80rem;">';
+
+  // ヘッダー
+  html += '<thead><tr style="background:var(--tap-bg);">';
+  html += '<th style="padding:5px 8px;text-align:left;white-space:nowrap;min-width:50px;">\u5730\u70b9</th>';
+  html += '<th style="padding:5px 8px;text-align:center;background:rgba(0,180,216,0.12);color:var(--accent);white-space:nowrap;" colspan="2">\u6700\u901f</th>';
+  sessionData.forEach(function(s,i){
+    html += '<th style="padding:5px 8px;text-align:center;border-left:2px solid '+colors[i%colors.length]+'44;" colspan="2">'
+      + '<span style="display:inline-block;width:10px;height:3px;background:'+colors[i%colors.length]+';border-radius:2px;margin-right:4px;vertical-align:middle;"></span>'
+      + s.label+'</th>';
+  });
+  html += '</tr>';
+  // サブヘッダー
+  html += '<tr style="background:var(--tap-bg);border-bottom:1px solid var(--border);">';
+  html += '<th style="padding:3px 8px;"></th>';
+  html += '<th style="padding:3px 6px;text-align:center;font-size:0.68rem;color:var(--accent);background:rgba(0,180,216,0.08);">S</th>';
+  html += '<th style="padding:3px 6px;text-align:center;font-size:0.68rem;color:var(--accent);background:rgba(0,180,216,0.08);">L</th>';
+  sessionData.forEach(function(s,i){
+    html += '<th style="padding:3px 6px;text-align:center;font-size:0.68rem;color:var(--muted);border-left:2px solid '+colors[i%colors.length]+'44;">S</th>';
+    html += '<th style="padding:3px 6px;text-align:center;font-size:0.68rem;color:var(--muted);">L</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  // データ行
+  splitPoints.forEach(function(d) {
+    var isFinish = d === distM;
+    html += '<tr style="border-bottom:1px solid var(--border);">';
+    html += '<td style="padding:4px 8px;font-size:0.78rem;white-space:nowrap;font-weight:600;">'+(isFinish?'\ud83c\udfc1 ':'')+d+'m</td>';
+
+    // 最速列（S・L）
+    var bs = bestSplit[d]; var bl = bestLap[d];
+    html += '<td style="padding:4px 6px;text-align:center;font-family:\'Rajdhani\',monospace;font-size:0.82rem;font-weight:800;color:#26c6da;background:rgba(0,180,216,0.06);">'+(bs?formatTime(bs):'—')+'</td>';
+    html += '<td style="padding:4px 6px;text-align:center;font-family:\'Rajdhani\',monospace;font-size:0.82rem;font-weight:800;color:#26c6da;background:rgba(0,180,216,0.06);">'+(bl?formatTime(bl):'—')+'</td>';
+
+    // 各セッション列（S・L）
+    sessionData.forEach(function(s,i){
+      var sv = s.splits[d]||null;
+      var lv = s.laps[d]||null;
+      var sBest = bs && sv && Math.abs(sv-bs)<0.01;
+      var lBest = bl && lv && Math.abs(lv-bl)<0.01;
+      html += '<td style="padding:4px 6px;text-align:center;font-family:\'Rajdhani\',monospace;font-size:0.82rem;font-weight:'+(sBest?'900':'600')+';color:'+(sBest?'#26c6da':'var(--text)')+';border-left:2px solid '+colors[i%colors.length]+'22;">'+(sv?formatTime(sv):'—')+'</td>';
+      html += '<td style="padding:4px 6px;text-align:center;font-family:\'Rajdhani\',monospace;font-size:0.82rem;font-weight:'+(lBest?'900':'600')+';color:'+(lBest?'#26c6da':'var(--muted)')+';">'+(lv?formatTime(lv):'—')+'</td>';
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  html += '</div>';
+  body.innerHTML = html;
+
+  // グラフ描画
+  setTimeout(function() {
+    if (typeof Chart === 'undefined') return;
+
+    function makeDatasets(key) {
+      return sessionData.map(function(s,i){
+        return {
+          label: s.label,
+          data: splitPoints.map(function(d){ return s[key][d]||null; }),
+          borderColor: colors[i%colors.length],
+          backgroundColor: colors[i%colors.length]+'22',
+          pointBackgroundColor: colors[i%colors.length],
+          pointRadius: 5, tension: 0.3, spanGaps: true,
+        };
+      });
+    }
+
+    function makeChartOptions(datasets) {
+      var allVals = datasets.flatMap(function(ds){ return ds.data.filter(function(d){ return d!==null; }); });
+      var minV = Math.min.apply(null, allVals); var maxV = Math.max.apply(null, allVals);
+      var pad = (maxV-minV)*0.12||1;
+      return {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label+': '+formatTime(ctx.parsed.y); } } }
+        },
+        scales: {
+          y: { reverse: true, min: minV-pad, max: maxV+pad,
+            ticks: { color:'#7b8fa1', callback: function(v){ return formatTime(v); } },
+            grid: { color:'rgba(255,255,255,0.06)' } },
+          x: { ticks: { color:'#7b8fa1' }, grid: { color:'rgba(255,255,255,0.06)' } }
+        }
+      };
+    }
+
+    // グラフ① スプリット
+    var c1 = document.getElementById('pd-growth-split-chart');
+    if (c1) {
+      if (c1._ci) c1._ci.destroy();
+      var ds1 = makeDatasets('splits');
+      c1._ci = new Chart(c1.getContext('2d'), { type:'line', data:{ labels:xLabels, datasets:ds1 }, options:makeChartOptions(ds1) });
+    }
+
+    // グラフ② ラップ
+    var c2 = document.getElementById('pd-growth-lap-chart');
+    if (c2) {
+      if (c2._ci) c2._ci.destroy();
+      var ds2 = makeDatasets('laps');
+      c2._ci = new Chart(c2.getContext('2d'), { type:'line', data:{ labels:xLabels, datasets:ds2 }, options:makeChartOptions(ds2) });
+    }
+  }, 100);
+}
+
+function renderPdPace(p) {
+  var body = document.getElementById('pd-body-pace');
+  if (!body) return;
+
+  var distM = distToM(p.dist);
+  // setResultsがあればそちら、なければ単一本として扱う
+  var sets = p.setResults && p.setResults.length > 0
+    ? p.setResults
+    : [{ setNum:1, totalSec:p.totalSec, time:p.value, lapData:p.lapData||[] }];
+
+  // ラップデータのある本だけ抽出
+  var validSets = sets.filter(function(sr){ return sr.lapData && sr.lapData.length > 0; });
+
+  if (!validSets.length) {
+    // ラップなし → フィニッシュタイムのみ表示
+    var html2 = '<div style="padding:24px 20px;">';
+    html2 += '<div style="font-size:0.82rem;color:var(--muted);margin-bottom:16px;">'+p.stroke+' '+p.dist+' — '+sets.length+'\u672c\u5206\u306e\u30d5\u30a3\u30cb\u30c3\u30b7\u30e5\u30bf\u30a4\u30e0</div>';
+    html2 += '<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">';
+    html2 += '<thead><tr style="background:var(--tap-bg);"><th style="padding:8px 12px;">\u672c\u6570</th><th style="padding:8px 12px;text-align:right;">\u30d5\u30a3\u30cb\u30c3\u30b7\u30e5</th></tr></thead><tbody>';
+    sets.forEach(function(sr,i){
+      html2 += '<tr style="border-bottom:1px solid var(--border);">'
+        + '<td style="padding:8px 12px;">'+sr.setNum+'\u672c\u76ee</td>'
+        + '<td style="padding:8px 12px;text-align:right;font-family:\'Rajdhani\',monospace;font-weight:800;color:var(--accent);">'+(sr.time||formatTime(sr.totalSec))+'</td>'
+        + '</tr>';
+    });
+    html2 += '</tbody></table>';
+    if (distM <= 50) html2 += '<div style="margin-top:16px;font-size:0.78rem;color:var(--muted);">※ 25m・50mはラップデータなし（フィニッシュタイムのみ）</div>';
+    html2 += '</div>';
+    body.innerHTML = html2;
+    return;
+  }
+
+  var colors = ['#00b4d8','#ff6b6b','#51cf66','#ffd43b','#cc5de8','#74c0fc','#ff922b','#a9e34b'];
+  var labels = validSets[0].lapData.map(function(l){ return l.distM+'m'; });
+
+  var html = '<div style="padding:16px 20px;">';
+  html += '<div style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">'+p.date+' '+p.ampm+' — '+p.stroke+' '+p.dist+' \u30da\u30fc\u30b9\u5206\u6790</div>';
+
+  if (validSets.length >= 2) {
+    html += '<canvas id="pd-pace-chart" style="width:100%;max-height:280px;margin-bottom:20px;"></canvas>';
+  }
+
+  // ラップ比較表
+  html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.82rem;">';
+  html += '<thead><tr style="background:var(--tap-bg);"><th style="padding:7px 10px;text-align:left;">\u672c\u6570</th>';
+  validSets[0].lapData.forEach(function(l){ html += '<th style="padding:7px 10px;text-align:right;">L '+l.distM+'m</th>'; });
+  html += '<th style="padding:7px 10px;text-align:right;">\u30d5\u30a3\u30cb\u30c3\u30b7\u30e5</th></tr></thead><tbody>';
+
+  validSets.forEach(function(sr, i) {
+    html += '<tr style="border-bottom:1px solid var(--border);">';
+    html += '<td style="padding:7px 10px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+colors[i%colors.length]+';margin-right:5px;"></span>'+sr.setNum+'\u672c\u76ee</td>';
+    sr.lapData.forEach(function(l, li) {
+      var lapVals = validSets.map(function(s2){ return s2.lapData[li] ? s2.lapData[li].lapSec : Infinity; });
+      var isBest  = Math.abs(l.lapSec - Math.min.apply(null,lapVals)) < 0.01;
+      html += '<td style="padding:7px 10px;text-align:right;font-family:\'Rajdhani\',monospace;font-weight:700;'+(isBest?'color:#26c6da;font-weight:900;':'')+'">'+formatTime(l.lapSec)+'</td>';
+    });
+    html += '<td style="padding:7px 10px;text-align:right;font-family:\'Rajdhani\',monospace;font-weight:800;color:var(--accent);">'+formatTime(sr.totalSec)+'</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+  body.innerHTML = html;
+
+  if (validSets.length >= 2) {
+    setTimeout(function() {
+      var canvas = document.getElementById('pd-pace-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+      if (canvas._chartInstance) canvas._chartInstance.destroy();
+      canvas._chartInstance = new Chart(canvas.getContext('2d'), {
+        type:'line',
+        data:{
+          labels:labels,
+          datasets:validSets.map(function(sr,i){
+            return {
+              label:sr.setNum+'\u672c\u76ee',
+              data:sr.lapData.map(function(l){ return l.lapSec; }),
+              borderColor:colors[i%colors.length], backgroundColor:colors[i%colors.length]+'33',
+              pointBackgroundColor:colors[i%colors.length], pointRadius:5, tension:0.3,
+            };
+          }),
+        },
+        options:{
+          responsive:true,
+          plugins:{
+            legend:{ labels:{ color:'#cfd8e3', font:{size:12} } },
+            tooltip:{ callbacks:{ label:function(ctx){ return ctx.dataset.label+': '+formatTime(ctx.parsed.y); } } }
+          },
+          scales:{
+            y:{ ticks:{ color:'#7b8fa1', callback:function(v){ return formatTime(v); } }, grid:{ color:'rgba(255,255,255,0.06)' } },
+            x:{ ticks:{ color:'#7b8fa1' }, grid:{ color:'rgba(255,255,255,0.06)' } }
+          }
+        }
+      });
+    }, 100);
+  }
+}
+
+function openAthletePracticeHistory(athleteId, athleteName) {
+  var list = practices
+    .filter(function(p){ return p.athleteId === athleteId; })
+    .sort(function(a,b){ return b.date.localeCompare(a.date)||(b.ampm||'').localeCompare(a.ampm||''); });
+
+  document.getElementById('aph-title').textContent    = athleteName+' — 練習履歴';
+  document.getElementById('aph-subtitle').textContent = list.length+'件のデータ';
+
+  if (!list.length) {
+    document.getElementById('aph-body').innerHTML = '<div class="dash-empty" style="padding:40px;"><div class="dash-empty-icon">📈</div>練習データがありません</div>';
+    document.getElementById('modal-athlete-practice').classList.add('open');
+    return;
+  }
+
+  // ① 種目（泳法＋距離）でグループ化
+  var eventMap = {};
+  list.forEach(function(p) {
+    var ek = (p.stroke||'')+'__'+(p.dist||'');
+    if (!eventMap[ek]) eventMap[ek] = { stroke:p.stroke, dist:p.dist, subGroups:{} };
+    // ② 本数×サークルで小グループ化
+    var sets   = p.sets || (p.setResults ? p.setResults.length : 1);
+    var circle = p.circle || 0;
+    var sk = sets+'__'+circle;
+    if (!eventMap[ek].subGroups[sk]) {
+      eventMap[ek].subGroups[sk] = { sets:sets, circle:circle, entries:[] };
+    }
+    eventMap[ek].subGroups[sk].entries.push(p);
+  });
+
+  function circleLabel(c) {
+    if (!c) return 'サークルなし';
+    return Math.floor(c/60)+'分'+('0'+(c%60)).slice(-2)+'秒';
+  }
+
+  var tagStyle = 'display:inline-block;font-size:0.78rem;font-weight:700;font-family:\'Noto Sans JP\',sans-serif;'
+    + 'padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--tap-bg);color:var(--white);';
+
+  var html = '<div style="padding:16px 20px;">';
+
+  Object.values(eventMap).forEach(function(ev) {
+    var totalCount = ev.subGroups ? Object.values(ev.subGroups).reduce(function(n,sg){ return n+sg.entries.length; },0) : 0;
+
+    html += '<div style="margin-bottom:24px;">';
+    // 種目ヘッダー
+    html += '<div style="font-size:0.9rem;font-weight:800;color:var(--accent);margin-bottom:10px;'
+      + 'padding:8px 12px;background:rgba(0,180,216,0.08);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;">'
+      + ev.stroke+' '+ev.dist
+      + '<span style="font-weight:400;color:var(--muted);margin-left:8px;font-size:0.78rem;">'+totalCount+'件</span>'
+      + '</div>';
+
+    // 小グループ
+    Object.values(ev.subGroups)
+      .sort(function(a,b){ return (b.sets-a.sets)||(b.circle-a.circle); })
+      .forEach(function(sg, sgi) {
+        var sgId = 'aph-sg-'+athleteId+'-'+ev.stroke+ev.dist+'-'+sgi;
+
+        // タグ行（タップで展開）
+        html += '<div style="margin-bottom:8px;margin-left:12px;">';
+        html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+        // タグ群（タップで展開）
+        html += '<div onclick="aphToggle(\''+sgId+'\')" style="'
+          + 'display:flex;align-items:center;gap:10px;padding:9px 12px;flex:1;'
+          + 'background:var(--card);border:1px solid var(--border);border-radius:8px;'
+          + 'cursor:pointer;" onmouseover="this.style.background=\'var(--tap-bg)\'" onmouseout="this.style.background=\'var(--card)\'">';
+        html += '<span style="'+tagStyle+'">'+sg.sets+'本</span>';
+        html += '<span style="'+tagStyle+'">'+circleLabel(sg.circle)+'</span>';
+        html += '<span style="'+tagStyle+'">'+sg.entries.length+'回</span>';
+        html += '<span id="'+sgId+'-arrow" style="font-size:0.72rem;color:var(--muted);margin-left:auto;">▼</span>';
+        html += '</div>';
+        // 成長記録ボタン
+        html += '<button onclick="openGrowthRecord(\''+athleteId+'\',\''+athleteName+'\',\''+ev.stroke+'\',\''+ev.dist+'\','+sg.sets+','+sg.circle+')" '
+          + 'style="padding:9px 12px;background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.3);'
+          + 'border-radius:8px;color:var(--accent);font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">'
+          + '📈 成長記録</button>';
+        html += '</div>';
+
+        // 展開エリア（デフォルト非表示）
+        html += '<div id="'+sgId+'" style="display:none;margin-top:6px;flex-direction:column;gap:4px;">';
+        sg.entries.forEach(function(p) {
+          var srs = p.setResults && p.setResults.length > 0
+            ? p.setResults
+            : [{ setNum:1, totalSec:p.totalSec, time:p.value }];
+          var best    = Math.min.apply(null, srs.map(function(s){ return s.totalSec||Infinity; }));
+          var bestStr = isFinite(best) ? formatTime(best) : (p.value||'—');
+          var timesStr = srs.map(function(s){ return s.time||formatTime(s.totalSec); }).join(' · ');
+
+          html += '<div onclick="closeModal(\'modal-athlete-practice\');openPracticeDetail(\''+p.id+'\')" '
+            + 'style="display:flex;align-items:center;gap:12px;padding:9px 12px;'
+            + 'background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;"'
+            + ' onmouseover="this.style.background=\'var(--tap-bg)\'" onmouseout="this.style.background=\'var(--card)\'">'
+            + '<div style="min-width:72px;flex-shrink:0;">'
+            + '<div style="font-size:0.78rem;color:var(--muted);">'+p.date+'</div>'
+            + '<div style="font-size:0.7rem;color:var(--muted);">'+(p.ampm||'')+'</div>'
+            + '</div>'
+            + '<div style="flex:1;overflow:hidden;">'
+            + '<div style="font-family:\'Rajdhani\',monospace;font-size:0.9rem;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+timesStr+'</div>'
+            + (srs.length>1?'<div style="font-size:0.68rem;color:var(--muted);">最速 '+bestStr+'</div>':'')
+            + '</div>'
+            + '<span style="color:var(--muted);font-size:0.78rem;">▶</span>'
+            + '</div>';
+        });
+        html += '</div>'; // 展開エリア終了
+        html += '</div>'; // 小グループ終了
+      });
+
+    html += '</div>'; // 種目グループ終了
+  });
+
+  html += '</div>';
+  document.getElementById('aph-body').innerHTML = html;
+  document.getElementById('modal-athlete-practice').classList.add('open');
+}
+
+function aphToggle(id) {
+  var el    = document.getElementById(id);
+  var arrow = document.getElementById(id+'-arrow');
+  if (!el) return;
+  var isOpen = el.style.display === 'flex';
+  el.style.display = isOpen ? 'none' : 'flex';
+  if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
 }
 
 function deletePractice(id) {
-  practices = practices.filter(x => x.id !== id);
+  if (!confirm('\u3053\u306e\u7df4\u7fd2\u30c7\u30fc\u30bf\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f')) return;
+  practices = practices.filter(function(p){ return p.id !== id; });
   savePractices();
+  if (typeof sbDeletePractice === 'function') sbDeletePractice(id);
   closeModal('modal-practice-detail');
   renderPracticeList();
-  showNotification('🗑️ 削除しました');
+  showNotification('\u7df4\u7fd2\u30c7\u30fc\u30bf\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
 }
 
 function updatePracticeAthleteFilter() {
-  const sel = document.getElementById('practice-filter-athlete');
+  var sel = document.getElementById('practice-filter-athlete');
   if (!sel) return;
-  const cur = sel.value;
-  sel.innerHTML = '<option value="all">全選手</option>' +
-    athletes.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
-  sel.value = cur;
+  var cur = sel.value;
+  sel.innerHTML = '<option value="all">\u5168\u9078\u624b</option>' +
+    athletes.map(function(a){ return '<option value="'+a.id+'"'+(a.id===cur?' selected':'')+'>'+a.name+'</option>'; }).join('');
 }
+
 
 // saveDashData も practices を含めて保存
 const _origSaveDashData = saveDashData;
@@ -7219,22 +8089,15 @@ function saveDashData() {
 // ── RENDER ──────────────────────────────────────────────────────────
 
 function renderDashboard() {
-  renderScheduleList();
+  renderScheduleCalendar();
   renderMenuList();
   renderGoalList();
 }
 
 /* ---- スケジュール ---- */
-var _calView = 'calendar';
-
 function calSetView(v) {
-  _calView = v;
-  document.getElementById('dash-calendar-view').style.display = v === 'calendar' ? '' : 'none';
-  document.getElementById('dash-list-view').style.display     = v === 'list'     ? '' : 'none';
-  document.getElementById('cal-btn-calendar').classList.toggle('active', v === 'calendar');
-  document.getElementById('cal-btn-list').classList.toggle('active', v === 'list');
-  if (v === 'calendar') renderScheduleCalendar();
-  else                  renderScheduleList();
+  // カレンダーのみ対応（リストビュー廃止）
+  renderScheduleCalendar();
 }
 
 function renderScheduleCalendar() {
@@ -7297,8 +8160,8 @@ function renderScheduleCalendar() {
         dotHtml += '<div style="font-size:0.58rem;color:var(--muted);margin-top:1px;">+' + (evs.length-2) + '件<\/div>';
       }
 
-      // クリックでその日の予定を表示
-      var onclick = hasEv ? 'onclick="calShowDay(\'' + dateStr + '\')"' : '';
+      // 全セルクリックでその日の詳細を表示
+      var onclick = 'onclick="calShowDay(\'' + dateStr + '\')"';
       html += '<div class="' + cellCls + '" ' + onclick + '>' + dayNumHtml + dotHtml + '<\/div>';
     }
     html += '<\/div><\/div>';  // cal-grid, cal-month-block
@@ -7309,15 +8172,30 @@ function renderScheduleCalendar() {
 
 function calShowDay(dateStr) {
   var evs = schedules.filter(function(s){ return s.date === dateStr; });
-  if (!evs.length) return;
+  var d = new Date(dateStr);
+  var title = (d.getMonth()+1) + '\u6708' + d.getDate() + '\u65e5\u306e\u4e88\u5b9a';
+
+  if (!evs.length) {
+    document.getElementById('dd-title').textContent = title;
+    document.getElementById('dd-body').innerHTML =
+      '<div class="dash-empty" style="padding:24px;">'
+      + '<div class="dash-empty-icon">📅</div>'
+      + '\u3053\u306e\u65e5\u306e\u4e88\u5b9a\u306f\u3042\u308a\u307e\u305b\u3093'
+      + '<div style="margin-top:12px;">'
+      + '<button class="btn btn-primary btn-sm" onclick="closeModal(\'modal-dash-detail\');openDashModal(\'schedule\')">+ \u4e88\u5b9a\u3092\u8ffd\u52a0<\/button>'
+      + '<\/div><\/div>';
+    var footer = document.getElementById('dd-footer');
+    if (footer) {
+      document.getElementById('dd-delete-btn').style.display = 'none';
+    }
+    document.getElementById('modal-dash-detail').classList.add('open');
+    return;
+  }
   if (evs.length === 1) {
     openDashDetail('schedule', evs[0].id);
     return;
   }
-  // 複数イベントの場合はリストをアラート風モーダルで表示
-  var d = new Date(dateStr);
-  var title = (d.getMonth()+1) + '月' + d.getDate() + '日の予定';
-  var typeClass = { '試合':'match','練習':'practice','大会':'event','休み':'rest' };
+  var typeClass = { '\u8a66\u5408':'match','\u7df4\u7fd2':'practice','\u5927\u4f1a':'event','\u4f11\u307f':'rest' };
   var html = '<div style="padding:4px 0;">';
   evs.forEach(function(s) {
     var tc = typeClass[s.type] || 'other';
@@ -7327,14 +8205,13 @@ function calShowDay(dateStr) {
       + '<div class="dash-card-title">' + s.title + '<\/div>'
       + '<div class="dash-card-meta">' + (s.location ? s.location : '') + '<\/div>'
       + '<\/div>'
-      + '<span class="dash-card-badge color-' + tc + '">' + (s.type||'その他') + '<\/span>'
+      + '<span class="dash-card-badge color-' + tc + '">' + (s.type||'\u305d\u306e\u4ed6') + '<\/span>'
       + '<\/div>';
   });
   html += '<\/div>';
-  document.getElementById('dash-detail-title').textContent = title;
-  document.getElementById('dash-detail-body').innerHTML = html;
-  document.getElementById('dash-detail-edit').style.display = 'none';
-  document.getElementById('dash-detail-del').style.display  = 'none';
+  document.getElementById('dd-title').textContent = title;
+  document.getElementById('dd-body').innerHTML = html;
+  document.getElementById('dd-delete-btn').style.display = 'none';
   document.getElementById('modal-dash-detail').classList.add('open');
 }
 
