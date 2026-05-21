@@ -1064,6 +1064,10 @@ select option { background: #f4f6f8; color: var(--white); }
   color: var(--gold);
   border-color: rgba(244,185,66,0.35);
 }
+.participant-event-chip.sb {
+  background: rgba(255,180,0,0.08);
+  border-color: rgba(255,180,0,0.25);
+}
 
 /* ── ベストタイムモーダル タブ ── */
 .be-tab {
@@ -4829,6 +4833,41 @@ function fiscalYearLabel(fy) {
   return `${fy}年度（${fy}/4〜${fy+1}/3）`;
 }
 
+// =====================================================================
+// PB・SB 再計算（レース日付の時系列基準）
+// =====================================================================
+function recalcPbSb() {
+  // 全レースを日付昇順でソート
+  var sorted = [...races].sort(function(a,b){
+    return (a.date||'').localeCompare(b.date||'') || (a.id||'').localeCompare(b.id||'');
+  });
+
+  // athleteId+stroke+distance ごとの通過済み最速
+  var pbMap  = {};  // key → 最速totalSec（全期間）
+  var sbMap  = {};  // key+fy → 最速totalSec（年度内）
+
+  // まず全フラグをリセット
+  races.forEach(function(r){ r.isPB = false; r.isSB = false; });
+
+  sorted.forEach(function(r) {
+    if (!r.totalSec) return;
+    var key   = (r.athleteId||'')+'__'+(r.stroke||'')+'__'+(r.distance||'');
+    var fy    = getFiscalYear(r.date) ?? 0;
+    var sbKey = key+'__'+fy;
+
+    var isPB = !pbMap[key] || r.totalSec < pbMap[key];
+    var isSB = !sbMap[sbKey] || r.totalSec < sbMap[sbKey];
+
+    // 同タイムは更新しない（先に出たものを優先）
+    if (isPB) pbMap[key] = r.totalSec;
+    if (isSB) sbMap[sbKey] = r.totalSec;
+
+    // 対応するraceオブジェクトにフラグセット
+    var target = races.find(function(x){ return x.id === r.id; });
+    if (target) { target.isPB = isPB; target.isSB = isSB; }
+  });
+}
+
 let _currentFiscalYear = null;
 let _expandedMeet = null;
 
@@ -4837,6 +4876,9 @@ function renderRaceHistory() {
   const container     = document.getElementById('race-history');
   const tabContainer  = document.getElementById('fiscal-year-tabs');
   if (!container) return;
+
+  // PB・SB 再計算
+  recalcPbSb();
 
   let list = athleteFilter === 'all' ? races : races.filter(r => r.athleteId === athleteFilter);
 
@@ -4852,8 +4894,9 @@ function renderRaceHistory() {
     if (!fyMap[fy]) fyMap[fy] = [];
     fyMap[fy].push(r);
   });
-  const fyList = Object.keys(fyMap).map(Number).sort((a,b) => b - a);
-  if (!fyList.includes(_currentFiscalYear)) _currentFiscalYear = fyList[0];
+  // 年度タブは古い順（昇順）
+  const fyList = Object.keys(fyMap).map(Number).sort((a,b) => a - b);
+  if (!fyList.includes(_currentFiscalYear)) _currentFiscalYear = fyList[fyList.length - 1];
 
   if (tabContainer) {
     tabContainer.innerHTML = fyList.map(fy =>
@@ -4863,47 +4906,47 @@ function renderRaceHistory() {
 
   const yearRaces = fyMap[_currentFiscalYear] || [];
 
-  // \u8a66\u5408\uff08\u65e5\u4ed8+\u5927\u4f1a\u540d+\u4f1a\u5834\uff09\u3054\u3068\u306b\u30b0\u30eb\u30fc\u30d7\u5316
+  // 試合ごとにグループ化（時系列昇順）
   const meetMap = {};
   yearRaces.forEach(r => {
     const key = `${r.date}__${r.meet||''}__${r.venue||''}`;
     if (!meetMap[key]) meetMap[key] = { date:r.date, meet:r.meet||'', venue:r.venue||'', pool:r.pool||50, races:[] };
     meetMap[key].races.push(r);
   });
-  const meetKeys = Object.keys(meetMap).sort((a,b) => b.localeCompare(a));
+  // 試合は古い順（昇順）
+  const meetKeys = Object.keys(meetMap).sort((a,b) => a.localeCompare(b));
 
-
-  // meetKeyMapでインデックス管理（日本語・特殊文字を安全に渡す）
   window._meetKeyMap = {};
   meetKeys.forEach((key, idx) => { window._meetKeyMap[idx] = key; });
-
-
-  // ── グローバルMapに保存（インデックスのみHTMLに渡す）──
   window.__meetKeys = meetKeys;
   window.__meetMap  = meetMap;
 
   container.innerHTML = meetKeys.map((key, idx) => {
     const m = meetMap[key];
 
-    // 選手ごとにグループ化
     const athMap = {};
     m.races.forEach(r => {
       if (!athMap[r.athleteId]) athMap[r.athleteId] = { name: r.athleteName, races: [] };
       athMap[r.athleteId].races.push(r);
     });
 
-    // 参加者行（縦並び）
     const participantRows = Object.entries(athMap).map(([aid, ath]) => {
       const athlete = athletes.find(a => a.id === aid);
       const age     = calcAge(athlete?.birthday);
       const hasPB   = ath.races.some(r => r.isPB);
+      const hasSB   = ath.races.some(r => r.isSB);
 
       const chips = ath.races.map(r => {
         const g = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
-        return `<span class="participant-event-chip${r.isPB ? ' pb' : ''}">
+        const flag = r.isPB
+          ? '<span class="pb-flag">🏆 PB</span>'
+          : r.isSB
+            ? '<span class="pb-flag" style="background:rgba(255,180,0,0.15);color:#f0a000;">⭐ SB</span>'
+            : '';
+        return `<span class="participant-event-chip${r.isPB ? ' pb' : r.isSB ? ' sb' : ''}">
           ${r.stroke} ${r.distance}
           <span style="font-family:'Rajdhani',monospace;font-weight:800;margin-left:4px;">${r.time}</span>
-          ${r.isPB ? '<span class="pb-flag">🚩PB</span>' : ''}
+          ${flag}
           ${g ? `<span style="opacity:.7;font-size:.85em"> ${g}級</span>` : ''}
         </span>`;
       }).join('');
@@ -4912,7 +4955,7 @@ function renderRaceHistory() {
           data-midx="${idx}" data-aid="${aid}"
           onclick="event.stopPropagation(); rrhOpenPersonal(this)">
         <div class="meet-participant-name">
-          ${hasPB ? '<span class="tag-pb-mark" style="margin-right:4px;">PB</span>' : ''}
+          ${hasPB ? '<span class="tag-pb-mark" style="margin-right:4px;">PB</span>' : hasSB ? '<span class="tag-pb-mark" style="margin-right:4px;background:rgba(255,180,0,0.15);color:#f0a000;">SB</span>' : ''}
           ${ath.name}
           <span style="font-size:0.72rem;color:var(--muted);font-weight:400;margin-left:6px;">
             ${athlete?.sex || ''} ${age ?? '-'}歳 ${athlete?.grade || ''}
