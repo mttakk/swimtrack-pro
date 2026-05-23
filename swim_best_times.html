@@ -815,10 +815,11 @@ select option { background: #f4f6f8; color: var(--white); }
 .lap-input::placeholder { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
 
 .lap-split-display {
-  font-size: 0.75rem;
+  font-size: 1.0rem;
+  font-weight: 700;
   color: var(--muted);
   font-family: 'Rajdhani', monospace;
-  min-height: 14px;
+  min-height: 18px;
 }
 .lap-split-display.valid { color: var(--accent); }
 
@@ -1977,7 +1978,7 @@ select option { background: #f4f6f8; color: var(--white); }
   border-radius: 8px;
   padding: 8px 14px;
   color: var(--white);
-  font-size: 14px;
+  font-size: 1rem;
   font-family: 'Noto Sans JP', sans-serif;
   font-weight: 600;
   outline: none;
@@ -1985,6 +1986,16 @@ select option { background: #f4f6f8; color: var(--white); }
   cursor: pointer;
 }
 .athlete-card-sel select:focus { border-color: var(--accent); }
+
+/* 全selectフォントサイズ統一 */
+select {
+  font-size: 1rem !important;
+  font-family: 'Noto Sans JP', sans-serif !important;
+}
+#pr-ampm, #pr-stroke, #pr-dist {
+  font-size: 1rem;
+  font-family: 'Noto Sans JP', sans-serif;
+}
 .athlete-card-remove {
   background: none;
   border: none;
