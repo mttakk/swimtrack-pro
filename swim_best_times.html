@@ -2296,6 +2296,8 @@ select {
     <button class="header-nav-item" id="hnav-race-entry" onclick="showView('race-entry')">📝 レース結果入力</button>
     <button class="header-nav-item" id="hnav-race-view" onclick="showView('race-view')">🏁 過去レース結果一覧</button>
     <button class="header-nav-item" id="hnav-compare" onclick="openRaceCompare()">📊 レース比較</button>
+    <button class="header-nav-item" id="hnav-sys-manual" onclick="showView('sys-manual')">📖 システム仕様書</button>
+    <button class="header-nav-item" id="hnav-fi-manual" onclick="showView('fi-manual')">⚡ FI仕様書</button>
     <button class="header-nav-item" id="hnav-grades" onclick="showView('grades')">📊 資格級</button>
   </nav>
   <div class="header-actions">
@@ -2407,6 +2409,118 @@ select {
       </div>
 
     </div><!-- #view-dashboard -->
+
+    <!-- ===== FATIGUE INDEX GUIDE MODAL ===== -->
+    <div class="modal-overlay" id="modal-fi-guide" style="z-index:300;">
+      <div class="modal" style="max-width:700px;">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">⚡ 疲労インデックス（FI）仕様書</div>
+            <div class="modal-subtitle">Fatigue Index — ペース配分の定量評価指標</div>
+          </div>
+          <button class="modal-close" onclick="closeModal('modal-fi-guide')">✕</button>
+        </div>
+        <div class="modal-body" style="overflow-y:auto;max-height:80vh;">
+          <div style="display:flex;flex-direction:column;gap:20px;padding:4px 0;">
+
+            <!-- 目次 -->
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+              <div style="font-size:0.8rem;font-weight:800;color:var(--accent);margin-bottom:10px;">📋 目次</div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:0.9rem;">
+                <a href="#fi-def"    onclick="document.getElementById('fi-def').scrollIntoView({behavior:'smooth'});return false;"    style="color:var(--accent);text-decoration:none;">1. 定義と計算式</a>
+                <a href="#fi-judge"  onclick="document.getElementById('fi-judge').scrollIntoView({behavior:'smooth'});return false;"  style="color:var(--accent);text-decoration:none;">2. 判定基準</a>
+                <a href="#fi-scene"  onclick="document.getElementById('fi-scene').scrollIntoView({behavior:'smooth'});return false;"  style="color:var(--accent);text-decoration:none;">3. 活用シーン</a>
+                <a href="#fi-limit"  onclick="document.getElementById('fi-limit').scrollIntoView({behavior:'smooth'});return false;"  style="color:var(--accent);text-decoration:none;">4. 注意事項・限界</a>
+                <a href="#fi-sample" onclick="document.getElementById('fi-sample').scrollIntoView({behavior:'smooth'});return false;" style="color:var(--accent);text-decoration:none;">5. 計算例</a>
+              </div>
+            </div>
+
+            <!-- 1. 定義 -->
+            <div id="fi-def" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+              <div style="font-size:1.0rem;font-weight:800;color:var(--white);margin-bottom:12px;">1. 定義と計算式</div>
+              <div style="font-size:0.9rem;color:var(--text);line-height:1.8;">
+                疲労インデックス（FI）は、レース・練習セットにおける<strong style="color:var(--accent);">後半ペースの崩れ具合</strong>を数値化した指標です。
+              </div>
+              <div style="margin:14px 0;padding:14px 18px;background:#0d1b2a;border-radius:8px;font-family:'Rajdhani',monospace;font-size:1.1rem;color:var(--accent);text-align:center;">
+                FI = 後半ラップタイム ÷ 前半ラップタイム
+              </div>
+              <div style="font-size:0.85rem;color:var(--muted);line-height:1.7;">
+                • <strong>前半</strong>：スタートから距離の½地点までのタイム<br>
+                • <strong>後半</strong>：½地点からフィニッシュまでのタイム<br>
+                • 例）200m自由形 → 前半100m / 後半100m で計算<br>
+                • 対象：100m以上かつ前後半のラップデータがあるもの
+              </div>
+            </div>
+
+            <!-- 2. 判定基準 -->
+            <div id="fi-judge" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+              <div style="font-size:1.0rem;font-weight:800;color:var(--white);margin-bottom:12px;">2. 判定基準</div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:#1a1a2e;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;">
+                  <div style="font-family:'Rajdhani',monospace;font-size:1.3rem;font-weight:900;color:#2563eb;min-width:70px;">FI &lt; 0.98</div>
+                  <div>
+                    <div style="font-weight:800;color:#74c0fc;">前半抑えすぎ</div>
+                    <div style="font-size:0.82rem;color:var(--muted);">後半の方が速い。前半をもう少し攻めることで更なるタイム短縮の余地あり。</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:#0d2b1a;border-left:4px solid #51cf66;border-radius:0 8px 8px 0;">
+                  <div style="font-family:'Rajdhani',monospace;font-size:1.3rem;font-weight:900;color:#51cf66;min-width:70px;">0.98〜1.05</div>
+                  <div>
+                    <div style="font-weight:800;color:#8ce99a;">良好なペース配分 ✓</div>
+                    <div style="font-size:0.82rem;color:var(--muted);">前後半のバランスが取れている理想的な状態。</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:#2b0a0a;border-left:4px solid #ef5350;border-radius:0 8px 8px 0;">
+                  <div style="font-family:'Rajdhani',monospace;font-size:1.3rem;font-weight:900;color:#ef5350;min-width:70px;">FI &gt; 1.05</div>
+                  <div>
+                    <div style="font-weight:800;color:#ff8a80;">後半失速</div>
+                    <div style="font-size:0.82rem;color:var(--muted);">前半飛ばしすぎ、または持久力不足。練習での有酸素系強化を検討。</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. 活用シーン -->
+            <div id="fi-scene" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+              <div style="font-size:1.0rem;font-weight:800;color:var(--white);margin-bottom:12px;">3. 活用シーン</div>
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:0.9rem;color:var(--text);line-height:1.7;">
+                <div>🏁 <strong>レース後の即時分析</strong>：試合直後にFIを確認し、次戦へのペース戦略を調整</div>
+                <div>📈 <strong>成長記録での時系列比較</strong>：FIの推移を追うことで持久力の向上を定量評価</div>
+                <div>⚡ <strong>練習セットのペース分析</strong>：本数間のFI変化で疲労蓄積のパターンを把握</div>
+                <div>🔄 <strong>レース比較</strong>：複数レースのFIを並べて自己ベスト時のペース配分を再現する</div>
+              </div>
+            </div>
+
+            <!-- 4. 注意事項 -->
+            <div id="fi-limit" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+              <div style="font-size:1.0rem;font-weight:800;color:var(--white);margin-bottom:12px;">4. 注意事項・限界</div>
+              <div style="display:flex;flex-direction:column;gap:6px;font-size:0.88rem;color:var(--muted);line-height:1.7;">
+                <div>⚠️ ラップデータが未入力の場合は計算されません</div>
+                <div>⚠️ 25m・50mはラップ地点が1つしかないためFI計算対象外</div>
+                <div>⚠️ 個人メドレーは泳法切替のため、FIの解釈に注意が必要</div>
+                <div>⚠️ FIはペース配分の指標であり、絶対的な良し悪しを示すものではない</div>
+                <div>⚠️ 選手の専門種目・レベル・戦略によって最適値は異なる</div>
+              </div>
+            </div>
+
+            <!-- 5. 計算例 -->
+            <div id="fi-sample" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;">
+              <div style="font-size:1.0rem;font-weight:800;color:var(--white);margin-bottom:12px;">5. 計算例</div>
+              <div style="font-size:0.88rem;color:var(--muted);margin-bottom:10px;">例）100m自由形：前半50m = 0:28.5 / フィニッシュ = 1:00.0</div>
+              <div style="padding:12px 16px;background:#0d1b2a;border-radius:8px;font-size:0.9rem;line-height:1.8;">
+                <div>後半50m = 1:00.0 − 0:28.5 = <span style="color:var(--accent);font-weight:700;">0:31.5</span></div>
+                <div>FI = 31.5 ÷ 28.5 = <span style="font-family:'Rajdhani',monospace;font-size:1.1rem;font-weight:900;color:#ef5350;">1.105</span></div>
+                <div style="color:#ef5350;font-weight:700;margin-top:4px;">→ 後半失速（1.05超）</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('modal-fi-guide')">閉じる</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ===== PRACTICE ENTRY MODAL ===== -->
     <div class="modal-overlay" id="modal-practice-entry" style="z-index:210;">
@@ -3053,7 +3167,19 @@ select {
   </div>
 </div>
 
-    <!-- Grades View -->
+    <!-- ========== SYSTEM MANUAL VIEW ========== -->
+    <!-- ========== SYSTEM MANUAL VIEW ========== -->
+    <div class="view" id="view-sys-manual">
+      <div id="sys-manual-content"></div>
+    </div>
+
+    <!-- ========== FI MANUAL VIEW ========== -->
+    <div class="view" id="view-fi-manual">
+      <div id="fi-manual-content"></div>
+    </div>
+
+
+    <!-- ========== GRADES VIEW ========== -->
     <div class="view" id="view-grades">
       <div class="page-header">
         <div>
@@ -4173,12 +4299,14 @@ function showView(name) {
   // ヘッダーナビ
   document.querySelectorAll('.header-nav-item').forEach(b => b.classList.remove('active'));
   const hnavMap = {
-    athletes:    'hnav-athletes',
-    roster:      'hnav-roster',
-    'race-entry':'hnav-race-entry',
-    'race-view': 'hnav-race-view',
-    grades:      'hnav-grades',
-    dashboard:   'hnav-dashboard'
+    athletes:      'hnav-athletes',
+    roster:        'hnav-roster',
+    'race-entry':  'hnav-race-entry',
+    'race-view':   'hnav-race-view',
+    grades:        'hnav-grades',
+    dashboard:     'hnav-dashboard',
+    'sys-manual':  'hnav-sys-manual',
+    'fi-manual':   'hnav-fi-manual',
   };
   if (hnavMap[name]) document.getElementById(hnavMap[name])?.classList.add('active');
 
@@ -4195,6 +4323,8 @@ function showView(name) {
   if (name === 'athletes')   setTimeout(() => renderAthleteTable(), 0);
   if (name === 'roster')     setTimeout(() => renderRoster(), 0);
   if (name === 'race-entry') renderRaceEntryView();
+  if (name === 'sys-manual') renderManual(SYS_MANUAL, 'sys-manual-content');
+  if (name === 'fi-manual')  renderManual(FI_MANUAL,  'fi-manual-content');
   if (name === 'race-view')  renderRaceHistory();
   if (name === 'grades')     renderGradeSummary();
   if (name === 'dashboard')  renderDashboard();
@@ -5907,6 +6037,197 @@ function openRaceDetail(raceId) {
 // =====================================================================
 // ラップ比較テーブル（横軸=通過距離、縦軸=単位別行）
 // =====================================================================
+// 仕様書・取扱説明書（ここを書き換えると仕様書が自動更新される）
+// =====================================================================
+const SYS_MANUAL = {
+  title: 'システム仕様書・取扱説明書',
+  subtitle: 'SwimTrack Pro — TX MYRICA SWIM TEAM',
+  lastUpdated: '2026-05-26',
+  sections: [
+    { id:'sm-overview', title:'1. システム概要', content:`
+      <table style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+        <tr style="background:var(--tap-bg);"><th style="padding:8px 12px;text-align:left;">項目</th><th style="padding:8px 12px;text-align:left;">内容</th></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">アプリ名</td><td style="padding:8px 12px;">SwimTrack Pro</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">URL</td><td style="padding:8px 12px;font-family:monospace;font-size:0.9rem;">https://lucky-cactus-174c46.netlify.app</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">データ保存先</td><td style="padding:8px 12px;">Supabase（クラウドDB）</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">ホスティング</td><td style="padding:8px 12px;">Netlify（GitHub自動デプロイ）</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;color:var(--muted);">対応デバイス</td><td style="padding:8px 12px;">MacBook Safari / Chrome、iPhone Safari</td></tr>
+      </table>` },
+    { id:'sm-access', title:'2. アクセス方法・デバイス対応', content:`
+      <p>URLをブラウザで開くだけで使用できます。インストール不要。</p>
+      <ul style="margin:10px 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li><strong>Mac（Safari / Chrome）</strong>：URLをブックマーク登録推奨</li>
+        <li><strong>iPhone（Safari）</strong>：ホーム画面に追加すると起動が速い</li>
+        <li><strong>データ同期</strong>：どのデバイスで入力しても即座に全端末に反映</li>
+        <li><strong>初回のみ</strong>：Supabase接続設定が必要（URLとAnon Key入力）</li>
+      </ul>` },
+    { id:'sm-dashboard', title:'3. ダッシュボード', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li><strong>スケジュール</strong>：3ヶ月カレンダー表示。日付タップで予定確認・追加</li>
+        <li><strong>練習メニュー</strong>：練習内容のメモ管理。右上「＋」から追加</li>
+        <li><strong>目標タイム</strong>：選手ごとの目標タイムを設定</li>
+        <li><strong>練習データ</strong>：選手カードをタップすると種目×本数×サークル別の履歴が閲覧できる</li>
+      </ul>` },
+    { id:'sm-best', title:'4. ベストタイム', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li><strong>通常表示</strong>：全18種目を横スクロールで閲覧。タイムをタップして編集</li>
+        <li><strong>全種目閲覧</strong>：フォントを縮小して1画面で全員比較</li>
+        <li><strong>資格級自動表示</strong>：タイム入力に連動して日本水泳連盟の資格級を自動表示</li>
+        <li><strong>PBフラグ</strong>：レース日付の時系列で最速タイムを自動判定</li>
+      </ul>` },
+    { id:'sm-roster', title:'5. 選手一覧', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li>選手カードをタップすると詳細・編集モーダルが開く</li>
+        <li>性別・学年でフィルタリング、あいうえお順・生年月日順で並び替え可能</li>
+        <li>写真登録機能あり（Supabase Storageに保存）</li>
+      </ul>` },
+    { id:'sm-race', title:'6. レース結果入力', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li><strong>セッション情報</strong>：日付・大会名・会場・プールサイズを一括設定</li>
+        <li><strong>複数選手対応</strong>：「＋ 選手を追加」で同一セッションに複数人まとめて登録</li>
+        <li><strong>スプリット入力</strong>：25m単位で通過タイムを入力 → ラップ自動計算</li>
+        <li><strong>PB自動反映</strong>：登録時にベストタイムを自動更新</li>
+        <li><strong>追加入力</strong>：過去レース結果一覧の「＋ 選手・種目を追加入力」から既存セッションに追加可能</li>
+      </ul>` },
+    { id:'sm-history', title:'7. 過去レース結果一覧', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li>年度別（4月〜翌3月）タブで絞り込み。試合は古い順に表示</li>
+        <li>試合行をタップすると参加者一覧モーダルが開く（スライドパネル）</li>
+        <li>選手名タップで個人の詳細結果・ラップ比較表・疲労インデックスが表示</li>
+        <li><strong>PB</strong>（全期間最速）と <strong>SB</strong>（年度内最速）をレース日付の時系列で自動判定</li>
+      </ul>` },
+    { id:'sm-compare', title:'8. レース比較', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li>選手・種目・年度を選択し複数レースをチェックして比較</li>
+        <li>タイム・最速比・前後半・疲労インデックス（FI）・資格級・ラップを一覧比較</li>
+        <li>ラップデータがある場合、折れ線グラフも自動生成</li>
+      </ul>` },
+    { id:'sm-practice', title:'9. 練習データ', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li><strong>入力</strong>：日付・AM/PM・泳法・距離・本数・サークルをセッション情報として設定</li>
+        <li>100m以上は50m単位スプリット入力 → ラップ自動計算。25m・50mはフィニッシュタイムのみ</li>
+        <li><strong>閲覧</strong>：ダッシュボードの選手カードをタップ → 種目×本数×サークルで階層表示</li>
+        <li><strong>成長記録</strong>：同種目・同本数・同サークルの履歴をグラフ＋比較表で確認</li>
+        <li><strong>ペース分析</strong>：1セッション内の本数間ラップ比較。FI値も自動表示</li>
+      </ul>` },
+    { id:'sm-modals', title:'10. モーダル操作', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li>各詳細画面は右側からスライドインするパネル形式で表示</li>
+        <li>右上の「⤢」ボタンで全画面表示に切り替え可能</li>
+        <li>「⊡」ボタンでスライドパネルに戻る。閉じると自動でリセット</li>
+      </ul>` },
+    { id:'sm-update', title:'11. アプリ更新手順', content:`
+      <ol style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li>Claudeのチャットで修正を依頼</li>
+        <li>「swim best times」をダウンロード（ファイル名変更不要）</li>
+        <li><code style="background:var(--tap-bg);padding:2px 8px;border-radius:4px;">https://github.com/mttakk/swimtrack-pro/upload/main</code> を開く</li>
+        <li><code>swim_best_times.html</code> をドラッグ＆ドロップ → 「Commit changes」</li>
+        <li>1〜2分後に自動更新完了 ✅</li>
+      </ol>
+      <div style="margin-top:14px;padding:10px 14px;background:rgba(0,180,216,0.08);border-radius:8px;font-size:0.9rem;color:var(--muted);">
+        ⚠️ リポジトリには <code>_redirects</code> と <code>swim_best_times.html</code> のみ存在させること。<code>index.html</code> が残っていると更新が反映されません。
+      </div>` },
+  ]
+};
+
+const FI_MANUAL = {
+  title: '⚡ 疲労インデックス（FI）仕様書・取扱説明書',
+  subtitle: 'Fatigue Index — ペース配分の定量評価指標',
+  lastUpdated: '2026-05-26',
+  sections: [
+    { id:'fi2-def', title:'1. 定義と計算式', content:`
+      <p>疲労インデックス（FI）は<strong style="color:var(--accent);">後半ペースの崩れ具合</strong>を数値化した指標です。</p>
+      <div style="margin:14px 0;padding:14px 18px;background:#0d1b2a;border-radius:8px;font-family:'Rajdhani',monospace;font-size:1.2rem;color:var(--accent);text-align:center;">
+        FI = 後半ラップタイム ÷ 前半ラップタイム
+      </div>
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li><strong>前半</strong>：スタートから距離の½地点までのタイム</li>
+        <li><strong>後半</strong>：½地点からフィニッシュまでのタイム</li>
+        <li>例）200m自由形 → 前半100m / 後半100m で計算</li>
+        <li><strong>対象</strong>：100m以上かつ前後半のラップデータがあるもの</li>
+      </ul>` },
+    { id:'fi2-judge', title:'2. 判定基準', content:`
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:#1a1a2e;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;">
+          <div style="font-family:'Rajdhani',monospace;font-size:1.4rem;font-weight:900;color:#2563eb;min-width:80px;">FI &lt; 0.98</div>
+          <div><div style="font-weight:800;color:#74c0fc;">前半抑えすぎ</div>
+          <div style="font-size:0.88rem;color:var(--muted);margin-top:4px;">後半の方が速い状態。前半をもう少し攻めることでタイム短縮の余地あり。</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:#0d2b1a;border-left:4px solid #51cf66;border-radius:0 8px 8px 0;">
+          <div style="font-family:'Rajdhani',monospace;font-size:1.4rem;font-weight:900;color:#51cf66;min-width:80px;">0.98〜1.05</div>
+          <div><div style="font-weight:800;color:#8ce99a;">良好なペース配分 ✓</div>
+          <div style="font-size:0.88rem;color:var(--muted);margin-top:4px;">前後半のバランスが取れた理想的な状態。</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:#2b0a0a;border-left:4px solid #ef5350;border-radius:0 8px 8px 0;">
+          <div style="font-family:'Rajdhani',monospace;font-size:1.4rem;font-weight:900;color:#ef5350;min-width:80px;">FI &gt; 1.05</div>
+          <div><div style="font-weight:800;color:#ff8a80;">後半失速</div>
+          <div style="font-size:0.88rem;color:var(--muted);margin-top:4px;">前半飛ばしすぎ、または持久力不足。有酸素系トレーニングの強化を検討。</div></div>
+        </div>
+      </div>` },
+    { id:'fi2-where', title:'3. 表示される場所', content:`
+      <table style="width:100%;border-collapse:collapse;font-size:0.95rem;">
+        <tr style="background:var(--tap-bg);"><th style="padding:8px 12px;text-align:left;">画面</th><th style="padding:8px 12px;text-align:left;">表示箇所</th></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;">過去レース結果</td><td style="padding:8px 12px;">個人詳細 → ラップ比較表の下に自動表示</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 12px;">レース比較</td><td style="padding:8px 12px;">比較テーブルの「⚡ FI」列</td></tr>
+        <tr><td style="padding:8px 12px;">練習データ詳細</td><td style="padding:8px 12px;">ペース分析タブのFI列</td></tr>
+      </table>` },
+    { id:'fi2-scene', title:'4. 活用シーン', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
+        <li>🏁 <strong>レース後の即時分析</strong>：試合直後にFIを確認し次戦のペース戦略を調整</li>
+        <li>📈 <strong>成長記録での時系列比較</strong>：FIの推移で持久力の向上を定量評価</li>
+        <li>⚡ <strong>練習セットのペース分析</strong>：本数間のFI変化で疲労蓄積パターンを把握</li>
+        <li>🔄 <strong>レース比較</strong>：PB時のFIを参照し理想のペース配分を再現する</li>
+      </ul>` },
+    { id:'fi2-limit', title:'5. 注意事項・限界', content:`
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;color:var(--muted);">
+        <li>ラップデータが未入力の場合は計算されません（「—」表示）</li>
+        <li>25m・50mはラップ地点が1つしかないため計算対象外</li>
+        <li>個人メドレーは泳法切替があるため、FIの解釈に注意が必要</li>
+        <li>FIはペース配分の指標であり、絶対的な良し悪しを示すものではない</li>
+        <li>選手の専門種目・レベル・レース戦略によって最適値は異なる</li>
+      </ul>` },
+    { id:'fi2-sample', title:'6. 計算例', content:`
+      <p style="color:var(--muted);margin-bottom:12px;">例①）100m自由形：前半50m通過 = 0:28.50 / フィニッシュ = 1:00.00</p>
+      <div style="padding:16px 20px;background:#0d1b2a;border-radius:8px;font-size:1.0rem;line-height:2.0;margin-bottom:16px;">
+        後半50m = 60.00 − 28.50 = <span style="color:var(--accent);font-weight:700;">31.50秒</span><br>
+        FI = 31.50 ÷ 28.50 = <span style="font-family:'Rajdhani',monospace;font-size:1.3rem;font-weight:900;color:#ef5350;">1.105</span><br>
+        <span style="color:#ef5350;font-weight:700;">→ 後半失速（1.05超）前半より後半が10.5%遅い</span>
+      </div>
+      <p style="color:var(--muted);margin-bottom:12px;">例②）200m平泳ぎ：前半100m通過 = 1:15.00 / フィニッシュ = 2:28.00</p>
+      <div style="padding:16px 20px;background:#0d1b2a;border-radius:8px;font-size:1.0rem;line-height:2.0;">
+        後半100m = 148.00 − 75.00 = <span style="color:var(--accent);font-weight:700;">73.00秒</span><br>
+        FI = 73.00 ÷ 75.00 = <span style="font-family:'Rajdhani',monospace;font-size:1.3rem;font-weight:900;color:#51cf66;">0.973</span><br>
+        <span style="color:#51cf66;font-weight:700;">→ 前半抑えすぎ（0.98未満）後半の方が速い</span>
+      </div>` },
+  ]
+};
+
+function renderManual(manual, containerId) {
+  var el = document.getElementById(containerId);
+  if (!el) return;
+  var toc = manual.sections.map(function(s){
+    return '<a href="#'+s.id+'" onclick="document.getElementById(\''+s.id+'\').scrollIntoView({behavior:\'smooth\'});return false;"'
+      +' style="color:var(--accent);text-decoration:none;font-size:0.95rem;">'+s.title+'</a>';
+  }).join('');
+  var secs = manual.sections.map(function(s){
+    return '<div id="'+s.id+'" class="table-container">'
+      +'<div class="table-header"><div class="table-title">'+s.title+'</div></div>'
+      +'<div style="padding:16px 24px;font-size:0.95rem;line-height:1.9;color:var(--text);">'+s.content+'</div>'
+      +'</div>';
+  }).join('');
+  el.innerHTML =
+    '<div class="page-header"><div>'
+    +'<div class="page-title">'+manual.title+'</div>'
+    +'<div class="page-subtitle">'+manual.subtitle+'</div>'
+    +'</div></div>'
+    +'<div style="max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">'
+    +'<div class="table-container"><div class="table-header"><div class="table-title">📋 目次'
+    +'<span style="margin-left:12px;font-size:0.75rem;color:var(--muted);font-weight:400;">最終更新: '+manual.lastUpdated+'</span>'
+    +'</div></div><div style="padding:16px 24px;display:flex;flex-direction:column;gap:8px;">'+toc+'</div></div>'
+    +secs+'</div>';
+}
+
+// =====================================================================
 // =====================================================================
 // モーダル 全画面 / スライドパネル 切り替え
 // =====================================================================
@@ -5974,7 +6295,11 @@ function fatigueIndexHtml(fi) {
   return '<div style="display:inline-flex;align-items:center;gap:10px;padding:8px 14px;'
     + 'background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;">'
     + '<div>'
-    + '<div style="font-size:0.7rem;color:var(--muted);font-weight:700;margin-bottom:2px;">⚡ 疲労インデックス</div>'
+    + '<div style="font-size:0.7rem;color:var(--muted);font-weight:700;margin-bottom:2px;">⚡ 疲労インデックス'
+    + '<button onclick="document.getElementById(\'modal-fi-guide\').classList.add(\'open\')" '
+    + 'style="margin-left:6px;font-size:0.65rem;padding:1px 6px;border-radius:4px;'
+    + 'background:rgba(0,180,216,0.12);border:1px solid rgba(0,180,216,0.3);color:var(--accent);cursor:pointer;">仕様書</button>'
+    + '</div>'
     + '<div style="font-family:\'Rajdhani\',monospace;font-size:1.4rem;font-weight:900;color:'+color+';">'
     + fi.toFixed(3)+'</div>'
     + bar
@@ -7014,7 +7339,7 @@ function cmpShowResult() {
   const hasLaps = selectedRaces.some(r => r.lapData?.length > 0);
   const maxLaps = Math.max(...selectedRaces.map(r => r.lapData?.length || 0));
 
-  let tableHeader = '<tr><th>日付 / 大会</th><th>タイム</th><th>最速比</th><th>前後半</th><th>資格級</th>';
+  let tableHeader = '<tr><th>日付 / 大会</th><th>タイム</th><th>最速比</th><th>前後半</th><th>⚡ FI</th><th>資格級</th>';
   if (hasLaps) {
     for (let i = 0; i < maxLaps; i++) {
       tableHeader += `<th>${(i+1)*25}m</th>`;
@@ -7044,6 +7369,15 @@ function cmpShowResult() {
            ${halfDiff>0?'+':''}${formatTime(halfDiff)}</div>`
       : '—';
 
+    // 疲労インデックス
+    const fi = laps.length >= 2 ? calcFatigueIndex(laps, distToM(r.distance)) : null;
+    const fiColor = fi===null ? 'var(--muted)' : fi>1.05 ? '#ef5350' : fi<0.98 ? '#2563eb' : '#51cf66';
+    const fiLabel = fi===null ? '—' : fi>1.05 ? '失速' : fi<0.98 ? '抑え' : '良好';
+    const fiHtmlCell = fi !== null
+      ? `<div style="font-family:'Rajdhani',monospace;font-size:1.0rem;font-weight:800;color:${fiColor};">${fi.toFixed(3)}</div>
+         <div style="font-size:0.68rem;color:${fiColor};">${fiLabel}</div>`
+      : '—';
+
     let lapCells = '';
     if (hasLaps) {
       for (let i = 0; i < maxLaps; i++) {
@@ -7063,6 +7397,7 @@ function cmpShowResult() {
       </td>
       <td>${isBest ? '<span class="cmp-diff-zero">基準</span>' : diffHtml}</td>
       <td>${halfHtml}</td>
+      <td style="text-align:center;">${fiHtmlCell}</td>
       <td style="font-size:0.82rem;">${g ? g+'級' : '—'}</td>
       ${lapCells}
     </tr>`;
