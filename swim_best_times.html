@@ -508,7 +508,25 @@ tbody td {
   flex-shrink: 0;
 }
 
-/* モーダル内フォントサイズ統一 */
+/* ── モーダル内テーブル横スクロール一括適用 ── */
+.modal-body table {
+  min-width: 600px;
+}
+.modal-body .table-container,
+.modal-body [style*="overflow"] {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* モーダルbody自体も横スクロール可能に */
+.modal-body {
+  overflow-x: hidden;
+}
+/* テーブルをラップするdivが必要な場合のフォールバック */
+.modal table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .modal table { font-size: 1.0rem; }
 .modal th, .modal td { font-size: 1.0rem; }
 .modal .dash-card-title { font-size: 1.0rem; }
@@ -2986,16 +3004,19 @@ select {
 </div>
 
 <!-- Race Comparison Modal -->
-<div class="modal-overlay" id="modal-race-compare" style="z-index:222;">
-  <div class="modal" style="max-width:900px;">
+<div class="modal-overlay" id="modal-race-compare" style="z-index:222;justify-content:center;align-items:center;">
+  <div class="modal" style="width:90%;max-width:1100px;height:90vh;">
     <div class="modal-header">
       <div>
         <div class="modal-title">📊 レース比較</div>
         <div class="modal-subtitle" id="cmp-subtitle">種目を選択してレースを比較</div>
       </div>
-      <button class="modal-close" onclick="closeModal('modal-race-compare')">✕</button>
+      <div class="modal-header-actions">
+        <button class="modal-fullscreen-btn" onclick="toggleModalFullscreen(this)" title="全画面表示">⤢</button>
+        <button class="modal-close" onclick="closeModal('modal-race-compare')">✕</button>
+      </div>
     </div>
-    <div class="modal-body" style="padding:20px 24px;">
+    <div class="modal-body" style="padding:20px 24px;overflow-y:auto;">
 
       <!-- Step1: 選手・種目選択 -->
       <div id="cmp-step1">
@@ -3038,7 +3059,7 @@ select {
           <button class="btn btn-ghost btn-sm" onclick="cmpBackToSelect()">← 選び直す</button>
           <span id="cmp-result-title" style="font-size:0.9rem;font-weight:700;color:var(--white);"></span>
         </div>
-        <div id="cmp-result-body"></div>
+        <div id="cmp-result-body" style="overflow-x:auto;"></div>
       </div>
 
     </div>
@@ -6239,27 +6260,68 @@ function toggleModalFullscreen(btn) {
   btn.title = isFull ? 'スライドパネルに戻す' : '全画面表示';
 }
 
-// モーダルを開くたびに全画面ボタンを自動挿入
+// モーダルを開くたびに全画面ボタンを自動挿入＋テーブル横スクロール自動適用
 document.addEventListener('DOMContentLoaded', function() {
+  // 全画面ボタン挿入
   document.querySelectorAll('.modal').forEach(function(modal) {
     var header = modal.querySelector('.modal-header');
     if (!header) return;
     var closeBtn = header.querySelector('.modal-close');
     if (!closeBtn) return;
-
-    // 既に挿入済みならスキップ
     if (header.querySelector('.modal-fullscreen-btn')) return;
-
     var fsBtn = document.createElement('button');
     fsBtn.className = 'modal-fullscreen-btn';
     fsBtn.textContent = '⤢';
     fsBtn.title = '全画面表示';
     fsBtn.onclick = function(){ toggleModalFullscreen(fsBtn); };
+    // modal-header-actionsがあればそこに、なければcloseの前に
+    var actions = header.querySelector('.modal-header-actions');
+    if (actions) {
+      actions.insertBefore(fsBtn, actions.firstChild);
+    } else {
+      header.insertBefore(fsBtn, closeBtn);
+    }
+  });
 
-    // closeボタンの前に挿入
-    header.insertBefore(fsBtn, closeBtn);
+  // モーダル内のすべてのテーブルを横スクロールコンテナで自動ラップ
+  document.querySelectorAll('.modal-body table').forEach(function(table) {
+    if (table.parentElement.classList.contains('table-scroll-wrap')) return;
+    if (table.parentElement.style.overflowX === 'auto') return;
+    var wrap = document.createElement('div');
+    wrap.style.overflowX = 'auto';
+    wrap.style.webkitOverflowScrolling = 'touch';
+    table.parentNode.insertBefore(wrap, table);
+    wrap.appendChild(table);
   });
 });
+
+// MutationObserverでモーダルが開いたときにも自動適用
+var _modalObserver = new MutationObserver(function(mutations) {
+  mutations.forEach(function(m) {
+    if (m.type === 'attributes' && m.attributeName === 'class') {
+      var el = m.target;
+      if (el.classList.contains('open')) {
+        // 少し遅延してDOMが確定してから適用
+        setTimeout(function() {
+          el.querySelectorAll('.modal-body table').forEach(function(table) {
+            if (table.parentElement.style.overflowX === 'auto') return;
+            if (table.parentElement.classList.contains('table-scroll-wrap')) return;
+            var wrap = document.createElement('div');
+            wrap.style.overflowX = 'auto';
+            wrap.style.webkitOverflowScrolling = 'touch';
+            wrap.classList.add('table-scroll-wrap');
+            table.parentNode.insertBefore(wrap, table);
+            wrap.appendChild(table);
+          });
+        }, 50);
+      }
+    }
+  });
+});
+document.querySelectorAll('.modal-overlay').forEach(function(o) {
+  _modalObserver.observe(o, { attributes: true });
+});
+
 
 
 // =====================================================================
@@ -7478,8 +7540,8 @@ function cmpShowResult() {
   }
 
   document.getElementById('cmp-result-body').innerHTML = `
-    <div style="overflow-x:auto;margin-bottom:16px;">
-      <table class="cmp-table">
+    <div style="overflow-x:auto;margin-bottom:16px;-webkit-overflow-scrolling:touch;">
+      <table class="cmp-table" style="min-width:700px;">
         <thead>${tableHeader}</thead>
         <tbody>${rows}</tbody>
       </table>
