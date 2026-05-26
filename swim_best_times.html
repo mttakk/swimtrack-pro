@@ -2982,7 +2982,6 @@ select {
     </div>
     <div class="modal-body" id="mp-body"></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm" onclick="addRaceToMeetFromModal()">＋ 選手・種目を追加入力</button>
       <button class="btn btn-ghost" onclick="closeModal('modal-meet-participants')">閉じる</button>
     </div>
   </div>
@@ -5842,6 +5841,54 @@ function openRaceDetail(raceId) {
 // =====================================================================
 // ラップ比較テーブル（横軸=通過距離、縦軸=単位別行）
 // =====================================================================
+// =====================================================================
+// 疲労インデックス（Fatigue Index）
+// =====================================================================
+function calcFatigueIndex(laps, totalM) {
+  // 前半・後半ラップを50m単位で計算
+  if (!laps || laps.length < 2) return null;
+  var half = totalM / 2;
+  // 前半最後の地点のsplit
+  var firstHalfLap = laps.find(function(l){ return l.distM === half; });
+  if (!firstHalfLap) return null;
+  var firstHalfSec = firstHalfLap.splitSec;
+  var totalSec     = laps[laps.length-1].splitSec;
+  var secondHalfSec = totalSec - firstHalfSec;
+  if (!firstHalfSec || !secondHalfSec) return null;
+  return secondHalfSec / firstHalfSec;
+}
+
+function fatigueIndexHtml(fi) {
+  if (fi === null) return '';
+  var pct  = ((fi - 1) * 100).toFixed(1);
+  var sign = fi > 1 ? '+' : '';
+  var color, label, bar;
+  if (fi > 1.05) {
+    color = '#ef5350'; label = '後半失速';
+    bar = '<div style="height:6px;border-radius:3px;background:linear-gradient(to right,#26c6da,#ef5350);margin-top:4px;"></div>';
+  } else if (fi < 0.98) {
+    color = '#2563eb'; label = '前半抑えすぎ';
+    bar = '<div style="height:6px;border-radius:3px;background:linear-gradient(to right,#2563eb,#26c6da);margin-top:4px;"></div>';
+  } else {
+    color = '#51cf66'; label = '良好';
+    bar = '<div style="height:6px;border-radius:3px;background:#51cf66;margin-top:4px;"></div>';
+  }
+  return '<div style="display:inline-flex;align-items:center;gap:10px;padding:8px 14px;'
+    + 'background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;">'
+    + '<div>'
+    + '<div style="font-size:0.7rem;color:var(--muted);font-weight:700;margin-bottom:2px;">⚡ 疲労インデックス</div>'
+    + '<div style="font-family:\'Rajdhani\',monospace;font-size:1.4rem;font-weight:900;color:'+color+';">'
+    + fi.toFixed(3)+'</div>'
+    + bar
+    + '</div>'
+    + '<div style="font-size:0.75rem;">'
+    + '<div style="color:'+color+';font-weight:800;">'+label+'</div>'
+    + '<div style="color:var(--muted);">後半/前半 '+sign+pct+'%</div>'
+    + '<div style="color:var(--muted);font-size:0.68rem;margin-top:4px;">基準: 0.98〜1.05</div>'
+    + '</div>'
+    + '</div>';
+}
+
 function buildLapCompareTable(laps, pbLaps, totalM, halfM) {
   var hasPB    = pbLaps && pbLaps.length === laps.length;
   var show50   = totalM >= 200;
@@ -6073,9 +6120,13 @@ function buildLapCompareTable(laps, pbLaps, totalM, halfM) {
       + '<\/div>'
     : '';
 
+  var fi    = calcFatigueIndex(laps, totalM);
+  var fiHtml = totalM >= 100 ? fatigueIndexHtml(fi) : '';
+
   return toggle
     + '<div style="overflow-x:auto;margin-bottom:4px;">' + tableScroll + tableCompact + '<\/div>'
-    + note;
+    + note
+    + fiHtml;
 }
 
 
@@ -7920,7 +7971,9 @@ function renderPdPace(p) {
   html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:0.82rem;">';
   html += '<thead><tr style="background:var(--tap-bg);"><th style="padding:7px 10px;text-align:left;">\u672c\u6570</th>';
   validSets[0].lapData.forEach(function(l){ html += '<th style="padding:7px 10px;text-align:right;">L '+l.distM+'m</th>'; });
-  html += '<th style="padding:7px 10px;text-align:right;">\u30d5\u30a3\u30cb\u30c3\u30b7\u30e5</th></tr></thead><tbody>';
+  html += '<th style="padding:7px 10px;text-align:right;">\u30d5\u30a3\u30cb\u30c3\u30b7\u30e5</th>';
+  html += '<th style="padding:7px 10px;text-align:right;">⚡ FI</th>';
+  html += '</tr></thead><tbody>';
 
   validSets.forEach(function(sr, i) {
     html += '<tr style="border-bottom:1px solid var(--border);">';
@@ -7930,7 +7983,11 @@ function renderPdPace(p) {
       var isBest  = Math.abs(l.lapSec - Math.min.apply(null,lapVals)) < 0.01;
       html += '<td style="padding:7px 10px;text-align:right;font-family:\'Rajdhani\',monospace;font-weight:700;'+(isBest?'color:#26c6da;font-weight:900;':'')+'">'+formatTime(l.lapSec)+'</td>';
     });
+    var fi = calcFatigueIndex(sr.lapData, distM);
+    var fiColor = fi===null?'var(--muted)':fi>1.05?'#ef5350':fi<0.98?'#2563eb':'#51cf66';
+    var fiLabel = fi===null?'—':fi>1.05?'後半失速 ▲':fi<0.98?'前半抑 ▼':'良好 ✓';
     html += '<td style="padding:7px 10px;text-align:right;font-family:\'Rajdhani\',monospace;font-weight:800;color:var(--accent);">'+formatTime(sr.totalSec)+'</td>';
+    html += '<td style="padding:7px 10px;text-align:right;font-size:0.78rem;font-weight:700;color:'+fiColor+';">'+(fi?fi.toFixed(3):'')+' <span style="font-size:0.68rem;">'+fiLabel+'</span></td>';
     html += '</tr>';
   });
   html += '</tbody></table></div></div>';
