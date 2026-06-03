@@ -112,21 +112,41 @@ header {
 }
 
 .header-nav-item {
-  padding: 8px 20px;
+  padding: 8px 16px;
   border-radius: 7px;
   font-size: 0.875rem;
   font-weight: 600;
   font-family: 'Noto Sans JP', sans-serif;
   cursor: pointer;
-  border: none;
-  background: none;
-  color: var(--muted);
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--tab-color, #64748b) 18%, transparent);
+  color: var(--tab-color, var(--muted));
   transition: all 0.15s;
   white-space: nowrap;
 }
 
-.header-nav-item:hover { color: var(--text); background: var(--tap-bg-hover); }
-.header-nav-item.active { background: var(--accent); color: #ffffff; }
+/* タブ個別カラー */
+#hnav-dashboard       { --tab-color: #94a3b8; }
+#hnav-athletes        { --tab-color: #d4a017; }
+#hnav-roster          { --tab-color: #2d9c6e; }
+#hnav-race-entry      { --tab-color: #e07b20; }
+#hnav-race-view       { --tab-color: #e84040; }
+#hnav-compare         { --tab-color: #9b59b6; }
+#hnav-sys-manual      { --tab-color: #3b6ea5; }
+#hnav-fi-manual       { --tab-color: #00b4d8; }
+#hnav-grades          { --tab-color: #1a8a9a; }
+
+.header-nav-item:hover {
+  background: color-mix(in srgb, var(--tab-color, #fff) 30%, transparent);
+  border-color: color-mix(in srgb, var(--tab-color, #fff) 50%, transparent);
+}
+.header-nav-item.active {
+  background: var(--tab-color, var(--accent));
+  border-color: var(--tab-color, var(--accent));
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--tab-color, #000) 40%, transparent);
+}
 
 .header-actions {
   display: flex;
@@ -3055,9 +3075,24 @@ select {
 
       <!-- Step3: 比較結果 -->
       <div id="cmp-step3" style="display:none;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
           <button class="btn btn-ghost btn-sm" onclick="cmpBackToSelect()">← 選び直す</button>
-          <span id="cmp-result-title" style="font-size:0.9rem;font-weight:700;color:var(--white);"></span>
+          <span id="cmp-result-title" style="font-size:0.9rem;font-weight:700;color:var(--white);flex:1;"></span>
+        </div>
+        <!-- タブ -->
+        <div style="display:flex;gap:3px;background:var(--tap-bg);border-radius:8px;padding:3px;border:1px solid var(--border);margin-bottom:14px;width:fit-content;">
+          <button class="sort-btn active" id="cmp-tab-selected" onclick="cmpSwitchTab('selected')">選択中</button>
+          <button class="sort-btn" id="cmp-tab-all" onclick="cmpSwitchTab('all')">全データ</button>
+        </div>
+        <!-- 並び替えコントロール -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+          <span style="font-size:0.78rem;color:var(--muted);font-weight:700;">並び替え：</span>
+          <div style="display:flex;gap:4px;background:var(--tap-bg);border-radius:8px;padding:3px;border:1px solid var(--border);">
+            <button class="sort-btn active" id="cmp-sort-date"  onclick="cmpSetSort('date')">日付</button>
+            <button class="sort-btn" id="cmp-sort-time"  onclick="cmpSetSort('time')">タイム</button>
+            <button class="sort-btn" id="cmp-sort-fi"    onclick="cmpSetSort('fi')">FI</button>
+          </div>
+          <button id="cmp-sort-dir-btn" class="sort-dir-btn" onclick="cmpToggleSortDir()">↑ 昇順</button>
         </div>
         <div id="cmp-result-body" style="overflow-x:auto;"></div>
       </div>
@@ -3123,8 +3158,8 @@ select {
 </div>
 
 <!-- Race Detail Modal -->
-<div class="modal-overlay" id="modal-race-detail">
-  <div class="modal" style="max-width:680px;">
+<div class="modal-overlay" id="modal-race-detail" style="justify-content:center;align-items:center;">
+  <div class="modal" style="width:90%;max-width:900px;height:90vh;">
     <div class="modal-header">
       <div>
         <div class="modal-title" id="rdetail-title">レース詳細</div>
@@ -3132,7 +3167,7 @@ select {
       </div>
       <button class="modal-close" onclick="closeModal('modal-race-detail')">✕</button>
     </div>
-    <div class="modal-body" id="rdetail-body"></div>
+    <div class="modal-body" id="rdetail-body" style="overflow-y:auto;flex:1;"></div>
     <div class="modal-footer">
       <button class="btn btn-danger btn-sm" id="rdetail-delete-btn">🗑️ 削除</button>
       <button class="btn btn-ghost btn-sm" onclick="printRaceDetail()">🖨️ 印刷・PDF</button>
@@ -3142,8 +3177,8 @@ select {
 </div>
 
 <!-- Personal Meet Result Modal -->
-<div class="modal-overlay" id="modal-personal-meet">
-  <div class="modal" style="max-width:900px;">
+<div class="modal-overlay" id="modal-personal-meet" style="justify-content:center;align-items:center;">
+  <div class="modal" style="width:90%;max-width:1000px;height:90vh;">
     <div class="modal-header">
       <div>
         <div class="modal-title" id="pm-title">個人レース結果</div>
@@ -3172,8 +3207,8 @@ select {
 </div>
 
 <!-- Meet Participants Modal -->
-<div class="modal-overlay" id="modal-meet-participants">
-  <div class="modal" style="max-width:560px;">
+<div class="modal-overlay" id="modal-meet-participants" style="justify-content:center;align-items:center;">
+  <div class="modal" style="width:90%;max-width:860px;height:90vh;">
     <div class="modal-header">
       <div>
         <div class="modal-title" id="mp-title">参加者一覧</div>
@@ -3181,7 +3216,7 @@ select {
       </div>
       <button class="modal-close" onclick="closeModal('modal-meet-participants')">✕</button>
     </div>
-    <div class="modal-body" id="mp-body"></div>
+    <div class="modal-body" id="mp-body" style="overflow-y:auto;flex:1;"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-meet-participants')">閉じる</button>
     </div>
@@ -4025,6 +4060,8 @@ async function sbLoadAll() {
       var a = athletes.find(function(x){ return x.id === r.athleteId; });
       if (a) r.athleteName = a.name;
     });
+    // PB・SBをレース日付の時系列で再計算
+    recalcPbSb();
     // PBをbestTimesに反映
     rebuildBestTimes();
     // localStorageも同期
@@ -4056,10 +4093,11 @@ function sbAthFromDB(r) {
     sex:r.sex||'', grade:r.grade||'', mainStroke:r.main_stroke||'', bestTimes:{} };
 }
 function sbRaceFromDB(r) {
+  // is_pb / is_sb はDBの値を使わず、常にrecalcPbSb()で再計算する
   return { id:r.id, athleteId:r.athlete_id, athleteName:'',
     date:r.date||'', meet:r.meet||'', venue:r.venue||'', pool:r.pool||50,
     stroke:r.stroke, distance:r.distance, time:r.time,
-    totalSec:r.total_sec, lapData:r.lap_data||[], isPB:r.is_pb||false };
+    totalSec:r.total_sec, lapData:r.lap_data||[], isPB:false, isSB:false };
 }
 function sbAthToDB(a) {
   return { id:a.id, name:a.name, kana:a.kana||'', birthday:a.birthday||'',
@@ -4959,6 +4997,8 @@ function submitAllRaces() {
   }
 
   saveData();
+  recalcPbSb();
+  rebuildBestTimes();
   saveVenueToHistory(venue, meet);
   renderAthleteTable();
 
@@ -5829,6 +5869,8 @@ function reenterRace(raceId, date, meet, venue, pool) {
     }
   }
   saveData();
+  recalcPbSb();
+  rebuildBestTimes();
 
   // 入力画面に遷移してセッション情報とカードをセット
   loadMeetToEntryForm(date, meet, venue, pool, r.athleteId, r.stroke, r.distance);
@@ -6165,7 +6207,7 @@ const FI_MANUAL = {
         <li><strong>前半</strong>：スタートから距離の½地点までのタイム</li>
         <li><strong>後半</strong>：½地点からフィニッシュまでのタイム</li>
         <li>例）200m自由形 → 前半100m / 後半100m で計算</li>
-        <li><strong>対象</strong>：100m以上かつ前後半のラップデータがあるもの</li>
+        <li><strong>対象</strong>：50m以上かつ前後半のラップデータがあるもの（50mは25m通過タイムを使用）</li>
       </ul>` },
     { id:'fi2-judge', title:'2. 判定基準', content:`
       <div style="display:flex;flex-direction:column;gap:10px;">
@@ -6253,15 +6295,32 @@ function renderManual(manual, containerId) {
 // モーダル 全画面 / スライドパネル 切り替え
 // =====================================================================
 function toggleModalFullscreen(btn) {
-  var modal = btn.closest('.modal');
+  var modal   = btn.closest('.modal');
+  var overlay = btn.closest('.modal-overlay');
   if (!modal) return;
   var isFull = modal.classList.toggle('fullscreen');
   btn.textContent = isFull ? '⊡' : '⤢';
   btn.title = isFull ? 'スライドパネルに戻す' : '全画面表示';
+  // オーバーレイの配置も切り替え
+  if (overlay) {
+    if (isFull) {
+      overlay.style.justifyContent = 'flex-end';
+      overlay.style.alignItems     = 'stretch';
+    } else {
+      // 元の設定に戻す（data属性で保持）
+      overlay.style.justifyContent = overlay.dataset.origJustify || '';
+      overlay.style.alignItems     = overlay.dataset.origAlign   || '';
+    }
+  }
 }
 
 // モーダルを開くたびに全画面ボタンを自動挿入＋テーブル横スクロール自動適用
 document.addEventListener('DOMContentLoaded', function() {
+  // オーバーレイの元の配置をdata属性に保存
+  document.querySelectorAll('.modal-overlay').forEach(function(o) {
+    o.dataset.origJustify = o.style.justifyContent || '';
+    o.dataset.origAlign   = o.style.alignItems     || '';
+  });
   // 全画面ボタン挿入
   document.querySelectorAll('.modal').forEach(function(modal) {
     var header = modal.querySelector('.modal-header');
@@ -6326,20 +6385,19 @@ document.querySelectorAll('.modal-overlay').forEach(function(o) {
 
 // =====================================================================
 function calcFatigueIndex(laps, totalM) {
-  // 前半・後半ラップを50m単位で計算
   if (!laps || laps.length < 2) return null;
   var half = totalM / 2;
-  // 前半最後の地点のsplit
+  // 前半の終点ラップを探す
   var firstHalfLap = laps.find(function(l){ return l.distM === half; });
   if (!firstHalfLap) return null;
-  var firstHalfSec = firstHalfLap.splitSec;
-  var totalSec     = laps[laps.length-1].splitSec;
+  var firstHalfSec  = firstHalfLap.splitSec;
+  var totalSec      = laps[laps.length-1].splitSec;
   var secondHalfSec = totalSec - firstHalfSec;
-  if (!firstHalfSec || !secondHalfSec) return null;
+  if (!firstHalfSec || !secondHalfSec || secondHalfSec <= 0) return null;
   return secondHalfSec / firstHalfSec;
 }
 
-function fatigueIndexHtml(fi) {
+function fatigueIndexHtml(fi, totalM) {
   if (fi === null) return '';
   var pct  = ((fi - 1) * 100).toFixed(1);
   var sign = fi > 1 ? '+' : '';
@@ -6354,6 +6412,7 @@ function fatigueIndexHtml(fi) {
     color = '#51cf66'; label = '良好';
     bar = '<div style="height:6px;border-radius:3px;background:#51cf66;margin-top:4px;"></div>';
   }
+  var splitLabel = totalM === 50 ? '前半25m / 後半25m' : '後半/前半 '+sign+pct+'%';
   return '<div style="display:inline-flex;align-items:center;gap:10px;padding:8px 14px;'
     + 'background:var(--card);border:1px solid var(--border);border-radius:10px;margin:10px 0;">'
     + '<div>'
@@ -6368,7 +6427,7 @@ function fatigueIndexHtml(fi) {
     + '</div>'
     + '<div style="font-size:0.75rem;">'
     + '<div style="color:'+color+';font-weight:800;">'+label+'</div>'
-    + '<div style="color:var(--muted);">後半/前半 '+sign+pct+'%</div>'
+    + '<div style="color:var(--muted);">'+splitLabel+'</div>'
     + '<div style="color:var(--muted);font-size:0.68rem;margin-top:4px;">基準: 0.98〜1.05</div>'
     + '</div>'
     + '</div>';
@@ -6606,7 +6665,7 @@ function buildLapCompareTable(laps, pbLaps, totalM, halfM) {
     : '';
 
   var fi    = calcFatigueIndex(laps, totalM);
-  var fiHtml = totalM >= 100 ? fatigueIndexHtml(fi) : '';
+  var fiHtml = totalM >= 50 ? fatigueIndexHtml(fi, totalM) : '';
 
   return toggle
     + '<div style="overflow-x:auto;margin-bottom:4px;">' + tableScroll + tableCompact + '<\/div>'
@@ -7136,8 +7195,10 @@ function deleteRace(raceId) {
   const r = races.find(x => x.id === raceId);
   if (!confirm(`${r?.athleteName} のレース記録を削除しますか？`)) return;
   races = races.filter(x => x.id !== raceId);
+  recalcPbSb();
+  rebuildBestTimes();
   saveData();
-  sbDeleteRace(raceId);  // Supabase同期
+  sbDeleteRace(raceId);
   closeModal('modal-race-detail');
   renderRaceHistory();
   showNotification('🗑️ レース記録を削除しました');
@@ -7377,180 +7438,402 @@ function cmpClearAll() {
 }
 
 function cmpBackToSelect() {
+  document.getElementById('cmp-step1').style.display = '';
   document.getElementById('cmp-step2').style.display = '';
   document.getElementById('cmp-step3').style.display = 'none';
 }
+
+// レース比較の色パレット（表・グラフ・凡例で共通使用）
+const CMP_PALETTE = ['#3b6ea5','#e84040','#2d9c6e','#9b59b6','#e07b20','#1a8a9a','#c0622d','#4a4fa8'];
+
+var _cmpSortKey = 'date';
+var _cmpSortAsc = true;
+var _cmpTabMode = 'selected'; // 'selected' | 'all'
+var _cmpAllRaces = []; // 全データタブ用
+
+function cmpSetSort(key) {
+  if (_cmpSortKey === key) {
+    _cmpSortAsc = !_cmpSortAsc;
+  } else {
+    _cmpSortKey = key;
+    _cmpSortAsc = key === 'date'; // 日付は昇順デフォルト、他は昇順
+  }
+  ['date','time','fi'].forEach(function(k){
+    var btn = document.getElementById('cmp-sort-'+k);
+    if (btn) btn.classList.toggle('active', k===key);
+  });
+  var dirBtn = document.getElementById('cmp-sort-dir-btn');
+  if (dirBtn) dirBtn.textContent = (_cmpSortAsc ? '↑ 昇順' : '↓ 降順');
+  cmpRenderTable(_cmpTabMode === 'all' ? _cmpAllRaces : _cmpCurrentRaces);
+}
+
+function cmpToggleSortDir() {
+  _cmpSortAsc = !_cmpSortAsc;
+  var dirBtn = document.getElementById('cmp-sort-dir-btn');
+  if (dirBtn) dirBtn.textContent = (_cmpSortAsc ? '↑ 昇順' : '↓ 降順');
+  cmpRenderTable(_cmpTabMode === 'all' ? _cmpAllRaces : _cmpCurrentRaces);
+}
+
+function cmpSwitchTab(mode) {
+  _cmpTabMode = mode;
+  ['selected','all'].forEach(function(m){
+    var btn = document.getElementById('cmp-tab-'+m);
+    if (btn) btn.classList.toggle('active', m===mode);
+  });
+  cmpRenderTable(mode === 'all' ? _cmpAllRaces : _cmpCurrentRaces);
+}
+
+function cmpSortRaces(raceList) {
+  return [...raceList].sort(function(a, b) {
+    var av, bv;
+    if (_cmpSortKey === 'date') {
+      av = a.date||''; bv = b.date||'';
+    } else if (_cmpSortKey === 'time') {
+      av = a.totalSec||9999; bv = b.totalSec||9999;
+    } else { // fi
+      var aFi = a.lapData?.length >= 2 ? calcFatigueIndex(a.lapData, distToM(a.distance)) : null;
+      var bFi = b.lapData?.length >= 2 ? calcFatigueIndex(b.lapData, distToM(b.distance)) : null;
+      av = aFi ?? 9999; bv = bFi ?? 9999;
+    }
+    if (av < bv) return _cmpSortAsc ? -1 : 1;
+    if (av > bv) return _cmpSortAsc ?  1 : -1;
+    return 0;
+  });
+}
+
+var _cmpCurrentRaces = [];
+
 
 function cmpShowResult() {
   if (_cmpSelected.size < 2) { alert('2件以上選択してください'); return; }
 
   const selectedRaces = [..._cmpSelected]
     .map(id => races.find(r => r.id === id))
-    .filter(Boolean)
-    .sort((a,b) => a.date.localeCompare(b.date));
+    .filter(Boolean);
 
   const athlete = athletes.find(a => a.id === _cmpAthleteId);
   const age     = calcAge(athlete?.birthday);
-  const bestSec = Math.min(...selectedRaces.map(r => r.totalSec));
-  const worstSec = Math.max(...selectedRaces.map(r => r.totalSec));
+
+  // 全データ（同選手・同種目）
+  _cmpAllRaces = races.filter(r =>
+    r.athleteId === _cmpAthleteId &&
+    r.stroke    === _cmpStroke    &&
+    r.distance  === _cmpDistance
+  );
+  _cmpCurrentRaces = selectedRaces;
+
+  // ソート状態リセット
+  _cmpSortKey = 'date';
+  _cmpSortAsc = true;
+  _cmpTabMode = 'selected';
+  ['date','time','fi'].forEach(function(k){
+    var btn = document.getElementById('cmp-sort-'+k);
+    if (btn) btn.classList.toggle('active', k==='date');
+  });
+  var dirBtn = document.getElementById('cmp-sort-dir-btn');
+  if (dirBtn) dirBtn.textContent = '↑ 昇順';
+  ['selected','all'].forEach(function(m){
+    var btn = document.getElementById('cmp-tab-'+m);
+    if (btn) btn.classList.toggle('active', m==='selected');
+  });
 
   document.getElementById('cmp-result-title').textContent =
-    `${athlete?.name} ${_cmpStroke} ${_cmpDistance}（${selectedRaces.length}件比較）`;
+    `${athlete?.name} ${_cmpStroke} ${_cmpDistance}（選択${selectedRaces.length}件 / 全${_cmpAllRaces.length}件）`;
 
-  // ── タイム比較テーブル ──
-  const hasLaps = selectedRaces.some(r => r.lapData?.length > 0);
-  const maxLaps = Math.max(...selectedRaces.map(r => r.lapData?.length || 0));
+  document.getElementById('cmp-step1').style.display = 'none';
+  document.getElementById('cmp-step2').style.display = 'none';
+  document.getElementById('cmp-step3').style.display = '';
 
-  let tableHeader = '<tr><th>日付 / 大会</th><th>タイム</th><th>最速比</th><th>前後半</th><th>⚡ FI</th><th>資格級</th>';
-  if (hasLaps) {
-    for (let i = 0; i < maxLaps; i++) {
-      tableHeader += `<th>${(i+1)*25}m</th>`;
-    }
-  }
-  tableHeader += '</tr>';
+  cmpRenderTable(selectedRaces);
+}
 
-  const rows = selectedRaces.map(r => {
+function cmpRenderTable(racesToShow) {
+  recalcPbSb();
+  const athlete     = athletes.find(a => a.id === _cmpAthleteId);
+  const age         = calcAge(athlete?.birthday);
+  const sortedRaces = cmpSortRaces(racesToShow);
+  const bestSec     = Math.min(...sortedRaces.map(r => r.totalSec));
+  const worstSec    = Math.max(...sortedRaces.map(r => r.totalSec));
+  const hasLaps     = sortedRaces.some(r => r.lapData?.length > 0);
+  const distM       = distToM(_cmpDistance);
+
+  // ① サマリーテーブル
+  const summaryRows = sortedRaces.map((r, rowIdx) => {
+    const rowColor = CMP_PALETTE[rowIdx % CMP_PALETTE.length];
     const g        = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
     const isBest   = r.totalSec === bestSec;
-    const isWorst  = r.totalSec === worstSec && selectedRaces.length > 1;
+    const isWorst  = r.totalSec === worstSec && sortedRaces.length > 1;
     const diffBest = r.totalSec - bestSec;
     const laps     = r.lapData || [];
-    const halfM    = distToM(r.distance) / 2;
+    const halfM    = distM / 2;
     const halfLap  = laps.find(l => l.distM === halfM);
     const halfSec  = halfLap?.splitSec ?? null;
     const backSec  = halfSec !== null ? r.totalSec - halfSec : null;
     const halfDiff = halfSec !== null && backSec !== null ? backSec - halfSec : null;
-
-    const diffHtml = isBest
-      ? '<span class="pb-flag">🚩最速</span>'
-      : `<span class="cmp-diff-pos">▲${formatTime(diffBest)}</span>`;
-
-    const halfHtml = halfSec !== null
-      ? `<div style="font-size:0.75rem;">${formatTime(halfSec)} / ${formatTime(backSec)}</div>
-         <div style="font-size:0.68rem;color:${halfDiff>0.1?'#c0392b':halfDiff<-0.1?'#2d7a72':'var(--muted)'};">
-           ${halfDiff>0?'+':''}${formatTime(halfDiff)}</div>`
-      : '—';
-
-    // 疲労インデックス
-    const fi = laps.length >= 2 ? calcFatigueIndex(laps, distToM(r.distance)) : null;
-    const fiColor = fi===null ? 'var(--muted)' : fi>1.05 ? '#ef5350' : fi<0.98 ? '#2563eb' : '#51cf66';
-    const fiLabel = fi===null ? '—' : fi>1.05 ? '失速' : fi<0.98 ? '抑え' : '良好';
-    const fiHtmlCell = fi !== null
-      ? `<div style="font-family:'Rajdhani',monospace;font-size:1.0rem;font-weight:800;color:${fiColor};">${fi.toFixed(3)}</div>
-         <div style="font-size:0.68rem;color:${fiColor};">${fiLabel}</div>`
-      : '—';
-
-    let lapCells = '';
-    if (hasLaps) {
-      for (let i = 0; i < maxLaps; i++) {
-        const l = laps[i];
-        if (!l) { lapCells += '<td style="color:var(--muted);">—</td>'; continue; }
-        lapCells += `<td style="font-size:0.82rem;">${formatTime(l.lapSec)}</td>`;
-      }
-    }
-
-    return `<tr>
-      <td style="text-align:left;font-size:0.82rem;">
-        <div style="font-weight:700;">${r.date}</div>
+    const fi       = laps.length >= 2 ? calcFatigueIndex(laps, distM) : null;
+    const fiColor  = fi===null?'var(--muted)':fi>1.05?'#ef5350':fi<0.98?'#2563eb':'#51cf66';
+    const fiLabel  = fi===null?'\u2014':fi>1.05?'\u5931\u901f':fi<0.98?'\u6291\u3048':'\u826f\u597d';
+    return `<tr style="border-left:4px solid ${rowColor};">
+      <td style="text-align:left;">
+        <div style="font-weight:700;font-size:0.9rem;">${r.date}</div>
         <div style="color:var(--muted);font-size:0.72rem;">${r.meet||''}</div>
       </td>
-      <td class="${isBest?'cmp-best-col':isWorst?'cmp-worst-col':''}" style="font-size:1.1rem;font-weight:900;">
-        ${r.time}${r.isPB?'<span class="pb-flag" style="margin-left:4px;">🚩PB</span>':''}
+      <td class="${isBest?'cmp-best-col':isWorst?'cmp-worst-col':''}" style="font-size:1.15rem;font-weight:900;white-space:nowrap;">
+        ${r.time}${isBest?'<span class="pb-flag" style="margin-left:4px;">\ud83c\udfc6</span>':''}
       </td>
-      <td>${isBest ? '<span class="cmp-diff-zero">基準</span>' : diffHtml}</td>
-      <td>${halfHtml}</td>
-      <td style="text-align:center;">${fiHtmlCell}</td>
-      <td style="font-size:0.82rem;">${g ? g+'級' : '—'}</td>
-      ${lapCells}
+      <td style="font-size:0.85rem;">${isBest?'<span style="color:var(--muted);">\u57fa\u6e96</span>':`<span class="cmp-diff-pos">\u25b2${formatTime(diffBest)}</span>`}</td>
+      <td style="font-size:0.82rem;">${halfSec!==null
+        ? `<div>${formatTime(halfSec)} / ${formatTime(backSec)}<\/div><div style="font-size:0.68rem;color:${halfDiff>0.1?'#c0392b':halfDiff<-0.1?'#2d7a72':'var(--muted)'};">${halfDiff>0?'+':''}${formatTime(halfDiff)}<\/div>`
+        : '\u2014'}</td>
+      <td style="text-align:center;">${fi!==null
+        ? `<div style="font-family:'Rajdhani',monospace;font-size:1.0rem;font-weight:800;color:${fiColor};">${fi.toFixed(3)}<\/div><div style="font-size:0.68rem;color:${fiColor};">${fiLabel}<\/div>`
+        : '\u2014'}</td>
+      <td style="font-size:0.82rem;">${g?g+'\u7d1a':'\u2014'}</td>
     </tr>`;
   }).join('');
 
-  // ── 折れ線グラフ比較 ──
-  let graphHtml = '';
-  const racesWithLaps = selectedRaces.filter(r => r.lapData?.length > 0);
-  if (racesWithLaps.length >= 2) {
-    const totalM  = distToM(_cmpDistance);
-    const palette = ['#3b6ea5','#c0392b','#2d7a72','#8b3b8b','#b07d2e','#1a7a8a','#a0522d','#4a4fa8'];
-    const W = 760, H = 260;
-    const PL = 68, PR = 24, PT = 40, PB = 44;
-    const chartW = W - PL - PR;
-    const chartH = H - PT - PB;
+  const summaryHtml = `<div style="margin-bottom:16px;">
+    <table class="cmp-table" style="width:100%;">
+      <thead><tr>
+        <th style="text-align:left;">\u65e5\u4ed8 / \u5927\u4f1a</th>
+        <th>\u30bf\u30a4\u30e0</th><th>\u6700\u901f\u6bd4</th><th>\u524d\u5f8c\u534a</th><th>\u26a1 FI</th><th>\u8cc7\u683c\u7d1a</th>
+      </tr></thead>
+      <tbody>${summaryRows}</tbody>
+    </table>
+  </div>`;
 
-    // 全レースのラップ値を集めてスケール計算
-    let allLapTimes = [];
-    racesWithLaps.forEach(r => r.lapData.forEach(l => allLapTimes.push(l.lapSec)));
-    const gMin = Math.min(...allLapTimes), gMax = Math.max(...allLapTimes);
-    const rangeT = gMax - gMin || 0.5;
-    const yMin = Math.max(0, gMin - rangeT*0.2);
-    const yMax = gMax + rangeT*0.2;
-    const yRange = yMax - yMin;
-
-    const xSc = d => PL + (d / totalM) * chartW;
-    const ySc = s => PT + (1 - (s - yMin) / yRange) * chartH;
-
-    let svg = '';
-
-    // グリッド
-    for (let i = 0; i <= 4; i++) {
-      const sec = yMin + (yRange*i/4);
-      const y   = ySc(sec).toFixed(1);
-      svg += `<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#dde3ea" stroke-width="1" stroke-dasharray="4,3"/>`;
-      svg += `<text x="${PL-6}" y="${y}" text-anchor="end" dominant-baseline="middle" font-size="11" fill="#8795a8">${formatTime(sec)}</text>`;
-    }
-
-    // 軸
-    svg += `<line x1="${PL}" y1="${PT}" x2="${PL}" y2="${H-PB}" stroke="#9aafc5" stroke-width="2"/>`;
-    svg += `<line x1="${PL}" y1="${H-PB}" x2="${W-PR}" y2="${H-PB}" stroke="#9aafc5" stroke-width="2"/>`;
-
-    // X軸ラベル（最初のレースの距離から）
-    const firstLaps = racesWithLaps[0].lapData;
-    [{distM:0}, ...firstLaps].forEach(l => {
-      const x = xSc(l.distM).toFixed(1);
-      svg += `<text x="${x}" y="${H-PB+16}" text-anchor="middle" font-size="11" fill="#8795a8">${l.distM}m</text>`;
-    });
-
-    // 各レースの折れ線
-    racesWithLaps.forEach((r, ri) => {
-      const col   = palette[ri % palette.length];
-      const laps  = r.lapData;
-      const coords = laps.map(l => `${xSc(l.distM).toFixed(1)},${ySc(l.lapSec).toFixed(1)}`).join(' ');
-      const x0 = xSc(0).toFixed(1), y0 = ySc(laps[0].lapSec).toFixed(1);
-      svg += `<polyline points="${x0},${y0} ${coords}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>`;
-      laps.forEach(l => {
-        const x = xSc(l.distM).toFixed(1);
-        const y = ySc(l.lapSec).toFixed(1);
-        svg += `<circle cx="${x}" cy="${y}" r="4" fill="${col}" stroke="white" stroke-width="1.5"/>`;
-      });
-    });
-
-    // 凡例
-    racesWithLaps.forEach((r, ri) => {
-      const col = palette[ri % palette.length];
-      const lx  = PL + ri * 120;
-      svg += `<rect x="${lx}" y="4" width="16" height="4" rx="2" fill="${col}"/>`;
-      svg += `<text x="${lx+20}" y="11" font-size="11" fill="${col}" font-weight="700">${r.date} ${r.time}${r.isPB?'🚩':''}</text>`;
-    });
-
-    graphHtml = `<div style="margin-top:20px;">
-      <div style="font-size:0.82rem;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">25mラップ比較グラフ</div>
-      <div style="overflow-x:auto;">
-        <svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:480px;display:block;background:#f8fafc;border-radius:10px;border:1px solid var(--border);">${svg}</svg>
+  // ② ラップ詳細（折りたたみ）
+  let lapDetailHtml = '';
+  if (hasLaps) {
+    lapDetailHtml = `<div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="font-size:0.85rem;font-weight:800;color:var(--white);cursor:pointer;"
+          onclick="(function(){var el=document.getElementById('cmp-lap-detail');var open=el.style.display!=='none';el.style.display=open?'none':'';document.getElementById('cmp-lap-toggle-txt').textContent=open?'\u25b6 \u5c55\u958b':'\u25bc \u9589\u3058\u308b';})()">
+          \ud83d\udccb \u30e9\u30c3\u30d7\u30fb\u30b9\u30d7\u30ea\u30c3\u30c8\u8a73\u7d30
+          <span id="cmp-lap-toggle-txt" style="font-size:0.78rem;color:var(--muted);margin-left:6px;">▼ 閉じる</span>
+        </div>
+      </div>
+      <div id="cmp-lap-detail" style="display:block;">
+        <div style="display:flex;gap:3px;background:var(--tap-bg);border-radius:8px;padding:3px;border:1px solid var(--border);margin-bottom:10px;width:fit-content;">
+          <button class="sort-btn active" id="cmp-lt-lap25"   onclick="cmpLapTabSwitch('lap25')"  >ラップ 25m</button>
+          <button class="sort-btn"        id="cmp-lt-lap50"   onclick="cmpLapTabSwitch('lap50')"  >ラップ 50m</button>
+          ${distM >= 400 ? '<button class="sort-btn" id="cmp-lt-lap100" onclick="cmpLapTabSwitch(\'lap100\')">ラップ 100m</button>' : ''}
+          <button class="sort-btn"        id="cmp-lt-split25" onclick="cmpLapTabSwitch('split25')">スプリット 25m</button>
+          <button class="sort-btn"        id="cmp-lt-split50" onclick="cmpLapTabSwitch('split50')">スプリット 50m</button>
+          ${distM >= 400 ? '<button class="sort-btn" id="cmp-lt-split100" onclick="cmpLapTabSwitch(\'split100\')">スプリット 100m</button>' : ''}
+        </div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+          <div id="cmp-lt-content-lap25"  >${buildLapDetailRows(sortedRaces,25,bestSec)}</div>
+          <div id="cmp-lt-content-lap50"   style="display:none;">${buildLapDetailRows(sortedRaces,50,bestSec)}</div>
+          ${distM >= 400 ? `<div id="cmp-lt-content-lap100" style="display:none;">${buildLapDetailRows(sortedRaces,100,bestSec)}</div>` : ''}
+          <div id="cmp-lt-content-split25" style="display:none;">${buildSplitDetailRows(sortedRaces,25,bestSec)}</div>
+          <div id="cmp-lt-content-split50" style="display:none;">${buildSplitDetailRows(sortedRaces,50,bestSec)}</div>
+          ${distM >= 400 ? `<div id="cmp-lt-content-split100" style="display:none;">${buildSplitDetailRows(sortedRaces,100,bestSec)}</div>` : ''}
+        </div>
       </div>
     </div>`;
   }
 
-  document.getElementById('cmp-result-body').innerHTML = `
-    <div style="overflow-x:auto;margin-bottom:16px;-webkit-overflow-scrolling:touch;">
-      <table class="cmp-table" style="min-width:700px;">
-        <thead>${tableHeader}</thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-    ${graphHtml}`;
+  // ③ グラフ
+  const racesWithLaps = sortedRaces.filter(r => r.lapData?.length > 0);
+  let graphHtml = '';
+  if (racesWithLaps.length >= 2) {
+    const legendHtml = racesWithLaps.map((r, ri) => {
+      const col = CMP_PALETTE[ri % CMP_PALETTE.length];
+      return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:0.82rem;font-weight:700;">
+        <span style="display:inline-block;width:24px;height:3px;border-radius:2px;background:${col};flex-shrink:0;"></span>
+        <span style="color:${col};">${r.date} <span style="font-family:'Rajdhani',monospace;">${r.time}</span>${r.totalSec===bestSec?' \ud83c\udfc6':''}</span>
+      </span>`;
+    }).join('');
+    graphHtml = `<div style="margin-top:8px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+        <div style="font-size:0.85rem;font-weight:800;color:var(--white);">📊 ラップ比較グラフ</div>
+        <div style="display:flex;gap:3px;background:var(--tap-bg);border-radius:8px;padding:3px;border:1px solid var(--border);">
+          <button class="sort-btn active" id="cmp-graph-25"  onclick="cmpDrawGraph(25)">25m</button>
+          <button class="sort-btn"        id="cmp-graph-50"  onclick="cmpDrawGraph(50)">50m</button>
+          <button class="sort-btn"        id="cmp-graph-100" onclick="cmpDrawGraph(100)">100m</button>
+        </div>
+      </div>
+      <div style="padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;">${legendHtml}</div>
+      <div style="position:relative;width:100%;height:300px;"><canvas id="cmp-lap-chart"></canvas></div>
+    </div>`;
+  }
 
-  document.getElementById('cmp-step2').style.display = 'none';
-  document.getElementById('cmp-step3').style.display = '';
+  document.getElementById('cmp-result-body').innerHTML = summaryHtml + lapDetailHtml + graphHtml;
+  if (racesWithLaps.length >= 2) {
+    window._cmpRacesWithLaps = racesWithLaps;
+    window._cmpBestSec = bestSec;
+    setTimeout(function(){ cmpDrawGraph(50); }, 80);
+  }
 }
+
+function buildLapDetailRows(sortedRaces, unit, bestSec) {
+  const distM = distToM(_cmpDistance);
+  const dists = [];
+  for (let d = unit; d <= distM; d += unit) dists.push(d);
+  const colHeaders = dists.map(d => `<th style="text-align:right;padding:6px 8px;">${d}m<\/th>`).join('');
+  const rows = sortedRaces.map((r, ri) => {
+    const col = CMP_PALETTE[ri % CMP_PALETTE.length];
+    const lapMap = {};
+    (r.lapData||[]).forEach(l => { lapMap[l.distM] = l; });
+    const cells = dists.map(d => {
+      if (unit === 25) {
+        // 25m単位：そのまま
+        const l = lapMap[d];
+        return l ? `<td style="text-align:right;padding:6px 8px;font-family:'Rajdhani',monospace;font-size:0.9rem;font-weight:700;">${formatTime(l.lapSec)}<\/td>`
+                 : '<td style="color:var(--muted);text-align:right;padding:6px 8px;">—<\/td>';
+      } else {
+        // 50m/100m単位：25m×N本を合算
+        let total = 0, valid = true;
+        for (let dd = d - unit + 25; dd <= d; dd += 25) {
+          if (lapMap[dd]) { total += lapMap[dd].lapSec || 0; }
+          else { valid = false; break; }
+        }
+        return valid && total > 0
+          ? `<td style="text-align:right;padding:6px 8px;font-family:'Rajdhani',monospace;font-size:0.9rem;font-weight:700;">${formatTime(Math.round(total*100)/100)}<\/td>`
+          : '<td style="color:var(--muted);text-align:right;padding:6px 8px;">—<\/td>';
+      }
+    }).join('');
+    return `<tr style="border-left:3px solid ${col};border-bottom:1px solid var(--border);">
+      <td style="padding:6px 10px;font-size:0.82rem;white-space:nowrap;">
+        <span style="font-weight:700;">${r.date}<\/span>
+        <span style="font-family:'Rajdhani',monospace;font-weight:800;color:${r.totalSec===bestSec?'#26c6da':'var(--text)'};margin-left:8px;">${r.time}<\/span>
+      <\/td>${cells}<\/tr>`;
+  }).join('');
+  return `<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+    <thead><tr style="background:var(--tap-bg);">
+      <th style="text-align:left;padding:6px 10px;">\u65e5\u4ed8 / \u30bf\u30a4\u30e0<\/th>${colHeaders}
+    <\/tr><\/thead><tbody>${rows}<\/tbody><\/table>`;
+}
+
+function buildSplitDetailRows(sortedRaces, unit, bestSec) {
+  const distM = distToM(_cmpDistance);
+  const dists = [];
+  for (let d = unit; d <= distM; d += unit) dists.push(d);
+  const colHeaders = dists.map(d => `<th style="text-align:right;padding:6px 8px;">${d}m<\/th>`).join('');
+  const rows = sortedRaces.map((r, ri) => {
+    const col = CMP_PALETTE[ri % CMP_PALETTE.length];
+    const splitMap = {};
+    (r.lapData||[]).forEach(l => { splitMap[l.distM] = l.splitSec; });
+    const cells = dists.map(d => {
+      const sec = splitMap[d];
+      return sec ? `<td style="text-align:right;padding:6px 8px;font-family:'Rajdhani',monospace;font-size:0.9rem;font-weight:700;">${formatTime(sec)}<\/td>`
+                 : '<td style="color:var(--muted);text-align:right;padding:6px 8px;">\u2014<\/td>';
+    }).join('');
+    return `<tr style="border-left:3px solid ${col};border-bottom:1px solid var(--border);">
+      <td style="padding:6px 10px;font-size:0.82rem;white-space:nowrap;">
+        <span style="font-weight:700;">${r.date}<\/span>
+        <span style="font-family:'Rajdhani',monospace;font-weight:800;color:${r.totalSec===bestSec?'#26c6da':'var(--text)'};margin-left:8px;">${r.time}<\/span>
+      <\/td>${cells}<\/tr>`;
+  }).join('');
+  return `<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+    <thead><tr style="background:var(--tap-bg);">
+      <th style="text-align:left;padding:6px 10px;">\u65e5\u4ed8 / \u30bf\u30a4\u30e0<\/th>${colHeaders}
+    <\/tr><\/thead><tbody>${rows}<\/tbody><\/table>`;
+}
+
+function cmpLapTabSwitch(mode) {
+  ['lap25','lap50','lap100','split25','split50','split100'].forEach(function(m) {
+    var btn     = document.getElementById('cmp-lt-'+m);
+    var content = document.getElementById('cmp-lt-content-'+m);
+    if (btn)     btn.classList.toggle('active', m===mode);
+    if (content) content.style.display = m===mode ? '' : 'none';
+  });
+}
+
+function cmpGraphSwitch(type) {
+  ['lap','split'].forEach(function(t) {
+    var btn = document.getElementById('cmp-graph-'+t);
+    if (btn) btn.classList.toggle('active', t===type);
+  });
+  cmpDrawGraph(50);
+}
+
+function cmpDrawGraph(unit) {
+  unit = unit || 50;
+  // ボタンのactive状態を更新
+  [25, 50, 100].forEach(function(u) {
+    var btn = document.getElementById('cmp-graph-'+u);
+    if (btn) btn.classList.toggle('active', u===unit);
+  });
+
+  var canvas = document.getElementById('cmp-lap-chart');
+  if (!canvas || typeof Chart === 'undefined') return;
+  if (window._cmpChartInst) { window._cmpChartInst.destroy(); window._cmpChartInst = null; }
+  var existing = Chart.getChart(canvas);
+  if (existing) existing.destroy();
+  var racesWithLaps = window._cmpRacesWithLaps || [];
+  if (!racesWithLaps.length) return;
+
+  var distM = distToM(_cmpDistance);
+  // unit単位の地点リスト（種目距離以下）
+  var dists = [];
+  for (var d = unit; d <= distM; d += unit) dists.push(d);
+  if (!dists.length) dists = [distM]; // フォールバック
+  var labels = dists.map(function(d){ return d+'m'; });
+
+  var datasets = racesWithLaps.map(function(r, ri) {
+    var col = CMP_PALETTE[ri % CMP_PALETTE.length];
+    var lapMap = {};
+    (r.lapData||[]).forEach(function(l){ lapMap[l.distM] = l; });
+
+    var data = dists.map(function(d) {
+      if (unit === 25) {
+        // 25m単位：そのままlapSec
+        return lapMap[d] ? lapMap[d].lapSec : null;
+      } else {
+        // 50m/100m単位：25m×N本を合算
+        var total = 0, valid = true;
+        for (var dd = d - unit + 25; dd <= d; dd += 25) {
+          if (lapMap[dd]) { total += lapMap[dd].lapSec || 0; }
+          else { valid = false; break; }
+        }
+        return valid && total > 0 ? Math.round(total * 100) / 100 : null;
+      }
+    });
+
+    return {
+      label: r.date + ' ' + r.time,
+      data: data,
+      borderColor: col, backgroundColor: col + '22', pointBackgroundColor: col,
+      pointRadius: 6, pointHoverRadius: 8, tension: 0.3, spanGaps: false, borderWidth: 2.5,
+    };
+  });
+
+  // y軸を0.1秒刻みで設定
+  var allVals = [];
+  datasets.forEach(function(ds){ ds.data.forEach(function(v){ if (v != null) allVals.push(v); }); });
+  if (!allVals.length) return;
+  var rawMin = Math.min.apply(null, allVals);
+  var rawMax = Math.max.apply(null, allVals);
+  var yMin = Math.floor(rawMin * 10) / 10 - 0.1;
+  var yMax = Math.ceil(rawMax  * 10) / 10 + 0.1;
+
+  window._cmpChartInst = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + formatTime(ctx.parsed.y); } } }
+      },
+      scales: {
+        y: {
+          min: yMin, max: yMax,
+          ticks: {
+            color: '#7b8fa1',
+            stepSize: 0.1,
+            callback: function(v){ return v > 0 ? formatTime(Math.round(v * 100) / 100) : ''; }
+          },
+          grid: { color: 'rgba(255,255,255,0.08)' }
+        },
+        x: { ticks: { color: '#7b8fa1', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+}
+
 // =====================================================================
 let _rosterFilter = 'all';
 
@@ -9210,13 +9493,15 @@ function closeModal(id) {
   var el = document.getElementById(id);
   if (el) {
     el.classList.remove('open');
-    // 全画面状態をリセット
     var modal = el.querySelector('.modal');
     if (modal) {
       modal.classList.remove('fullscreen');
       var fsBtn = modal.querySelector('.modal-fullscreen-btn');
       if (fsBtn) { fsBtn.textContent = '⤢'; fsBtn.title = '全画面表示'; }
     }
+    // オーバーレイの配置をリセット
+    el.style.justifyContent = el.dataset.origJustify || '';
+    el.style.alignItems     = el.dataset.origAlign   || '';
   }
 }
 
@@ -9840,18 +10125,25 @@ function openAthleteDetail(id) {
     html += `<div class="section-divider"></div>`;
     html += `<div class="events-title">直近のレース記録 <span style="font-size:11px;color:var(--muted);font-weight:400;text-transform:none">（タップで詳細）</span></div>`;
     html += myRaces.map(r => {
-      const rg = getGradeForTime(a.sex, age, r.stroke, r.distance, r.time);
+      const rg     = getGradeForTime(a.sex, age, r.stroke, r.distance, r.time);
       const hasLap = r.lapData?.length > 0;
+      const fi     = hasLap ? calcFatigueIndex(r.lapData, distToM(r.distance)) : null;      const fiColor = fi===null?'var(--muted)':fi>1.05?'#ef5350':fi<0.98?'#2563eb':'#51cf66';
+      const fiLabel = fi===null?'':fi>1.05?'後半失速':fi<0.98?'前半抑え':'良好';
+      const fiHtml  = fi!==null
+        ? `<span style="font-size:0.78rem;font-weight:800;color:${fiColor};margin-left:8px;">⚡ FI ${fi.toFixed(3)} <span style="font-size:0.68rem;">${fiLabel}</span></span>`
+        : '';
       return `<div class="race-card" style="margin-bottom:8px" onclick="openRaceDetail('${r.id}')">
         <div>
           <div class="race-card-top">
             <span class="race-card-event" style="color:var(--white);font-weight:700">${r.stroke} ${r.distance}</span>
             ${r.isPB ? '<span class="race-pb">🏆 PB</span>' : ''}
+            ${r.isSB && !r.isPB ? '<span class="race-pb" style="background:rgba(255,180,0,0.15);color:#f0a000;">⭐ SB</span>' : ''}
             ${hasLap ? '<span class="section-tag">📊 ラップあり</span>' : ''}
           </div>
           <div class="race-card-bottom" style="margin-top:5px;">
             <span class="race-card-date">📅 ${r.date}</span>
             ${r.meet ? `<span class="race-card-meet">🏟 ${r.meet}</span>` : ''}
+            ${fiHtml}
           </div>
         </div>
         <div class="race-card-time"><span>${r.time}</span>${rg ? gradeBadgeHtml(rg) : ''}</div>
