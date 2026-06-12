@@ -134,7 +134,7 @@ header {
 #hnav-compare         { --tab-color: #9b59b6; }
 #hnav-sys-manual      { --tab-color: #3b6ea5; }
 #hnav-fi-manual       { --tab-color: #00b4d8; }
-#hnav-grades          { --tab-color: #1a8a9a; }
+#hnav-schedule-builder { --tab-color: #22c97a; }
 
 .header-nav-item:hover {
   background: color-mix(in srgb, var(--tab-color, #fff) 30%, transparent);
@@ -241,6 +241,7 @@ header {
 /* Views */
 .view { display: none; padding: 36px 32px; }
 .view.active { display: block; }
+#view-schedule-builder.active { display: flex; padding: 0; }
 
 /* Page header */
 .page-header {
@@ -375,20 +376,27 @@ tbody td {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  font-size: 12px;
+  min-width: 32px; height: 30px;
+  padding: 0 5px;
+  border-radius: 7px;
+  font-size: 16px;
   font-weight: 800;
   font-family: 'Rajdhani', monospace;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 }
 
-.grade-15 { background: rgba(255,215,0,0.2); color: #FFD700; border: 1px solid rgba(255,215,0,0.4); }
-.grade-14 { background: rgba(192,192,192,0.2); color: #E0E0E0; border: 1px solid rgba(192,192,192,0.3); }
-.grade-13, .grade-12 { background: rgba(205,127,50,0.2); color: #CD7F32; border: 1px solid rgba(205,127,50,0.3); }
-.grade-11, .grade-10, .grade-9 { background: rgba(77,182,172,0.2); color: #4db6ac; border: 1px solid rgba(77,182,172,0.3); }
-.grade-8, .grade-7, .grade-6 { background: rgba(121,134,203,0.2); color: #7986cb; border: 1px solid rgba(121,134,203,0.3); }
-.grade-5, .grade-4, .grade-3, .grade-2, .grade-1 { background: rgba(161,161,170,0.15); color: #a1a1aa; border: 1px solid rgba(161,161,170,0.2); }
-.grade-none { background: rgba(100,100,100,0.1); color: var(--muted); border: 1px solid rgba(100,100,100,0.2); }
+/* 15級＝最上位（ゴールド）→ 下位ほど落ち着いた色。すべて塗りつぶし＋高コントラスト文字 */
+.grade-15 { background: linear-gradient(135deg, #ffd84d, #f0a500); color: #2a1d00; }
+.grade-14 { background: linear-gradient(135deg, #e9edf2, #aeb9c6); color: #1d2530; }
+.grade-13, .grade-12 { background: linear-gradient(135deg, #e89a55, #b86f2a); color: #2a1500; }
+.grade-11, .grade-10, .grade-9 { background: linear-gradient(135deg, #2bd4bd, #0d9488); color: #052e2a; }
+.grade-8, .grade-7, .grade-6 { background: linear-gradient(135deg, #8b9cf5, #5b6bd6); color: #ffffff; }
+.grade-5, .grade-4, .grade-3, .grade-2, .grade-1 { background: linear-gradient(135deg, #aab3c2, #767f8e); color: #ffffff; }
+.grade-none { background: rgba(120,120,130,0.12); color: var(--muted); border: 1px dashed rgba(150,150,160,0.35); box-shadow: none; font-size: 12px; }
+
+/* コンパクト表示（ベスト表の縮小モード）では少しだけ小さく */
+.compact-table .grade-badge { min-width: 26px; height: 24px; font-size: 13px; border-radius: 6px; }
 
 .time-chip {
   font-family: 'Rajdhani', monospace;
@@ -867,22 +875,26 @@ select option { background: #f4f6f8; color: var(--white); }
 
 .lap-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+  gap: 12px;
   margin-bottom: 16px;
 }
 
 .lap-cell {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.18);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  transition: border-color 0.15s;
+  gap: 6px;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.lap-cell:focus-within { border-color: var(--accent); }
+.lap-cell:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0,180,216,0.25);
+  background: rgba(0,180,216,0.06);
+}
 
 .lap-cell-header {
   display: flex;
@@ -891,32 +903,36 @@ select option { background: #f4f6f8; color: var(--white); }
 }
 
 .lap-num {
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.08em;
 }
 .lap-dist-label {
-  font-size: 10px;
-  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  color: #f0c040;
 }
 
 .lap-input {
   background: none !important;
   border: none !important;
-  border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+  border-bottom: 2px solid rgba(255,255,255,0.25) !important;
   border-radius: 0 !important;
-  padding: 4px 2px !important;
+  padding: 8px 2px !important;
   font-family: 'Rajdhani', monospace !important;
-  font-size: 1.2rem !important;
+  font-size: 1.55rem !important;
   font-weight: 700 !important;
-  color: var(--white) !important;
+  letter-spacing: 0.04em !important;
+  color: #ffffff !important;
   width: 100% !important;
   outline: none !important;
   transition: border-color 0.15s !important;
+  caret-color: var(--accent);
 }
 .lap-input:focus { border-bottom-color: var(--accent) !important; }
-.lap-input::placeholder { color: var(--muted); font-size: 0.85rem; font-weight: 400; }
+.lap-input::placeholder { color: rgba(150,165,185,0.6); font-size: 1rem; font-weight: 400; letter-spacing: 0; }
+.lap-input::selection { background: rgba(0,180,216,0.4); }
 
 .lap-split-display {
   font-size: 1.0rem;
@@ -2329,6 +2345,7 @@ select {
   </div>
   <nav class="header-nav">
     <button class="header-nav-item" id="hnav-dashboard" onclick="showView('dashboard')">🏠 ダッシュボード</button>
+    <button class="header-nav-item" id="hnav-schedule-builder" onclick="showView('schedule-builder')">📅 スケジュール作成</button>
     <button class="header-nav-item active" id="hnav-athletes" onclick="showView('athletes')">📋 ベストタイム</button>
     <button class="header-nav-item" id="hnav-roster" onclick="showView('roster')">👥 選手一覧</button>
     <button class="header-nav-item" id="hnav-race-entry" onclick="showView('race-entry')">📝 レース結果入力</button>
@@ -2811,6 +2828,7 @@ select {
                 <button class="sort-btn"        data-sort="birthday" onclick="toggleSort('birthday',this)">生年月日順</button>
               </div>
               <button class="sort-dir-btn" id="sort-dir-btn" onclick="toggleSortDir()" title="昇順/降順">↑ 昇順</button>
+              <button class="sort-dir-btn" id="grade-judge-btn" onclick="toggleGradeJudgeMode()" title="資格級の年齢判定基準を切替">級: 実年齢（今日）</button>
               <div class="search-box">
                 🔍 <input type="text" placeholder="選手名検索..." oninput="searchAthletes(this.value)" id="search-input">
               </div>
@@ -2850,9 +2868,23 @@ select {
 
       <!-- ① セッション情報（固定） -->
       <div class="table-container" style="margin-bottom:20px;">
+        <!-- スケジュール連携バナー -->
+        <div id="race-entry-schedule-banner" style="display:none;align-items:center;justify-content:space-between;padding:10px 18px;background:rgba(0,200,224,0.1);border-bottom:1px solid rgba(0,200,224,0.2);border-radius:10px 10px 0 0;gap:8px;"></div>
+        <!-- 出場可能選手パネル -->
+        <div id="race-elig-panel" style="display:none;padding:14px 18px;background:rgba(120,200,80,0.06);border-bottom:1px solid rgba(120,200,80,0.2);"></div>
+
         <div class="table-header">
           <div class="table-title">📋 セッション情報</div>
-          <div id="session-badge" style="display:none;font-size:12px;color:var(--accent);font-weight:700;padding:4px 12px;background:rgba(0,180,216,0.12);border-radius:20px;"></div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <!-- スケジュールから選択ピッカー -->
+            <div id="race-schedule-picker-wrap" style="display:none;align-items:center;gap:6px;">
+              <span style="font-size:11px;color:var(--muted);white-space:nowrap;">📅</span>
+              <select id="race-schedule-picker" onchange="onRaceSchedulePick()" style="background:rgba(0,200,224,0.1);border:1px solid rgba(0,200,224,0.3);border-radius:8px;color:var(--accent);font-size:12px;padding:4px 8px;cursor:pointer;outline:none;max-width:200px;">
+                <option value="">── スケジュールから選択 ──</option>
+              </select>
+            </div>
+            <div id="session-badge" style="display:none;font-size:12px;color:var(--accent);font-weight:700;padding:4px 12px;background:rgba(0,180,216,0.12);border-radius:20px;"></div>
+          </div>
         </div>
         <div style="padding:18px 24px;">
           <div class="session-grid">
@@ -3235,6 +3267,291 @@ select {
     </div>
 
 
+    <!-- ========== SCHEDULE BUILDER VIEW ========== -->
+    <div class="view" id="view-schedule-builder" style="padding:0;overflow:hidden;height:calc(100vh - 56px);">
+      <div style="display:flex;height:100%;overflow:hidden;flex:1;width:100%;">
+
+        <!-- サイドバー -->
+        <div style="width:320px;min-width:320px;background:#112240;border-right:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;overflow-y:auto;">
+          <div style="padding:20px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.07);">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:1px;color:#00c8e0;text-transform:uppercase;">Schedule Builder</div>
+            <div style="font-size:11px;color:#b0bcd0;margin-top:2px;">TX MYRICA SWIM TEAM</div>
+          </div>
+
+          <!-- 月選択（スライド＋クイック選択） -->
+          <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00c8e0;margin-bottom:12px;">📅 対象月</div>
+            <!-- スライドバー -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <button onclick="sbMonthShift(-1)" style="flex:0 0 36px;height:36px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,200,224,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">‹</button>
+              <div id="sb-month-display" style="flex:1;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;"></div>
+              <button onclick="sbMonthShift(1)" style="flex:0 0 36px;height:36px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;" onmouseover="this.style.background='rgba(0,200,224,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">›</button>
+            </div>
+            <!-- 年度セレクタ -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;">
+              <button onclick="sbFiscalShift(-1)" style="background:none;border:none;color:#5a8aaa;font-size:14px;cursor:pointer;padding:2px 6px;">‹</button>
+              <div id="sb-fiscal-label" style="font-size:12px;font-weight:700;color:#00c8e0;letter-spacing:1px;"></div>
+              <button onclick="sbFiscalShift(1)" style="background:none;border:none;color:#5a8aaa;font-size:14px;cursor:pointer;padding:2px 6px;">›</button>
+            </div>
+            <!-- クイック月選択グリッド（年度固定 4月〜翌3月） -->
+            <div id="sb-month-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;"></div>
+            <input type="month" id="sb-inp-month" value="2026-06" onchange="sbMonthFromPicker()" style="display:none;">
+          </div>
+
+          <!-- 練習時間（曜日別） -->
+          <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00c8e0;margin-bottom:10px;">🏊 曜日別練習時間</div>
+            <div style="font-size:10px;color:#5a7a9a;margin-bottom:10px;">OFFにチェックで練習なし表示</div>
+            
+            <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,0.02);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:#fff;">月</span>
+                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#e84040;">
+                  <input type="checkbox" id="sb-dow-off-1" checked onchange="sbDowToggle(1);sbSave();sbRenderPreview();" style="cursor:pointer;accent-color:#e84040;"> OFF
+                </label>
+              </div>
+              <div id="sb-dow-fields-1" style="display:none;display:none;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">AM</label>
+                <input type="text" id="sb-dow-am-1" value="" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Dry Swim</label>
+                <input type="text" id="sb-dow-dry-1" value="" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Swim</label>
+                <input type="text" id="sb-dow-pm-1" value="" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;">
+              </div>
+            </div>
+            <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,0.02);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:#fff;">火</span>
+                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#e84040;">
+                  <input type="checkbox" id="sb-dow-off-2"  onchange="sbDowToggle(2);sbSave();sbRenderPreview();" style="cursor:pointer;accent-color:#e84040;"> OFF
+                </label>
+              </div>
+              <div id="sb-dow-fields-2" style="display:block;display:block;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">AM</label>
+                <input type="text" id="sb-dow-am-2" value="" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Dry Swim</label>
+                <input type="text" id="sb-dow-dry-2" value="17:45–18:20" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Swim</label>
+                <input type="text" id="sb-dow-pm-2" value="18:25–20:30" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;">
+              </div>
+            </div>
+            <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,0.02);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:#fff;">水</span>
+                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#e84040;">
+                  <input type="checkbox" id="sb-dow-off-3"  onchange="sbDowToggle(3);sbSave();sbRenderPreview();" style="cursor:pointer;accent-color:#e84040;"> OFF
+                </label>
+              </div>
+              <div id="sb-dow-fields-3" style="display:block;display:block;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">AM</label>
+                <input type="text" id="sb-dow-am-3" value="" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Dry Swim</label>
+                <input type="text" id="sb-dow-dry-3" value="17:45–18:20" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Swim</label>
+                <input type="text" id="sb-dow-pm-3" value="18:25–20:30" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;">
+              </div>
+            </div>
+            <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,0.02);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:#fff;">木</span>
+                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#e84040;">
+                  <input type="checkbox" id="sb-dow-off-4"  onchange="sbDowToggle(4);sbSave();sbRenderPreview();" style="cursor:pointer;accent-color:#e84040;"> OFF
+                </label>
+              </div>
+              <div id="sb-dow-fields-4" style="display:block;display:block;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">AM</label>
+                <input type="text" id="sb-dow-am-4" value="" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Dry Swim</label>
+                <input type="text" id="sb-dow-dry-4" value="17:45–18:20" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Swim</label>
+                <input type="text" id="sb-dow-pm-4" value="18:25–20:30" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;">
+              </div>
+            </div>
+            <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,0.02);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:#fff;">金</span>
+                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#e84040;">
+                  <input type="checkbox" id="sb-dow-off-5"  onchange="sbDowToggle(5);sbSave();sbRenderPreview();" style="cursor:pointer;accent-color:#e84040;"> OFF
+                </label>
+              </div>
+              <div id="sb-dow-fields-5" style="display:block;display:block;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">AM</label>
+                <input type="text" id="sb-dow-am-5" value="" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Dry Swim</label>
+                <input type="text" id="sb-dow-dry-5" value="17:45–18:20" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Swim</label>
+                <input type="text" id="sb-dow-pm-5" value="18:25–20:30" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;">
+              </div>
+            </div>
+            <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,0.02);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:#fff;">土</span>
+                <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#e84040;">
+                  <input type="checkbox" id="sb-dow-off-6"  onchange="sbDowToggle(6);sbSave();sbRenderPreview();" style="cursor:pointer;accent-color:#e84040;"> OFF
+                </label>
+              </div>
+              <div id="sb-dow-fields-6" style="display:block;display:block;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">AM</label>
+                <input type="text" id="sb-dow-am-6" value="6:30–8:30" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Dry Swim</label>
+                <input type="text" id="sb-dow-dry-6" value="17:45–18:15" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">Swim</label>
+                <input type="text" id="sb-dow-pm-6" value="18:20–20:00" oninput="sbSave();sbRenderPreview();" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;">
+              </div>
+            </div>
+          </div>
+
+          <!-- 日別調整 -->
+          <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00c8e0;margin-bottom:6px;">📆 日別調整</div>
+            <div style="font-size:10px;color:#5a7a9a;margin-bottom:10px;">特定日の練習時間変更・OFF（曜日設定より優先）</div>
+            <div id="sb-override-list"></div>
+            <div style="background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.12);border-radius:8px;padding:10px;margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;gap:8px;">
+                <div style="flex:0 0 90px;"><label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">日</label>
+                  <select id="sb-ovr-day" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;padding:7px 6px;">
+                    <option value="">--</option>
+                  </select></div>
+                <div style="flex:1;"><label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">種別</label>
+                  <select id="sb-ovr-mode" onchange="sbOvrModeToggle()" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;">
+                    <option value="off">🔴 OFF</option>
+                    <option value="time">🕐 時間指定</option>
+                  </select></div>
+              </div>
+              <div id="sb-ovr-time-fields" style="display:none;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">AM</label>
+                <input type="text" id="sb-ovr-am" placeholder="例: 9:00–11:00（空欄=なし）" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">PM (Dry)</label>
+                <input type="text" id="sb-ovr-dry" placeholder="空欄=なし" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;margin-bottom:4px;">
+                <label style="font-size:10px;color:#b0bcd0;display:block;margin-bottom:2px;">PM (Swim)</label>
+                <input type="text" id="sb-ovr-pm" placeholder="空欄=なし" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:5px 8px;outline:none;">
+              </div>
+              <button onclick="sbAddOverride()" style="background:#00c8e0;color:#0a1628;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:8px;cursor:pointer;width:100%;">＋ 追加</button>
+            </div>
+          </div>
+
+          <!-- イベント -->
+          <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00c8e0;margin-bottom:10px;">🏆 イベント・特記日</div>
+            <div id="sb-event-list"></div>
+            <div style="background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.12);border-radius:8px;padding:10px;margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;gap:8px;">
+                <div style="flex:0 0 80px;"><label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">日</label>
+                  <select id="sb-new-ev-day" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 6px;outline:none;">
+                    <option value="">--</option>
+                  </select></div>
+                <div style="flex:1;"><label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">種別（表示先の枠）</label>
+                  <select id="sb-new-ev-type" onchange="sbEvTypeToggle()" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;">
+                    <optgroup label="── イベント枠 ──">
+                      <option value="bd">🎂 誕生日</option>
+                    </optgroup>
+                    <optgroup label="── Race・強化練・その他枠 ──">
+                      <option value="race" selected>🏁 試合</option>
+                      <option value="training">💪 強化練</option>
+                      <option value="other">📌 その他</option>
+                      <option value="off">🔴 OFF日</option>
+                    </optgroup>
+                  </select></div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <div style="flex:1;"><label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">時間帯</label>
+                  <select id="sb-new-ev-scope" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;">
+                    <option value="all">終日</option>
+                    <option value="am">AMのみ</option>
+                    <option value="pm">PMのみ</option>
+                  </select></div>
+                <div style="flex:1;"><label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">出場形態（試合時）</label>
+                  <select id="sb-new-ev-disp" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;">
+                    <option value="partial">一部出場</option>
+                    <option value="all">全員出場</option>
+                  </select></div>
+              </div>
+              <label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;" id="sb-new-ev-name-label">大会名</label>
+              <input type="text" id="sb-new-ev-name" placeholder="例: 北地区BC級" list="sb-meet-datalist" autocomplete="off" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;">
+              <datalist id="sb-meet-datalist"></datalist>
+              <div id="sb-ev-race-fields">
+                <label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">会場名</label>
+                <input type="text" id="sb-new-ev-venue" placeholder="例: ラクタブドーム" list="sb-venue-datalist" autocomplete="off" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;">
+                <datalist id="sb-venue-datalist"></datalist>
+                <label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;margin-top:6px;">プールサイズ</label>
+                <select id="sb-new-ev-pool" style="width:100%;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;">
+                  <option value="50">50m（長水路）</option>
+                  <option value="25">25m（短水路）</option>
+                </select>
+                <label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;margin-top:6px;">参加資格級（レース当日年齢で判定）</label>
+                <div style="display:flex;gap:6px;align-items:center;">
+                  <select id="sb-new-ev-gmin" style="flex:1;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 8px;outline:none;">
+                    <option value="">なし</option><option value="1">1級</option><option value="2">2級</option><option value="3">3級</option><option value="4">4級</option><option value="5">5級</option><option value="6">6級</option><option value="7">7級</option><option value="8">8級</option><option value="9">9級</option><option value="10">10級</option><option value="11">11級</option><option value="12">12級</option><option value="13">13級</option><option value="14">14級</option><option value="15">15級</option>
+                  </select>
+                  <span style="color:#5a7a9a;font-size:12px;">〜</span>
+                  <select id="sb-new-ev-gmax" style="flex:1;background:#1a2a4a;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 8px;outline:none;">
+                    <option value="">なし</option><option value="1">1級</option><option value="2">2級</option><option value="3">3級</option><option value="4">4級</option><option value="5">5級</option><option value="6">6級</option><option value="7">7級</option><option value="8">8級</option><option value="9">9級</option><option value="10">10級</option><option value="11">11級</option><option value="12">12級</option><option value="13">13級</option><option value="14">14級</option><option value="15">15級</option>
+                  </select>
+                </div>
+                <div style="font-size:10px;color:#5a7a9a;margin-top:3px;">例: 6級〜なし ＝ 6級以上で出場可</div>
+                <label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;margin-top:6px;">資格級認定日（任意）</label>
+                <input type="date" id="sb-new-ev-certdate" min="2020-01-01" max="2099-12-31" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;">
+                <div style="font-size:10px;color:#5a7a9a;margin-top:3px;">未設定 ＝ レース当日の年齢で認定（基本）</div>
+              </div>
+              <button onclick="sbAddEvent()" style="background:#00c8e0;color:#0a1628;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:8px;cursor:pointer;width:100%;">＋ 追加</button>
+            </div>
+          </div>
+
+          <!-- コーチ不在 -->
+          <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00c8e0;margin-bottom:10px;">👤 コーチ不在日</div>
+            <div id="sb-absent-list"></div>
+            <div style="background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.12);border-radius:8px;padding:10px;margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;gap:8px;">
+                <div style="flex:1;"><label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">日</label>
+                  <input type="text" id="sb-new-abs-day" placeholder="9" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;"></div>
+                <div style="flex:1;"><label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">曜日</label>
+                  <input type="text" id="sb-new-abs-dow" placeholder="火" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;"></div>
+              </div>
+              <button onclick="sbAddAbsent()" style="background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:8px;cursor:pointer;width:100%;">＋ 追加</button>
+            </div>
+          </div>
+
+          <!-- メッセージ -->
+          <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00c8e0;margin-bottom:10px;">✉️ 月間メッセージ</div>
+            <label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">タイトル</label>
+            <input type="text" id="sb-inp-msg-title" placeholder="今月のテーマ等" oninput="sbRenderPreview()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:13px;padding:7px 10px;outline:none;margin-bottom:8px;">
+            <label style="font-size:11px;color:#b0bcd0;display:block;margin-bottom:3px;">本文</label>
+            <textarea id="sb-inp-message" rows="6" oninput="sbRenderPreview()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:8px 10px;outline:none;resize:vertical;line-height:1.6;">遅刻せずに練習に来る。ごはんをちゃんと食べる。夜、決まった時間に寝る。そういう地味で当たり前のことを気分が乗らない日も誰も見ていない日もずっと続けている。ただそれだけです。水泳のタイムは正直です。一日頑張ったくらいでは上がらないけれど毎日の積み重ねは半年後・一年後に必ず形になります。今日の一回、今からの一本、この一瞬を大切にしてください。</textarea>
+          </div>
+
+          <!-- 注意書き -->
+          <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00c8e0;margin-bottom:10px;">📋 注意書き</div>
+            <textarea id="sb-inp-notes" rows="4" oninput="sbRenderPreview()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:8px 10px;outline:none;resize:vertical;line-height:1.6;">大会スケジュール等の都合で練習日や時間を変更する場合がございます
+お休みするときは、自分でプールに連絡を入れましょう
+体調を崩さないように、日々健康管理をおこないましょう
+続けられる選手が、最後に勝つ！</textarea>
+            <div style="font-size:10px;color:#5a6a80;margin-top:4px;">1行1項目</div>
+          </div>
+
+          <div style="padding:14px 20px 28px;">
+            <button onclick="sbPrint()" style="background:#1a5aff;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;padding:10px;cursor:pointer;width:100%;">🖨 印刷 / PDF保存</button>
+            <button onclick="sbResetTemplate()" style="background:rgba(255,255,255,0.06);color:#b0bcd0;border:1px solid rgba(255,255,255,0.12);border-radius:8px;font-size:12px;font-weight:600;padding:8px;cursor:pointer;width:100%;margin-top:8px;">↺ テンプレートに戻す</button>
+          </div>
+        </div>
+
+        <!-- プレビューエリア -->
+        <div style="flex:1;overflow-y:auto;padding:24px 28px;background:#0d1e36;display:flex;flex-direction:column;align-items:center;">
+          <div style="width:100%;max-width:860px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:#b0bcd0;text-transform:uppercase;flex:1;">Preview</div>
+              <button onclick="sbRenderPreview()" style="background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:8px 14px;cursor:pointer;">↻ 更新</button>
+              <button onclick="sbPrint()" style="background:#00c8e0;color:#0a1628;border:none;border-radius:8px;font-size:13px;font-weight:700;padding:8px 14px;cursor:pointer;">🖨 印刷</button>
+            </div>
+            <div id="sb-preview-root"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ========== GRADES VIEW ========== -->
     <div class="view" id="view-grades">
       <div class="page-header">
@@ -3502,39 +3819,44 @@ select {
 <!-- Notification -->
 <div class="notification" id="notification"></div>
 
-<script>
+<script id="sb-print-styles" type="text/plain">
+  body { font-family: 'Noto Sans JP', sans-serif; }
+  * { box-sizing: border-box; }
+</script>
+<script type="text/javascript">
 // =====================
 // DATA
 // =====================
 
 // =====================================================================
-// 2026年度 日本水泳連盟 水泳資格表（2026/04/10現在）
+// 2026年度 日本水泳連盟 水泳資格表（2026/04/10現在・公式PDF準拠）
 // 配列インデックス: 0=15級, 1=14級, ... 14=1級
+// 年齢区分: 8歳以下/9歳/10歳/11歳/12歳/13歳/14歳/15-16歳/17-18歳/19歳以上
 // =====================================================================
 
 // 男子 年齢別資格級基準
 const MALE_AGE_DATA = {
   19: { // 19歳以上
     '自由形': {
-      '50m':  [20.42,20.86,21.30,21.74,22.19,22.92,23.66,24.40,25.14,25.88,26.62,27.36,28.10,28.84,29.58],
+      '50m': [20.42,20.86,21.30,21.74,22.19,22.92,23.66,24.40,25.14,25.88,26.62,27.36,28.10,28.84,29.58],
       '100m': ['45.53','46.32','47.12','47.92','48.72','50.39','52.06','53.73','55.40','57.08','58.75','1:00.42','1:02.09','1:03.76','1:05.44'],
       '200m': ['1:39.95','1:41.61','1:43.28','1:44.95','1:46.62','1:50.30','1:53.98','1:57.66','2:01.34','2:05.03','2:08.71','2:12.39','2:16.07','2:19.75','2:23.44'],
       '400m': ['3:34.56','3:37.72','3:40.88','3:44.04','3:47.21','3:55.16','4:03.12','4:11.07','4:19.03','4:26.99','4:34.94','4:42.90','4:50.85','4:58.81','5:06.77'],
       '800m': ['7:27.12','7:34.03','7:40.94','7:47.85','7:54.76','8:11.30','8:27.84','8:44.38','9:00.93','9:17.47','9:34.01','9:50.56','10:07.10','10:23.64','10:40.19'],
-      '1500m':['14:15.07','14:28.28','14:41.50','14:54.71','15:07.93','15:39.56','16:11.20','16:42.84','17:14.47','17:46.11','18:17.75','18:49.38','19:21.02','19:52.66','20:24.30'],
+      '1500m': ['14:15.07','14:28.28','14:41.50','14:54.71','15:07.93','15:39.56','16:11.20','16:42.84','17:14.47','17:46.11','18:17.75','18:49.38','19:21.02','19:52.66','20:24.30'],
     },
     '背泳ぎ': {
-      '50m':  [22.46,23.00,23.55,24.09,24.64,25.44,26.25,27.05,27.86,28.67,29.47,30.28,31.08,31.89,32.70],
+      '50m': [22.46,23.00,23.55,24.09,24.64,25.44,26.25,27.05,27.86,28.67,29.47,30.28,31.08,31.89,32.70],
       '100m': ['48.90','49.92','50.94','51.96','52.99','54.76','56.54','58.31','1:00.09','1:01.87','1:03.64','1:05.42','1:07.19','1:08.97','1:10.75'],
       '200m': ['1:46.68','1:49.11','1:51.55','1:53.98','1:56.42','2:00.27','2:04.12','2:07.97','2:11.82','2:15.67','2:19.52','2:23.37','2:27.22','2:31.07','2:34.93'],
     },
     '平泳ぎ': {
-      '50m':  [25.43,25.88,26.33,26.78,27.23,28.16,29.09,30.02,30.96,31.89,32.82,33.76,34.69,35.62,36.56],
+      '50m': [25.43,25.88,26.33,26.78,27.23,28.16,29.09,30.02,30.96,31.89,32.82,33.76,34.69,35.62,36.56],
       '100m': ['55.52','56.33','57.15','57.97','58.79','1:00.84','1:02.90','1:04.96','1:07.02','1:09.08','1:11.13','1:13.19','1:15.25','1:17.31','1:19.37'],
       '200m': ['1:59.93','2:01.83','2:03.74','2:05.65','2:07.56','2:11.99','2:16.42','2:20.85','2:25.28','2:29.71','2:34.14','2:38.57','2:43.00','2:47.43','2:51.86'],
     },
     'バタフライ': {
-      '50m':  [21.74,22.19,22.64,23.09,23.54,24.33,25.12,25.91,26.70,27.49,28.28,29.07,29.86,30.65,31.44],
+      '50m': [21.74,22.19,22.64,23.09,23.54,24.33,25.12,25.91,26.70,27.49,28.28,29.07,29.86,30.65,31.44],
       '100m': ['48.61','49.49','50.37','51.25','52.14','53.92','55.70','57.48','59.26','1:01.04','1:02.82','1:04.60','1:06.38','1:08.16','1:09.95'],
       '200m': ['1:46.85','1:49.13','1:51.42','1:53.70','1:55.99','1:59.86','2:03.74','2:07.61','2:11.49','2:15.37','2:19.24','2:23.12','2:26.99','2:30.87','2:34.75'],
     },
@@ -3542,166 +3864,277 @@ const MALE_AGE_DATA = {
       '100m': ['50.28','50.40','50.53','50.65','50.78','52.72','54.66','56.60','58.54','1:00.48','1:02.42','1:04.36','1:06.30','1:08.24','1:10.18'],
       '200m': ['1:49.67','1:51.68','1:53.69','1:55.70','1:57.71','2:01.72','2:05.74','2:09.76','2:13.78','2:17.80','2:21.82','2:25.84','2:29.86','2:33.88','2:37.90'],
       '400m': ['3:54.81','3:59.15','4:03.50','4:07.85','4:12.20','4:20.79','4:29.39','4:37.99','4:46.59','4:55.19','5:03.79','5:12.39','5:20.99','5:29.59','5:38.19'],
-    }
+    },
   },
   18: { // 17〜18歳
     '自由形': {
-      '50m':  [21.30,21.72,22.15,22.58,23.01,23.75,24.49,25.23,25.97,26.71,27.45,28.19,28.93,29.67,30.42],
+      '50m': [21.30,21.72,22.15,22.58,23.01,23.75,24.49,25.23,25.97,26.71,27.45,28.19,28.93,29.67,30.42],
       '100m': ['47.12','47.86','48.61','49.35','50.10','51.82','53.54','55.26','56.98','58.70','1:00.42','1:02.14','1:03.86','1:05.58','1:07.31'],
       '200m': ['1:43.28','1:44.73','1:46.19','1:47.65','1:49.11','1:52.95','1:56.79','2:00.63','2:04.48','2:08.32','2:12.16','2:16.01','2:19.85','2:23.69','2:27.54'],
       '400m': ['3:40.88','3:43.49','3:46.10','3:48.71','3:51.32','3:59.74','4:08.16','4:16.58','4:25.00','4:33.43','4:41.85','4:50.27','4:58.69','5:07.11','5:15.54'],
       '800m': ['7:40.94','7:46.72','7:52.50','7:58.28','8:04.06','8:21.50','8:38.94','8:56.38','9:13.82','9:31.27','9:48.71','10:06.15','10:23.59','10:41.03','10:58.48'],
-      '1500m':['14:41.50','14:52.55','15:03.61','15:14.66','15:25.72','15:59.07','16:32.43','17:05.78','17:39.14','18:12.50','18:45.85','19:19.21','19:52.56','20:25.92','20:59.28'],
+      '1500m': ['14:41.50','14:52.55','15:03.61','15:14.66','15:25.72','15:59.07','16:32.43','17:05.78','17:39.14','18:12.50','18:45.85','19:19.21','19:52.56','20:25.92','20:59.28'],
     },
     '背泳ぎ': {
-      '50m':  [23.55,24.05,24.55,25.05,25.56,26.36,27.17,27.98,28.79,29.60,30.40,31.21,32.02,32.83,33.64],
+      '50m': [23.55,24.05,24.55,25.05,25.56,26.36,27.17,27.98,28.79,29.60,30.40,31.21,32.02,32.83,33.64],
       '100m': ['50.94','52.03','53.12','54.21','55.30','57.04','58.79','1:00.54','1:02.28','1:04.03','1:05.78','1:07.52','1:09.27','1:11.02','1:12.77'],
       '200m': ['1:51.55','1:53.90','1:56.25','1:58.60','2:00.95','2:04.79','2:08.63','2:12.47','2:16.31','2:20.15','2:23.99','2:27.83','2:31.67','2:35.51','2:39.35'],
     },
     '平泳ぎ': {
-      '50m':  [26.33,26.84,27.36,27.87,28.39,29.31,30.23,31.15,32.07,33.00,33.92,34.84,35.76,36.68,37.61],
+      '50m': [26.33,26.84,27.36,27.87,28.39,29.31,30.23,31.15,32.07,33.00,33.92,34.84,35.76,36.68,37.61],
       '100m': ['57.15','58.18','59.21','1:00.24','1:01.28','1:03.31','1:05.35','1:07.38','1:09.42','1:11.46','1:13.49','1:15.53','1:17.56','1:19.60','1:21.64'],
       '200m': ['2:03.74','2:05.96','2:08.19','2:10.42','2:12.65','2:17.06','2:21.47','2:25.88','2:30.29','2:34.71','2:39.12','2:43.53','2:47.94','2:52.35','2:56.77'],
     },
     'バタフライ': {
-      '50m':  [22.64,23.11,23.58,24.05,24.52,25.30,26.08,26.86,27.64,28.43,29.21,29.99,30.77,31.55,32.34],
-      '100m': ['50.37','51.28','52.20','53.11','54.03','55.82','57.61','59.40','1:01.19','1:02.99','1:04.78','1:06.57','1:08.36','1:10.15','1:11.95'],
+      '50m': [22.64,23.11,23.58,24.05,24.52,25.30,26.08,26.86,27.64,28.43,29.21,29.99,30.77,31.55,32.34],
+      '100m': ['50.37','51.28','52.20','53.11','54.03','55.82','57.61','59.4','1:01.19','1:02.99','1:04.78','1:06.57','1:08.36','1:10.15','1:11.95'],
       '200m': ['1:51.42','1:53.36','1:55.31','1:57.25','1:59.20','2:03.19','2:07.19','2:11.19','2:15.18','2:19.18','2:23.18','2:27.17','2:31.17','2:35.17','2:39.17'],
     },
     '個人メドレー': {
+      '100m': ['50.53','51.87','53.21','54.55','55.90','57.52','59.15','1:00.78','1:02.41','1:04.04','1:05.66','1:07.29','1:08.92','1:10.55','1:12.18'],
       '200m': ['1:53.69','1:55.75','1:57.82','1:59.88','2:01.95','2:05.99','2:10.04','2:14.08','2:18.13','2:22.18','2:26.22','2:30.27','2:34.31','2:38.36','2:42.41'],
       '400m': ['4:03.50','4:07.37','4:11.24','4:15.11','4:18.98','4:27.86','4:36.75','4:45.64','4:54.52','5:03.41','5:12.30','5:21.18','5:30.07','5:38.96','5:47.85'],
-    }
+    },
   },
   16: { // 15〜16歳
     '自由形': {
-      '50m':  [22.15,22.46,22.77,23.08,23.40,24.19,24.98,25.77,26.56,27.36,28.15,28.94,29.73,30.52,31.32],
+      '50m': [22.15,22.46,22.77,23.08,23.40,24.19,24.98,25.77,26.56,27.36,28.15,28.94,29.73,30.52,31.32],
       '100m': ['48.61','49.16','49.72','50.28','50.84','52.68','54.53','56.37','58.22','1:00.06','1:01.91','1:03.75','1:05.60','1:07.44','1:09.29'],
       '200m': ['1:46.19','1:47.51','1:48.83','1:50.15','1:51.48','1:55.52','1:59.56','2:03.60','2:07.64','2:11.68','2:15.72','2:19.76','2:23.80','2:27.84','2:31.88'],
       '400m': ['3:46.10','3:48.34','3:50.58','3:52.82','3:55.07','4:04.04','4:13.02','4:21.99','4:30.97','4:39.94','4:48.92','4:57.89','5:06.87','5:15.84','5:24.82'],
       '800m': ['7:52.50','7:57.74','8:02.99','8:08.23','8:13.48','8:31.91','8:50.35','9:08.79','9:27.22','9:45.66','10:04.10','10:22.53','10:40.97','10:59.41','11:17.85'],
-      '1500m':['15:03.61','15:13.64','15:23.67','15:33.70','15:43.74','16:18.99','16:54.25','17:29.51','18:04.77','18:40.03','19:15.28','19:50.54','20:25.80','21:01.06','21:36.32'],
+      '1500m': ['15:03.61','15:13.64','15:23.67','15:33.70','15:43.74','16:18.99','16:54.25','17:29.51','18:04.77','18:40.03','19:15.28','19:50.54','20:25.80','21:01.06','21:36.32'],
     },
     '背泳ぎ': {
-      '50m':  [24.55,24.84,25.13,25.42,25.72,26.61,27.50,28.39,29.28,30.17,31.06,31.95,32.84,33.73,34.63],
+      '50m': [24.55,24.84,25.13,25.42,25.72,26.61,27.50,28.39,29.28,30.17,31.06,31.95,32.84,33.73,34.63],
       '100m': ['53.12','53.84','54.56','55.28','56.01','57.90','59.79','1:01.68','1:03.57','1:05.46','1:07.35','1:09.24','1:11.13','1:13.02','1:14.91'],
       '200m': ['1:56.25','1:57.85','1:59.45','2:01.05','2:02.65','2:06.78','2:10.92','2:15.06','2:19.20','2:23.34','2:27.48','2:31.62','2:35.76','2:39.90','2:44.04'],
     },
     '平泳ぎ': {
-      '50m':  [27.36,27.66,27.96,28.26,28.56,29.57,30.59,31.60,32.62,33.64,34.65,35.67,36.68,37.70,38.72],
+      '50m': [27.36,27.66,27.96,28.26,28.56,29.57,30.59,31.60,32.62,33.64,34.65,35.67,36.68,37.70,38.72],
+      '100m': ['59.21','1:00.00','1:00.79','1:01.58','1:02.37','1:04.53','1:06.70','1:08.87','1:11.03','1:13.20','1:15.37','1:17.53','1:19.70','1:21.87','1:24.04'],
+      '200m': ['2:08.19','2:09.51','2:10.83','2:12.15','2:13.48','2:18.32','2:23.17','2:28.02','2:32.87','2:37.72','2:42.57','2:47.42','2:52.27','2:57.12','3:01.97'],
+    },
+    'バタフライ': {
+      '50m': [23.58,23.83,24.09,24.35,24.61,25.47,26.34,27.21,28.08,28.95,29.81,30.68,31.55,32.42,33.29],
+      '100m': ['52.20','52.91','53.62','54.33','55.04','56.94','58.84','1:00.74','1:02.65','1:04.55','1:06.45','1:08.36','1:10.26','1:12.16','1:14.07'],
+      '200m': ['1:55.31','1:56.65','1:57.99','1:59.33','2:00.67','2:04.98','2:09.30','2:13.62','2:17.94','2:22.26','2:26.57','2:30.89','2:35.21','2:39.53','2:43.85'],
+    },
+    '個人メドレー': {
+      '100m': ['53.21','54.10','55.00','55.89','56.79','58.54','1:00.29','1:02.04','1:03.79','1:05.54','1:07.29','1:09.04','1:10.79','1:12.54','1:14.30'],
+      '200m': ['1:57.82','1:59.33','2:00.84','2:02.35','2:03.87','2:08.20','2:12.53','2:16.86','2:21.19','2:25.53','2:29.86','2:34.19','2:38.52','2:42.85','2:47.19'],
+      '400m': ['4:11.24','4:13.85','4:16.46','4:19.07','4:21.68','4:31.32','4:40.96','4:50.60','5:00.24','5:09.88','5:19.52','5:29.16','5:38.80','5:48.44','5:58.08'],
+    },
+  },
+  14: { // 14歳
+    '自由形': {
+      '50m': [22.77,23.16,23.55,23.94,24.34,25.13,25.92,26.71,27.51,28.30,29.09,29.89,30.68,31.47,32.27],
+      '100m': ['49.72','50.54','51.36','52.18','53.00','54.83','56.67','58.51','1:00.35','1:02.19','1:04.03','1:05.87','1:07.71','1:09.55','1:11.39'],
+      '200m': ['1:48.83','1:50.12','1:51.41','1:52.70','1:54.00','1:58.24','2:02.49','2:06.74','2:10.99','2:15.24','2:19.48','2:23.73','2:27.98','2:32.23','2:36.48'],
+      '400m': ['3:50.58','3:53.95','3:57.33','4:00.71','4:04.09','4:13.14','4:22.20','4:31.26','4:40.31','4:49.37','4:58.43','5:07.48','5:16.54','5:25.60','5:34.66'],
+      '800m': ['8:02.99','8:08.05','8:13.11','8:18.17','8:23.23','8:42.74','9:02.26','9:21.77','9:41.29','10:00.81','10:20.32','10:39.84','10:59.35','11:18.87','11:38.39'],
+      '1500m': ['15:23.67','15:33.34','15:43.02','15:52.70','16:02.38','16:39.70','17:17.02','17:54.34','18:31.66','19:08.99','19:46.31','20:23.63','21:00.95','21:38.27','22:15.60'],
+    },
+    '背泳ぎ': {
+      '50m': [25.13,25.56,26.00,26.44,26.88,27.76,28.64,29.52,30.40,31.28,32.16,33.04,33.92,34.80,35.68],
+      '100m': ['54.56','55.55','56.54','57.53','58.53','1:00.39','1:02.26','1:04.12','1:05.99','1:07.85','1:09.72','1:11.58','1:13.45','1:15.31','1:17.18'],
+      '200m': ['1:59.45','2:01.53','2:03.61','2:05.69','2:07.78','2:11.90','2:16.02','2:20.14','2:24.27','2:28.39','2:32.51','2:36.64','2:40.76','2:44.88','2:49.01'],
+    },
+    '平泳ぎ': {
+      '50m': [27.96,28.38,28.80,29.22,29.64,30.66,31.69,32.71,33.74,34.76,35.79,36.81,37.84,38.86,39.89],
       '100m': ['1:00.79','1:01.77','1:02.76','1:03.74','1:04.73','1:06.91','1:09.10','1:11.28','1:13.47','1:15.66','1:17.84','1:20.03','1:22.21','1:24.40','1:26.59'],
       '200m': ['2:10.83','2:12.94','2:15.05','2:17.16','2:19.28','2:24.10','2:28.92','2:33.74','2:38.56','2:43.38','2:48.20','2:53.02','2:57.84','3:02.66','3:07.48'],
     },
     'バタフライ': {
-      '50m':  [24.09,24.48,24.87,25.26,25.66,26.52,27.38,28.25,29.11,29.98,30.84,31.70,32.57,33.43,34.30],
+      '50m': [24.09,24.48,24.87,25.26,25.66,26.52,27.38,28.25,29.11,29.98,30.84,31.70,32.57,33.43,34.30],
       '100m': ['53.62','54.56','55.50','56.44','57.39','59.28','1:01.17','1:03.06','1:04.95','1:06.85','1:08.74','1:10.63','1:12.52','1:14.41','1:16.31'],
       '200m': ['1:57.99','2:00.07','2:02.16','2:04.24','2:06.33','2:10.57','2:14.82','2:19.07','2:23.32','2:27.57','2:31.81','2:36.06','2:40.31','2:44.56','2:48.81'],
     },
     '個人メドレー': {
+      '100m': ['55.00','56.01','57.02','58.03','59.04','1:00.79','1:02.54','1:04.29','1:06.04','1:07.80','1:09.55','1:11.30','1:13.05','1:14.80','1:16.56'],
       '200m': ['2:00.84','2:02.82','2:04.81','2:06.79','2:08.78','2:13.12','2:17.47','2:21.82','2:26.16','2:30.51','2:34.86','2:39.20','2:43.55','2:47.90','2:52.25'],
       '400m': ['4:16.46','4:20.67','4:24.88','4:29.09','4:33.31','4:42.87','4:52.43','5:01.99','5:11.55','5:21.12','5:30.68','5:40.24','5:49.80','5:59.36','6:08.93'],
-    }
+    },
   },
-  14: { // 13〜14歳
+  13: { // 13歳
     '自由形': {
-      '50m':  [23.55,23.84,24.14,24.44,24.74,25.64,26.55,27.45,28.36,29.27,30.17,31.08,31.98,32.89,33.80],
-      '100m': ['51.36','52.18','53.05','53.89','54.74','56.74','58.75','1:00.75','1:02.76','1:04.76','1:06.77','1:08.77','1:10.78','1:12.78','1:14.79'],
-      '200m': ['1:51.41','1:52.70','1:54.00','1:55.30','1:56.60','2:00.43','2:04.26','2:08.09','2:11.92','2:15.76','2:19.59','2:23.42','2:27.25','2:31.08','2:34.91'],
-      '400m': ['3:57.33','4:00.71','4:04.09','4:07.48','4:10.86','4:20.20','4:29.54','4:38.88','4:48.23','4:57.57','5:06.91','5:16.25','5:25.59','5:34.93','5:44.27'],
-      '800m': ['8:13.11','8:18.17','8:23.23','8:28.29','8:33.35','8:48.36','9:03.37','9:18.37','9:33.38','9:48.39','10:03.40','10:18.41','10:33.42','10:48.43','11:03.44'],
-      '1500m':['15:43.02','15:52.70','16:02.38','16:12.06','16:21.74','16:50.46','17:19.18','17:47.90','18:16.62','18:45.34','19:14.06','19:42.78','20:11.50','20:40.22','21:08.94'],
+      '50m': [23.55,23.84,24.14,24.44,24.74,25.64,26.55,27.45,28.36,29.27,30.17,31.08,31.98,32.89,33.80],
+      '100m': ['51.36','52.20','53.05','53.89','54.74','56.74','58.75','1:00.75','1:02.76','1:04.76','1:06.77','1:08.77','1:10.78','1:12.78','1:14.79'],
+      '200m': ['1:51.41','1:53.23','1:55.05','1:56.87','1:58.69','2:03.21','2:07.73','2:12.26','2:16.78','2:21.31','2:25.83','2:30.35','2:34.88','2:39.40','2:43.93'],
+      '400m': ['3:57.33','4:01.00','4:04.67','4:08.34','4:12.01','4:21.86','4:31.72','4:41.58','4:51.44','5:01.30','5:11.16','5:21.02','5:30.88','5:40.74','5:50.60'],
+      '800m': ['8:13.11','8:19.72','8:26.33','8:32.94','8:39.55','9:00.76','9:21.97','9:43.18','10:04.39','10:25.60','10:46.81','11:08.02','11:29.23','11:50.44','12:11.65'],
+      '1500m': ['15:43.02','15:55.66','16:08.30','16:20.94','16:33.59','17:14.15','17:54.71','18:35.27','19:15.83','19:56.39','20:36.95','21:17.51','21:58.07','22:38.63','23:19.20'],
     },
     '背泳ぎ': {
-      '50m':  [26.00,26.47,26.94,27.41,27.89,28.83,29.78,30.73,31.68,32.63,33.58,34.53,35.48,36.43,37.38],
-      '100m': ['56.54','57.53','58.53','59.53','1:00.53','1:02.51','1:04.50','1:06.48','1:08.47','1:10.45','1:12.44','1:14.42','1:16.41','1:18.39','1:20.38'],
-      '200m': ['2:03.61','2:05.69','2:07.78','2:09.86','2:11.95','2:16.12','2:20.30','2:24.47','2:28.64','2:32.82','2:36.99','2:41.16','2:45.34','2:49.51','2:53.69'],
+      '50m': [26.00,26.47,26.94,27.41,27.89,28.83,29.78,30.73,31.68,32.63,33.58,34.53,35.48,36.43,37.38],
+      '100m': ['56.54','57.59','58.64','59.69','1:00.74','1:02.75','1:04.76','1:06.77','1:08.78','1:10.79','1:12.80','1:14.81','1:16.82','1:18.83','1:20.85'],
+      '200m': ['2:03.61','2:05.64','2:07.68','2:09.72','2:11.76','2:16.29','2:20.82','2:25.35','2:29.88','2:34.41','2:38.94','2:43.47','2:48.00','2:52.53','2:57.06'],
     },
     '平泳ぎ': {
-      '50m':  [28.80,29.22,29.64,30.06,30.48,31.52,32.57,33.62,34.66,35.71,36.76,37.80,38.85,39.90,40.94],
-      '100m': ['1:02.76','1:03.74','1:04.73','1:05.71','1:06.70','1:09.06','1:11.42','1:13.79','1:16.15','1:18.51','1:20.88','1:23.24','1:25.60','1:27.97','1:30.33'],
-      '200m': ['2:15.05','2:17.16','2:19.28','2:21.39','2:23.51','2:28.12','2:32.73','2:37.35','2:41.96','2:46.57','2:51.18','2:55.80','3:00.41','3:05.02','3:09.63'],
+      '50m': [28.80,29.20,29.60,30.00,30.40,31.53,32.67,33.81,34.95,36.09,37.23,38.37,39.51,40.65,41.79],
+      '100m': ['1:02.76','1:03.66','1:04.57','1:05.48','1:06.39','1:08.82','1:11.25','1:13.68','1:16.11','1:18.55','1:20.98','1:23.41','1:25.84','1:28.27','1:30.71'],
+      '200m': ['2:15.05','2:16.80','2:18.56','2:20.32','2:22.08','2:27.51','2:32.94','2:38.37','2:43.81','2:49.24','2:54.67','3:00.11','3:05.54','3:10.97','3:16.41'],
     },
     'バタフライ': {
-      '50m':  [24.87,25.22,25.57,25.92,26.28,27.24,28.21,29.17,30.14,31.10,32.07,33.03,34.00,34.96,35.93],
+      '50m': [24.87,25.22,25.57,25.92,26.28,27.24,28.21,29.17,30.14,31.10,32.07,33.03,34.00,34.96,35.93],
       '100m': ['55.50','56.32','57.14','57.96','58.78','1:00.89','1:03.01','1:05.13','1:07.24','1:09.36','1:11.48','1:13.59','1:15.71','1:17.83','1:19.95'],
-      '200m': ['2:02.16','2:04.24','2:06.33','2:08.41','2:10.49','2:15.08','2:19.67','2:24.26','2:28.86','2:33.45','2:38.04','2:42.63','2:47.22','2:51.82','2:56.41'],
+      '200m': ['2:02.16','2:04.28','2:06.41','2:08.53','2:10.66','2:15.27','2:19.89','2:24.51','2:29.13','2:33.75','2:38.37','2:42.99','2:47.61','2:52.23','2:56.85'],
     },
     '個人メドレー': {
-      '200m': ['2:04.81','2:06.79','2:08.78','2:10.76','2:12.75','2:17.41','2:22.07','2:26.74','2:31.40','2:36.06','2:40.73','2:45.39','2:50.05','2:54.71','2:59.38'],
-      '400m': ['4:24.88','4:29.09','4:33.31','4:37.52','4:41.73','4:51.80','5:01.87','5:11.95','5:22.02','5:32.09','5:42.16','5:52.24','6:02.31','6:12.38','6:22.45'],
-    }
+      '100m': ['57.02','57.87','58.73','59.59','1:00.45','1:02.42','1:04.40','1:06.37','1:08.35','1:10.32','1:12.30','1:14.27','1:16.25','1:18.22','1:20.20'],
+      '200m': ['2:04.81','2:06.57','2:08.34','2:10.10','2:11.87','2:16.72','2:21.58','2:26.44','2:31.30','2:36.16','2:41.02','2:45.88','2:50.74','2:55.60','3:00.46'],
+      '400m': ['4:24.88','4:28.38','4:31.88','4:35.38','4:38.88','4:49.64','5:00.40','5:11.16','5:21.92','5:32.69','5:43.45','5:54.21','6:04.97','6:15.73','6:26.50'],
+    },
   },
-  12: { // 11〜12歳
+  12: { // 12歳
     '自由形': {
-      '50m':  [24.14,24.69,25.24,25.79,26.34,27.25,28.17,29.08,30.00,30.92,31.83,32.75,33.66,34.58,35.50],
+      '50m': [24.14,24.69,25.24,25.79,26.34,27.25,28.17,29.08,30.00,30.92,31.83,32.75,33.66,34.58,35.50],
       '100m': ['53.05','54.32','55.60','56.87','58.15','1:00.18','1:02.22','1:04.26','1:06.30','1:08.34','1:10.37','1:12.41','1:14.45','1:16.49','1:18.53'],
       '200m': ['1:55.05','1:57.84','2:00.64','2:03.43','2:06.23','2:10.82','2:15.41','2:20.00','2:24.59','2:29.18','2:33.77','2:38.36','2:42.95','2:47.54','2:52.13'],
       '400m': ['4:04.67','4:10.50','4:16.34','4:22.17','4:28.01','4:38.02','4:48.03','4:58.04','5:08.05','5:18.07','5:28.08','5:38.09','5:48.10','5:58.11','6:08.13'],
       '800m': ['8:26.33','8:37.88','8:49.43','9:00.98','9:12.53','9:34.10','9:55.67','10:17.24','10:38.81','11:00.38','11:21.95','11:43.52','12:05.09','12:26.66','12:48.23'],
-      '1500m':['16:08.30','16:30.39','16:52.48','17:14.57','17:36.66','18:17.91','18:59.16','19:40.41','20:21.66','21:02.91','21:44.16','22:25.41','23:06.66','23:47.91','24:29.16'],
+      '1500m': ['16:08.30','16:30.39','16:52.48','17:14.57','17:36.66','18:17.91','18:59.16','19:40.41','20:21.66','21:02.91','21:44.16','22:25.41','23:06.66','23:47.91','24:29.16'],
     },
     '背泳ぎ': {
-      '50m':  [26.94,27.66,28.39,29.11,29.84,30.78,31.72,32.66,33.60,34.54,35.48,36.42,37.36,38.30,39.25],
+      '50m': [26.94,27.66,28.39,29.11,29.84,30.78,31.72,32.66,33.60,34.54,35.48,36.42,37.36,38.30,39.25],
       '100m': ['58.64','1:00.21','1:01.79','1:03.37','1:04.95','1:06.94','1:08.94','1:10.93','1:12.93','1:14.92','1:16.92','1:18.91','1:20.91','1:22.90','1:24.90'],
       '200m': ['2:07.68','2:11.18','2:14.68','2:18.18','2:21.69','2:26.11','2:30.53','2:34.95','2:39.37','2:43.80','2:48.22','2:52.64','2:57.06','3:01.48','3:05.91'],
     },
     '平泳ぎ': {
-      '50m':  [29.60,30.45,31.30,32.15,33.01,34.09,35.18,36.27,37.35,38.44,39.53,40.61,41.70,42.79,43.88],
+      '50m': [29.60,30.45,31.30,32.15,33.01,34.09,35.18,36.27,37.35,38.44,39.53,40.61,41.70,42.79,43.88],
       '100m': ['1:04.57','1:06.26','1:07.96','1:09.65','1:11.35','1:13.74','1:16.13','1:18.52','1:20.91','1:23.30','1:25.69','1:28.08','1:30.47','1:32.86','1:35.25'],
       '200m': ['2:18.56','2:22.45','2:26.34','2:30.23','2:34.12','2:39.33','2:44.54','2:49.75','2:54.96','3:00.17','3:05.38','3:10.59','3:15.80','3:21.01','3:26.23'],
     },
     'バタフライ': {
-      '50m':  [25.57,26.20,26.83,27.46,28.10,29.06,30.02,30.98,31.95,32.91,33.87,34.84,35.80,36.76,37.73],
+      '50m': [25.57,26.20,26.83,27.46,28.10,29.06,30.02,30.98,31.95,32.91,33.87,34.84,35.80,36.76,37.73],
       '100m': ['57.14','58.61','1:00.08','1:01.55','1:03.02','1:05.11','1:07.20','1:09.29','1:11.39','1:13.48','1:15.57','1:17.67','1:19.76','1:21.85','1:23.95'],
       '200m': ['2:06.41','2:09.43','2:12.46','2:15.49','2:18.52','2:23.23','2:27.95','2:32.67','2:37.39','2:42.11','2:46.82','2:51.54','2:56.26','3:00.98','3:05.70'],
     },
     '個人メドレー': {
+      '100m': ['58.73','1:00.00','1:01.28','1:02.55','1:03.83','1:05.86','1:07.90','1:09.94','1:11.98','1:14.02','1:16.05','1:18.09','1:20.13','1:22.17','1:24.21'],
       '200m': ['2:08.34','2:11.06','2:13.78','2:16.50','2:19.23','2:24.25','2:29.28','2:34.30','2:39.33','2:44.35','2:49.38','2:54.40','2:59.43','3:04.45','3:09.48'],
       '400m': ['4:31.88','4:37.52','4:43.16','4:48.80','4:54.44','5:05.57','5:16.71','5:27.85','5:38.99','5:50.13','6:01.27','6:12.41','6:23.55','6:34.69','6:45.83'],
-    }
+    },
   },
-  10: { // 9〜10歳
+  11: { // 11歳
     '自由形': {
-      '50m':  [29.18,29.64,30.11,30.58,31.05,32.46,33.88,35.29,36.71,38.13,39.54,40.96,42.37,43.79,45.21],
-      '100m': ['1:04.39','1:05.42','1:06.45','1:07.48','1:08.51','1:11.57','1:14.63','1:17.69','1:20.75','1:23.81','1:26.87','1:29.93','1:32.99','1:36.05','1:39.12'],
-      '200m': ['2:19.14','2:21.35','2:23.56','2:25.77','2:27.99','2:34.80','2:41.61','2:48.42','2:55.23','3:02.04','3:08.85','3:15.66','3:22.47','3:29.28','3:36.09'],
+      '50m': [25.24,25.84,26.45,27.06,27.67,28.70,29.74,30.77,31.81,32.85,33.88,34.92,35.95,36.99,38.03],
+      '100m': ['55.60','56.96','58.33','59.70','1:01.07','1:03.37','1:05.68','1:07.99','1:10.29','1:12.60','1:14.91','1:17.21','1:19.52','1:21.83','1:24.14'],
+      '200m': ['2:00.64','2:03.46','2:06.28','2:09.10','2:11.93','2:17.17','2:22.42','2:27.67','2:32.92','2:38.17','2:43.42','2:48.67','2:53.92','2:59.17','3:04.42'],
+      '400m': ['4:16.34','4:22.28','4:28.22','4:34.16','4:40.11','4:51.54','5:02.97','5:14.40','5:25.83','5:37.26','5:48.69','6:00.12','6:11.55','6:22.98','6:34.42'],
+      '800m': ['8:49.43','9:01.44','9:13.45','9:25.46','9:37.47','10:02.03','10:26.59','10:51.15','11:15.72','11:40.28','12:04.84','12:29.41','12:53.97','13:18.53','13:43.10'],
+      '1500m': ['16:52.48','17:15.44','17:38.41','18:01.38','18:24.35','19:11.32','19:58.30','20:45.27','21:32.25','22:19.22','23:06.20','23:53.17','24:40.15','25:27.12','26:14.10'],
     },
     '背泳ぎ': {
-      '50m':  [33.08,33.58,34.08,34.58,35.08,36.55,38.02,39.49,40.97,42.44,43.91,45.39,46.86,48.33,49.81],
-      '100m': ['1:12.56','1:13.66','1:14.76','1:15.86','1:16.96','1:19.97','1:22.99','1:26.01','1:29.03','1:32.05','1:35.07','1:38.09','1:41.11','1:44.13','1:47.15'],
+      '50m': [28.39,29.09,29.80,30.50,31.21,32.29,33.37,34.46,35.54,36.63,37.71,38.79,39.88,40.96,42.05],
+      '100m': ['1:01.79','1:03.46','1:05.13','1:06.80','1:08.48','1:10.72','1:12.97','1:15.22','1:17.47','1:19.72','1:21.96','1:24.21','1:26.46','1:28.71','1:30.96'],
+      '200m': ['2:14.68','2:18.35','2:22.03','2:25.71','2:29.39','2:34.37','2:39.35','2:44.33','2:49.31','2:54.29','2:59.27','3:04.25','3:09.23','3:14.21','3:19.19'],
     },
     '平泳ぎ': {
-      '50m':  [36.68,37.40,38.13,38.85,39.58,41.22,42.87,44.52,46.17,47.82,49.47,51.12,52.77,54.42,56.07],
-      '100m': ['1:19.57','1:21.13','1:22.70','1:24.27','1:25.84','1:29.40','1:32.96','1:36.52','1:40.08','1:43.64','1:47.20','1:50.76','1:54.32','1:57.88','2:01.44'],
+      '50m': [31.30,32.12,32.94,33.76,34.58,35.82,37.06,38.30,39.55,40.79,42.03,43.28,44.52,45.76,47.01],
+      '100m': ['1:07.96','1:09.72','1:11.48','1:13.24','1:15.00','1:17.70','1:20.41','1:23.11','1:25.82','1:28.52','1:31.23','1:33.93','1:36.64','1:39.34','1:42.05'],
+      '200m': ['2:26.34','2:30.25','2:34.17','2:38.08','2:42.00','2:47.89','2:53.79','2:59.68','3:05.58','3:11.48','3:17.37','3:23.27','3:29.16','3:35.06','3:40.96'],
     },
     'バタフライ': {
-      '50m':  [31.32,31.82,32.33,32.84,33.35,34.78,36.21,37.65,39.08,40.52,41.95,43.38,44.82,46.25,47.69],
-      '100m': ['1:10.04','1:11.17','1:12.30','1:13.43','1:14.56','1:17.67','1:20.79','1:23.91','1:27.03','1:30.15','1:33.27','1:36.39','1:39.51','1:42.63','1:45.75'],
+      '50m': [26.83,27.56,28.29,29.02,29.75,30.81,31.88,32.95,34.01,35.08,36.15,37.21,38.28,39.35,40.42],
+      '100m': ['1:00.08','1:01.69','1:03.30','1:04.91','1:06.52','1:08.86','1:11.20','1:13.54','1:15.88','1:18.23','1:20.57','1:22.91','1:25.25','1:27.59','1:29.94'],
+      '200m': ['2:12.46','2:15.89','2:19.33','2:22.77','2:26.21','2:31.48','2:36.76','2:42.03','2:47.31','2:52.58','2:57.86','3:03.13','3:08.41','3:13.68','3:18.96'],
     },
     '個人メドレー': {
-      '200m': ['2:33.96','2:36.12','2:38.29','2:40.45','2:42.62','2:48.31','2:54.00','2:59.70','3:05.39','3:11.08','3:16.78','3:22.47','3:28.16','3:33.86','3:39.55'],
-    }
+      '100m': ['1:01.28','1:02.77','1:04.26','1:05.75','1:07.25','1:09.54','1:11.84','1:14.14','1:16.44','1:18.74','1:21.03','1:23.33','1:25.63','1:27.93','1:30.23'],
+      '200m': ['2:13.78','2:17.01','2:20.24','2:23.47','2:26.70','2:32.33','2:37.96','2:43.59','2:49.22','2:54.85','3:00.48','3:06.11','3:11.74','3:17.37','3:23.01'],
+      '400m': ['4:43.16','4:49.92','4:56.69','5:03.46','5:10.23','5:22.68','5:35.14','5:47.60','6:00.06','6:12.52','6:24.98','6:37.44','6:49.90','7:02.36','7:14.82'],
+    },
+  },
+  10: { // 10歳
+    '自由形': {
+      '50m': [27.06,27.76,28.47,29.18,29.89,31.05,32.21,33.37,34.54,35.70,36.86,38.03,39.19,40.35,41.52],
+      '100m': ['59.70','1:01.26','1:02.83','1:04.39','1:05.96','1:08.46','1:10.97','1:13.48','1:15.98','1:18.49','1:21.00','1:23.50','1:26.01','1:28.52','1:31.03'],
+      '200m': ['2:09.10','2:12.44','2:15.79','2:19.14','2:22.49','2:28.08','2:33.68','2:39.28','2:44.87','2:50.47','2:56.07','3:01.66','3:07.26','3:12.86','3:18.46'],
+      '400m': ['4:34.16','4:41.25','4:48.34','4:55.43','5:02.53','5:14.51','5:26.49','5:38.48','5:50.46','6:02.45','6:14.43','6:26.41','6:38.40','6:50.38','7:02.37'],
+      '800m': ['9:25.46','9:40.01','9:54.57','10:09.13','10:23.69','10:48.89','11:14.09','11:39.29','12:04.50','12:29.70','12:54.90','13:20.11','13:45.31','14:10.51','14:35.72'],
+      '1500m': ['18:01.38','18:29.22','18:57.06','19:24.90','19:52.74','20:41.11','21:29.48','22:17.85','23:06.22','23:54.59','24:42.96','25:31.33','26:19.70','27:08.07','27:56.44'],
+    },
+    '背泳ぎ': {
+      '50m': [30.50,31.36,32.22,33.08,33.95,35.12,36.30,37.48,38.66,39.84,41.02,42.20,43.38,44.56,45.74],
+      '100m': ['1:06.80','1:08.72','1:10.64','1:12.56','1:14.49','1:16.88','1:19.27','1:21.66','1:24.05','1:26.45','1:28.84','1:31.23','1:33.62','1:36.01','1:38.41'],
+      '200m': ['2:25.71','2:29.90','2:34.10','2:38.30','2:42.50','2:47.71','2:52.92','2:58.13','3:03.35','3:08.56','3:13.77','3:18.99','3:24.20','3:29.41','3:34.63'],
+    },
+    '平泳ぎ': {
+      '50m': [33.76,34.73,35.71,36.68,37.66,39.04,40.42,41.80,43.19,44.57,45.95,47.34,48.72,50.10,51.49],
+      '100m': ['1:13.24','1:15.35','1:17.46','1:19.57','1:21.68','1:24.66','1:27.64','1:30.63','1:33.61','1:36.60','1:39.58','1:42.56','1:45.55','1:48.53','1:51.52'],
+      '200m': ['2:38.08','2:42.66','2:47.25','2:51.83','2:56.42','3:02.73','3:09.05','3:15.37','3:21.68','3:28.00','3:34.32','3:40.63','3:46.95','3:53.27','3:59.59'],
+    },
+    'バタフライ': {
+      '50m': [29.02,29.78,30.55,31.32,32.09,33.26,34.43,35.60,36.77,37.94,39.11,40.28,41.45,42.62,43.80],
+      '100m': ['1:04.91','1:06.62','1:08.33','1:10.04','1:11.75','1:14.28','1:16.82','1:19.36','1:21.89','1:24.43','1:26.97','1:29.50','1:32.04','1:34.58','1:37.12'],
+      '200m': ['2:22.77','2:26.50','2:30.23','2:33.96','2:37.70','2:43.45','2:49.21','2:54.96','3:00.72','3:06.47','3:12.23','3:17.98','3:23.74','3:29.49','3:35.25'],
+    },
+    '個人メドレー': {
+      '100m': ['1:05.75','1:07.34','1:08.94','1:10.53','1:12.13','1:14.66','1:17.20','1:19.74','1:22.28','1:24.82','1:27.35','1:29.89','1:32.43','1:34.97','1:37.51'],
+      '200m': ['2:23.47','2:26.94','2:30.41','2:33.88','2:37.35','2:43.56','2:49.78','2:56.00','3:02.22','3:08.44','3:14.65','3:20.87','3:27.09','3:33.31','3:39.53'],
+      '400m': ['5:03.46','5:10.78','5:18.10','5:25.42','5:32.75','5:46.17','5:59.59','6:13.01','6:26.43','6:39.86','6:53.28','7:06.70','7:20.12','7:33.54','7:46.97'],
+    },
+  },
+  9: { // 9歳
+    '自由形': {
+      '50m': [29.18,29.64,30.11,30.58,31.05,32.46,33.88,35.29,36.71,38.13,39.54,40.96,42.37,43.79,45.21],
+      '100m': ['1:04.39','1:05.42','1:06.45','1:07.48','1:08.51','1:11.57','1:14.63','1:17.69','1:20.75','1:23.81','1:26.87','1:29.93','1:32.99','1:36.05','1:39.12'],
+      '200m': ['2:19.14','2:21.35','2:23.56','2:25.77','2:27.99','2:34.80','2:41.61','2:48.42','2:55.23','3:02.04','3:08.85','3:15.66','3:22.47','3:29.28','3:36.09'],
+      '400m': ['4:55.43','5:00.12','5:04.81','5:09.50','5:14.20','5:28.76','5:43.33','5:57.90','6:12.47','6:27.04','6:41.60','6:56.17','7:10.74','7:25.31','7:39.88'],
+      '800m': ['10:09.13','10:18.78','10:28.43','10:38.08','10:47.74','11:18.31','11:48.88','12:19.45','12:50.02','13:20.60','13:51.17','14:21.74','14:52.31','15:22.88','15:53.46'],
+      '1500m': ['19:24.90','19:43.35','20:01.81','20:20.27','20:38.73','21:37.38','22:36.03','23:34.69','24:33.34','25:32.00','26:30.65','27:29.30','28:27.96','29:26.61','30:25.27'],
+    },
+    '背泳ぎ': {
+      '50m': [33.08,33.58,34.08,34.58,35.08,36.55,38.02,39.49,40.97,42.44,43.91,45.39,46.86,48.33,49.81],
+      '100m': ['1:12.56','1:13.66','1:14.76','1:15.86','1:16.96','1:19.97','1:22.99','1:26.01','1:29.03','1:32.05','1:35.07','1:38.09','1:41.11','1:44.13','1:47.15'],
+      '200m': ['2:38.30','2:40.69','2:43.09','2:45.48','2:47.88','2:54.46','3:01.04','3:07.62','3:14.20','3:20.78','3:27.36','3:33.94','3:40.52','3:47.10','3:53.69'],
+    },
+    '平泳ぎ': {
+      '50m': [36.68,37.40,38.13,38.85,39.58,41.22,42.87,44.52,46.17,47.82,49.47,51.12,52.77,54.42,56.07],
+      '100m': ['1:19.57','1:21.13','1:22.70','1:24.27','1:25.84','1:29.40','1:32.96','1:36.52','1:40.08','1:43.64','1:47.20','1:50.76','1:54.32','1:57.88','2:01.44'],
+      '200m': ['2:51.83','2:55.22','2:58.61','3:02.00','3:05.40','3:12.94','3:20.49','3:28.04','3:35.59','3:43.14','3:50.68','3:58.23','4:05.78','4:13.33','4:20.88'],
+    },
+    'バタフライ': {
+      '50m': [31.32,31.82,32.33,32.84,33.35,34.78,36.21,37.65,39.08,40.52,41.95,43.38,44.82,46.25,47.69],
+      '100m': ['1:10.04','1:11.17','1:12.30','1:13.43','1:14.56','1:17.67','1:20.79','1:23.91','1:27.03','1:30.15','1:33.27','1:36.39','1:39.51','1:42.63','1:45.75'],
+      '200m': ['2:33.96','2:36.43','2:38.91','2:41.39','2:43.87','2:50.92','2:57.97','3:05.02','3:12.07','3:19.12','3:26.17','3:33.22','3:40.27','3:47.32','3:54.38'],
+    },
+    '個人メドレー': {
+      '100m': ['1:10.53','1:11.56','1:12.59','1:13.62','1:14.65','1:17.80','1:20.95','1:24.10','1:27.26','1:30.41','1:33.56','1:36.72','1:39.87','1:43.02','1:46.18'],
+      '200m': ['2:33.88','2:36.12','2:38.36','2:40.60','2:42.84','2:50.46','2:58.08','3:05.70','3:13.32','3:20.94','3:28.56','3:36.18','3:43.80','3:51.42','3:59.04'],
+      '400m': ['5:25.42','5:30.15','5:34.88','5:39.61','5:44.35','6:00.75','6:17.16','6:33.57','6:49.98','7:06.39','7:22.80','7:39.21','7:55.62','8:12.03','8:28.44'],
+    },
   },
   8: { // 8歳以下
     '自由形': {
-      '50m':  [29.89,31.24,32.59,33.94,35.29,36.67,38.05,39.43,40.81,42.20,43.58,44.96,46.34,47.72,49.11],
+      '50m': [29.89,31.24,32.59,33.94,35.29,36.67,38.05,39.43,40.81,42.20,43.58,44.96,46.34,47.72,49.11],
       '100m': ['1:05.96','1:08.89','1:11.82','1:14.75','1:17.69','1:20.68','1:23.68','1:26.68','1:29.67','1:32.67','1:35.67','1:38.66','1:41.66','1:44.66','1:47.66'],
+      '200m': ['2:22.49','2:28.97','2:35.45','2:41.93','2:48.42','2:55.05','3:01.68','3:08.31','3:14.94','3:21.57','3:28.20','3:34.83','3:41.46','3:48.09','3:54.73'],
+      '400m': ['5:02.53','5:16.37','5:30.21','5:44.05','5:57.90','6:12.06','6:26.23','6:40.39','6:54.56','7:08.73','7:22.89','7:37.06','7:51.22','8:05.39','8:19.56'],
+      '800m': ['10:23.69','10:52.63','11:21.57','11:50.51','12:19.45','12:49.08','13:18.71','13:48.34','14:17.97','14:47.60','15:17.23','15:46.86','16:16.49','16:46.12','17:15.75'],
+      '1500m': ['19:52.74','20:48.22','21:43.71','22:39.20','23:34.69','24:31.50','25:28.31','26:25.12','27:21.93','28:18.74','29:15.55','30:12.36','31:09.17','32:05.98','33:02.79'],
     },
     '背泳ぎ': {
-      '50m':  [33.95,35.33,36.72,38.10,39.49,40.95,42.41,43.87,45.33,46.79,48.25,49.71,51.17,52.63,54.10],
+      '50m': [33.95,35.33,36.72,38.10,39.49,40.95,42.41,43.87,45.33,46.79,48.25,49.71,51.17,52.63,54.10],
       '100m': ['1:14.49','1:17.37','1:20.25','1:23.13','1:26.01','1:29.04','1:32.08','1:35.12','1:38.16','1:41.20','1:44.23','1:47.27','1:50.31','1:53.35','1:56.39'],
+      '200m': ['2:42.50','2:48.78','2:55.06','3:01.34','3:07.62','3:14.24','3:20.86','3:27.48','3:34.11','3:40.73','3:47.35','3:53.98','4:00.60','4:07.22','4:13.85'],
     },
     '平泳ぎ': {
-      '50m':  [37.66,39.37,41.09,42.80,44.52,46.15,47.79,49.43,51.07,52.71,54.35,55.99,57.63,59.27,'1:00.91'],
+      '50m': [37.66,39.37,41.09,42.80,44.52,46.15,47.79,49.43,51.07,52.71,54.35,55.99,57.63,59.27,'1:00.91'],
       '100m': ['1:21.68','1:25.39','1:29.10','1:32.81','1:36.52','1:40.05','1:43.59','1:47.13','1:50.67','1:54.21','1:57.75','2:01.29','2:04.83','2:08.37','2:11.91'],
+      '200m': ['2:56.42','3:04.32','3:12.23','3:20.13','3:28.04','3:35.57','3:43.10','3:50.63','3:58.17','4:05.70','4:13.23','4:20.77','4:28.30','4:35.83','4:43.37'],
     },
     'バタフライ': {
-      '50m':  [32.09,33.48,34.87,36.26,37.65,39.06,40.48,41.89,43.31,44.72,46.14,47.55,48.97,50.38,51.80],
+      '50m': [32.09,33.48,34.87,36.26,37.65,39.06,40.48,41.89,43.31,44.72,46.14,47.55,48.97,50.38,51.80],
       '100m': ['1:11.75','1:14.79','1:17.83','1:20.87','1:23.91','1:27.00','1:30.10','1:33.19','1:36.29','1:39.39','1:42.48','1:45.58','1:48.67','1:51.77','1:54.87'],
+      '200m': ['2:37.70','2:44.53','2:51.36','2:58.19','3:05.02','3:11.97','3:18.93','3:25.89','3:32.84','3:39.80','3:46.76','3:53.71','4:00.67','4:07.63','4:14.59'],
     },
     '個人メドレー': {
+      '100m': ['1:12.13','1:15.12','1:18.11','1:21.10','1:24.10','1:27.22','1:30.34','1:33.46','1:36.59','1:39.71','1:42.83','1:45.96','1:49.08','1:52.20','1:55.33'],
       '200m': ['2:37.35','2:44.43','2:51.52','2:58.61','3:05.70','3:13.09','3:20.49','3:27.88','3:35.28','3:42.67','3:50.07','3:57.46','4:04.86','4:12.25','4:19.65'],
-    }
+      '400m': ['5:32.75','5:47.95','6:03.16','6:18.36','6:33.57','6:49.44','7:05.31','7:21.18','7:37.06','7:52.93','8:08.80','8:24.68','8:40.55','8:56.42','9:12.30'],
+    },
   },
 };
 
@@ -3709,25 +4142,25 @@ const MALE_AGE_DATA = {
 const FEMALE_AGE_DATA = {
   19: { // 19歳以上
     '自由形': {
-      '50m':  [23.39,23.90,24.41,24.92,25.43,26.27,27.12,27.97,28.81,29.66,30.51,31.35,32.20,33.05,33.90],
+      '50m': [23.39,23.90,24.41,24.92,25.43,26.27,27.12,27.97,28.81,29.66,30.51,31.35,32.20,33.05,33.90],
       '100m': ['50.77','51.90','53.04','54.17','55.31','57.14','58.98','1:00.81','1:02.65','1:04.48','1:06.32','1:08.15','1:09.99','1:11.82','1:13.66'],
       '200m': ['1:51.00','1:53.01','1:55.02','1:57.03','1:59.05','2:03.12','2:07.19','2:11.26','2:15.33','2:19.40','2:23.47','2:27.54','2:31.61','2:35.68','2:39.75'],
       '400m': ['3:54.83','3:59.21','4:03.59','4:07.97','4:12.35','4:20.94','4:29.54','4:38.13','4:46.73','4:55.33','5:03.92','5:12.52','5:21.11','5:29.71','5:38.31'],
       '800m': ['8:03.49','8:12.60','8:21.72','8:30.83','8:39.95','8:57.63','9:15.32','9:33.01','9:50.70','10:08.39','10:26.07','10:43.76','11:01.45','11:19.14','11:36.83'],
-      '1500m':['15:26.54','15:44.00','16:01.47','16:18.94','16:36.41','17:10.30','17:44.20','18:18.09','18:51.99','19:25.89','19:59.78','20:33.68','21:07.57','21:41.47','22:15.37'],
+      '1500m': ['15:26.54','15:44.00','16:01.47','16:18.94','16:36.41','17:10.30','17:44.20','18:18.09','18:51.99','19:25.89','19:59.78','20:33.68','21:07.57','21:41.47','22:15.37'],
     },
     '背泳ぎ': {
-      '50m':  [25.59,26.19,26.80,27.41,28.02,28.94,29.86,30.78,31.70,32.62,33.54,34.46,35.38,36.30,37.22],
+      '50m': [25.59,26.19,26.80,27.41,28.02,28.94,29.86,30.78,31.70,32.62,33.54,34.46,35.38,36.30,37.22],
       '100m': ['54.62','55.98','57.34','58.70','1:00.06','1:02.01','1:03.97','1:05.93','1:07.88','1:09.84','1:11.80','1:13.75','1:15.71','1:17.67','1:19.63'],
       '200m': ['1:58.75','2:01.65','2:04.55','2:07.45','2:10.36','2:14.62','2:18.88','2:23.14','2:27.40','2:31.67','2:35.93','2:40.19','2:44.45','2:48.71','2:52.98'],
     },
     '平泳ぎ': {
-      '50m':  [28.97,29.67,30.37,31.07,31.77,32.81,33.85,34.89,35.93,36.97,38.01,39.05,40.09,41.13,42.18],
+      '50m': [28.97,29.67,30.37,31.07,31.77,32.81,33.85,34.89,35.93,36.97,38.01,39.05,40.09,41.13,42.18],
       '100m': ['1:03.18','1:04.40','1:05.63','1:06.86','1:08.09','1:10.39','1:12.70','1:15.00','1:17.31','1:19.62','1:21.92','1:24.23','1:26.53','1:28.84','1:31.15'],
       '200m': ['2:14.13','2:17.02','2:19.91','2:22.80','2:25.69','2:30.55','2:35.41','2:40.27','2:45.13','2:50.00','2:54.86','2:59.72','3:04.58','3:09.44','3:14.31'],
     },
     'バタフライ': {
-      '50m':  [24.21,24.88,25.56,26.24,26.92,27.77,28.63,29.49,30.35,31.21,32.06,32.92,33.78,34.64,35.50],
+      '50m': [24.21,24.88,25.56,26.24,26.92,27.77,28.63,29.49,30.35,31.21,32.06,32.92,33.78,34.64,35.50],
       '100m': ['53.90','55.19','56.48','57.77','59.06','1:00.99','1:02.93','1:04.87','1:06.81','1:08.75','1:10.68','1:12.62','1:14.56','1:16.50','1:18.44'],
       '200m': ['2:01.14','2:03.28','2:05.42','2:07.56','2:09.71','2:14.15','2:18.60','2:23.05','2:27.50','2:31.95','2:36.39','2:40.84','2:45.29','2:49.74','2:54.19'],
     },
@@ -3735,166 +4168,277 @@ const FEMALE_AGE_DATA = {
       '100m': ['56.43','56.59','56.76','56.92','57.09','59.26','1:01.43','1:03.61','1:05.78','1:07.96','1:10.13','1:12.30','1:14.48','1:16.65','1:18.83'],
       '200m': ['2:02.78','2:05.31','2:07.85','2:10.38','2:12.92','2:17.38','2:21.84','2:26.31','2:30.77','2:35.24','2:39.70','2:44.16','2:48.63','2:53.09','2:57.56'],
       '400m': ['4:19.10','4:24.59','4:30.09','4:35.59','4:41.09','4:50.49','4:59.89','5:09.29','5:18.70','5:28.10','5:37.50','5:46.91','5:56.31','6:05.71','6:15.12'],
-    }
+    },
   },
   18: { // 17〜18歳
     '自由形': {
-      '50m':  [24.41,24.86,25.31,25.76,26.21,27.02,27.84,28.66,29.47,30.29,31.11,31.92,32.74,33.56,34.38],
+      '50m': [24.41,24.86,25.31,25.76,26.21,27.02,27.84,28.66,29.47,30.29,31.11,31.92,32.74,33.56,34.38],
       '100m': ['53.04','54.02','55.00','55.98','56.97','58.74','1:00.51','1:02.28','1:04.06','1:05.83','1:07.60','1:09.38','1:11.15','1:12.92','1:14.70'],
       '200m': ['1:55.02','1:56.92','1:58.82','2:00.72','2:02.63','2:06.56','2:10.50','2:14.44','2:18.37','2:22.31','2:26.25','2:30.18','2:34.12','2:38.06','2:42.00'],
       '400m': ['4:03.59','4:07.04','4:10.49','4:13.94','4:17.40','4:25.96','4:34.53','4:43.10','4:51.67','5:00.24','5:08.80','5:17.37','5:25.94','5:34.51','5:43.08'],
       '800m': ['8:21.72','8:28.70','8:35.68','8:42.66','8:49.64','9:07.34','9:25.04','9:42.74','10:00.44','10:18.14','10:35.84','10:53.54','11:11.24','11:28.94','11:46.64'],
-      '1500m':['16:01.47','16:14.84','16:28.22','16:41.59','16:54.97','17:28.89','18:02.81','18:36.73','19:10.65','19:44.57','20:18.49','20:52.41','21:26.33','22:00.25','22:34.18'],
+      '1500m': ['16:01.47','16:14.84','16:28.22','16:41.59','16:54.97','17:28.89','18:02.81','18:36.73','19:10.65','19:44.57','20:18.49','20:52.41','21:26.33','22:00.25','22:34.18'],
     },
     '背泳ぎ': {
-      '50m':  [26.80,27.26,27.72,28.18,28.65,29.55,30.46,31.37,32.28,33.19,34.10,35.01,35.92,36.83,37.74],
+      '50m': [26.80,27.26,27.72,28.18,28.65,29.55,30.46,31.37,32.28,33.19,34.10,35.01,35.92,36.83,37.74],
       '100m': ['57.34','58.59','59.85','1:01.11','1:02.37','1:04.20','1:06.04','1:07.88','1:09.72','1:11.56','1:13.40','1:15.24','1:17.08','1:18.92','1:20.76'],
       '200m': ['2:04.55','2:07.02','2:09.49','2:11.96','2:14.43','2:18.52','2:22.62','2:26.72','2:30.82','2:34.92','2:39.02','2:43.12','2:47.22','2:51.32','2:55.42'],
     },
     '平泳ぎ': {
-      '50m':  [30.37,30.88,31.39,31.90,32.41,33.44,34.48,35.51,36.55,37.59,38.62,39.66,40.69,41.73,42.77],
+      '50m': [30.37,30.88,31.39,31.90,32.41,33.44,34.48,35.51,36.55,37.59,38.62,39.66,40.69,41.73,42.77],
       '100m': ['1:05.63','1:06.71','1:07.80','1:08.89','1:09.98','1:12.22','1:14.47','1:16.71','1:18.96','1:21.20','1:23.45','1:25.69','1:27.94','1:30.18','1:32.43'],
       '200m': ['2:19.91','2:22.42','2:24.94','2:27.46','2:29.98','2:34.68','2:39.39','2:44.10','2:48.80','2:53.51','2:58.22','3:02.92','3:07.63','3:12.34','3:17.05'],
     },
     'バタフライ': {
-      '50m':  [25.56,26.07,26.59,27.11,27.63,28.46,29.30,30.14,30.97,31.81,32.65,33.48,34.32,35.16,36.00],
+      '50m': [25.56,26.07,26.59,27.11,27.63,28.46,29.30,30.14,30.97,31.81,32.65,33.48,34.32,35.16,36.00],
       '100m': ['56.48','57.67','58.86','1:00.05','1:01.24','1:03.07','1:04.90','1:06.73','1:08.56','1:10.39','1:12.22','1:14.05','1:15.88','1:17.71','1:19.54'],
       '200m': ['2:05.42','2:07.60','2:09.79','2:11.98','2:14.17','2:18.41','2:22.66','2:26.91','2:31.15','2:35.40','2:39.65','2:43.89','2:48.14','2:52.39','2:56.64'],
     },
     '個人メドレー': {
+      '100m': ['56.76','58.34','59.93','1:01.51','1:03.10','1:04.78','1:06.46','1:08.15','1:09.83','1:11.52','1:13.20','1:14.88','1:16.57','1:18.25','1:19.94'],
       '200m': ['2:07.85','2:10.21','2:12.58','2:14.94','2:17.31','2:21.58','2:25.86','2:30.13','2:34.41','2:38.69','2:42.96','2:47.24','2:51.51','2:55.79','3:00.07'],
       '400m': ['4:30.09','4:34.67','4:39.26','4:43.84','4:48.43','4:57.62','5:06.82','5:16.02','5:25.21','5:34.41','5:43.61','5:52.80','6:02.00','6:11.20','6:20.40'],
-    }
+    },
   },
   16: { // 15〜16歳
     '自由形': {
-      '50m':  [24.86,25.20,25.54,25.88,26.23,27.09,27.95,28.82,29.68,30.55,31.41,32.27,33.14,34.00,34.87],
+      '50m': [24.86,25.20,25.54,25.88,26.23,27.09,27.95,28.82,29.68,30.55,31.41,32.27,33.14,34.00,34.87],
       '100m': ['54.02','54.80','55.58','56.36','57.14','59.00','1:00.86','1:02.72','1:04.59','1:06.45','1:08.31','1:10.18','1:12.04','1:13.90','1:15.77'],
       '200m': ['1:56.92','1:58.44','1:59.96','2:01.48','2:03.01','2:07.14','2:11.27','2:15.40','2:19.53','2:23.66','2:27.79','2:31.92','2:36.05','2:40.18','2:44.31'],
       '400m': ['4:07.04','4:09.77','4:12.51','4:15.24','4:17.98','4:26.98','4:35.98','4:44.98','4:53.98','5:02.98','5:11.98','5:20.98','5:29.98','5:38.98','5:47.98'],
       '800m': ['8:28.70','8:34.52','8:40.34','8:46.16','8:51.98','9:10.45','9:28.93','9:47.40','10:05.88','10:24.36','10:42.83','11:01.31','11:19.78','11:38.26','11:56.74'],
-      '1500m':['16:14.84','16:25.99','16:37.15','16:48.30','16:59.46','17:34.86','18:10.27','18:45.67','19:21.08','19:56.49','20:31.89','21:07.30','21:42.70','22:18.11','22:53.52'],
+      '1500m': ['16:14.84','16:25.99','16:37.15','16:48.30','16:59.46','17:34.86','18:10.27','18:45.67','19:21.08','19:56.49','20:31.89','21:07.30','21:42.70','22:18.11','22:53.52'],
     },
     '背泳ぎ': {
-      '50m':  [27.26,27.77,28.28,28.79,29.31,30.20,31.10,32.00,32.89,33.79,34.69,35.58,36.48,37.38,38.28],
+      '50m': [27.26,27.77,28.28,28.79,29.31,30.20,31.10,32.00,32.89,33.79,34.69,35.58,36.48,37.38,38.28],
       '100m': ['58.59','59.58','1:00.58','1:01.58','1:02.58','1:04.51','1:06.44','1:08.37','1:10.31','1:12.24','1:14.17','1:16.11','1:18.04','1:19.97','1:21.91'],
       '200m': ['2:07.02','2:08.87','2:10.73','2:12.58','2:14.44','2:18.78','2:23.13','2:27.48','2:31.83','2:36.18','2:40.52','2:44.87','2:49.22','2:53.57','2:57.92'],
     },
     '平泳ぎ': {
-      '50m':  [31.25,31.70,32.15,32.60,33.05,34.14,35.24,36.33,37.43,38.53,39.62,40.72,41.81,42.91,44.01],
-      '100m': ['1:07.69','1:08.79','1:09.89','1:10.99','1:12.09','1:14.39','1:16.69','1:18.99','1:21.29','1:23.60','1:25.90','1:28.20','1:30.50','1:32.80','1:35.11'],
-      '200m': ['2:24.53','2:26.95','2:29.37','2:31.79','2:34.22','2:39.07','2:43.92','2:48.78','2:53.63','2:58.49','3:03.34','3:08.19','3:13.05','3:17.90','3:22.76'],
+      '50m': [30.88,31.25,31.63,32.01,32.39,33.48,34.58,35.68,36.78,37.88,38.98,40.08,41.18,42.28,43.38],
+      '100m': ['1:06.71','1:07.69','1:08.68','1:09.67','1:10.66','1:12.96','1:15.27','1:17.58','1:19.89','1:22.20','1:24.51','1:26.82','1:29.13','1:31.44','1:33.75'],
+      '200m': ['2:22.42','2:24.53','2:26.65','2:28.77','2:30.89','2:35.78','2:40.68','2:45.58','2:50.48','2:55.38','3:00.27','3:05.17','3:10.07','3:14.97','3:19.87'],
     },
     'バタフライ': {
-      '50m':  [26.07,26.44,26.81,27.18,27.56,28.45,29.35,30.24,31.14,32.03,32.93,33.82,34.72,35.61,36.51],
+      '50m': [26.07,26.44,26.81,27.18,27.56,28.45,29.35,30.24,31.14,32.03,32.93,33.82,34.72,35.61,36.51],
       '100m': ['57.67','58.59','59.51','1:00.43','1:01.36','1:03.29','1:05.22','1:07.15','1:09.08','1:11.02','1:12.95','1:14.88','1:16.81','1:18.74','1:20.68'],
-      '200m': ['2:09.34','2:11.37','2:13.40','2:15.43','2:17.47','2:21.89','2:26.32','2:30.75','2:35.18','2:39.61','2:44.04','2:48.47','2:52.90','2:57.33','3:01.76'],
+      '200m': ['2:07.60','2:09.34','2:11.09','2:12.83','2:14.58','2:19.03','2:23.49','2:27.95','2:32.41','2:36.87','2:41.33','2:45.79','2:50.25','2:54.71','2:59.17'],
     },
     '個人メドレー': {
-      '200m': ['2:09.34','2:12.09','2:14.85','2:17.60','2:20.36','2:24.78','2:29.21','2:33.64','2:38.07','2:42.49','2:46.92','2:51.35','2:55.78','3:00.21','3:04.63'],
-      '400m': ['4:38.29','4:42.40','4:46.52','4:50.63','4:54.75','5:04.41','5:14.08','5:23.75','5:33.42','5:43.09','5:52.75','6:02.42','6:12.09','6:21.76','6:31.43'],
-    }
+      '100m': ['58.34','59.58','1:00.82','1:02.06','1:03.30','1:05.07','1:06.85','1:08.63','1:10.41','1:12.19','1:13.96','1:15.74','1:17.52','1:19.30','1:21.08'],
+      '200m': ['2:10.21','2:12.09','2:13.97','2:15.85','2:17.74','2:22.23','2:26.72','2:31.21','2:35.70','2:40.19','2:44.68','2:49.17','2:53.66','2:58.15','3:02.64'],
+      '400m': ['4:34.67','4:38.29','4:41.92','4:45.54','4:49.17','4:58.83','5:08.50','5:18.17','5:27.83','5:37.50','5:47.17','5:56.83','6:06.50','6:16.17','6:25.84'],
+    },
   },
-  14: { // 13〜14歳
+  14: { // 14歳
     '自由形': {
-      '50m':  [25.20,25.59,25.99,26.39,26.79,27.64,28.50,29.36,30.22,31.08,31.93,32.79,33.65,34.51,35.37],
+      '50m': [25.20,25.59,25.99,26.39,26.79,27.64,28.50,29.36,30.22,31.08,31.93,32.79,33.65,34.51,35.37],
       '100m': ['54.80','55.67','56.54','57.41','58.28','1:00.13','1:01.99','1:03.85','1:05.71','1:07.57','1:09.42','1:11.28','1:13.14','1:15.00','1:16.86'],
       '200m': ['1:58.44','2:00.18','2:01.92','2:03.66','2:05.40','2:09.52','2:13.65','2:17.78','2:21.91','2:26.04','2:30.17','2:34.30','2:38.43','2:42.56','2:46.69'],
       '400m': ['4:09.77','4:13.28','4:16.80','4:20.32','4:23.84','4:32.75','4:41.67','4:50.59','4:59.51','5:08.43','5:17.34','5:26.26','5:35.18','5:44.10','5:53.02'],
       '800m': ['8:34.52','8:39.50','8:44.48','8:49.46','8:54.45','9:13.71','9:32.98','9:52.25','10:11.52','10:30.79','10:50.05','11:09.32','11:28.59','11:47.86','12:07.13'],
-      '1500m':['16:25.99','16:35.54','16:45.09','16:54.64','17:04.19','17:41.11','18:18.03','18:54.96','19:31.88','20:08.81','20:45.73','21:22.65','21:59.58','22:36.50','23:13.43'],
+      '1500m': ['16:25.99','16:35.54','16:45.09','16:54.64','17:04.19','17:41.11','18:18.03','18:54.96','19:31.88','20:08.81','20:45.73','21:22.65','21:59.58','22:36.50','23:13.43'],
     },
     '背泳ぎ': {
-      '50m':  [27.77,28.33,28.90,29.46,30.03,30.91,31.79,32.67,33.55,34.43,35.31,36.19,37.07,37.95,38.84],
+      '50m': [27.77,28.33,28.90,29.46,30.03,30.91,31.79,32.67,33.55,34.43,35.31,36.19,37.07,37.95,38.84],
       '100m': ['59.58','1:00.71','1:01.84','1:02.97','1:04.10','1:06.00','1:07.90','1:09.80','1:11.70','1:13.60','1:15.50','1:17.40','1:19.30','1:21.20','1:23.10'],
       '200m': ['2:08.87','2:11.00','2:13.13','2:15.26','2:17.39','2:21.70','2:26.01','2:30.32','2:34.63','2:38.94','2:43.25','2:47.56','2:51.87','2:56.18','3:00.50'],
     },
     '平泳ぎ': {
-      '50m':  [31.70,32.05,32.40,32.75,33.11,34.36,35.62,36.87,38.13,39.38,40.64,41.89,43.15,44.40,45.66],
-      '100m': ['1:08.79','1:09.64','1:10.50','1:11.35','1:12.21','1:14.86','1:17.51','1:20.16','1:22.80','1:25.45','1:28.10','1:30.75','1:33.40','1:36.05','1:38.70'],
+      '50m': [31.25,31.70,32.15,32.60,33.05,34.14,35.24,36.33,37.43,38.53,39.62,40.72,41.81,42.91,44.01],
+      '100m': ['1:07.69','1:08.79','1:09.89','1:10.99','1:12.09','1:14.39','1:16.69','1:18.99','1:21.29','1:23.60','1:25.90','1:28.20','1:30.50','1:32.80','1:35.11'],
+      '200m': ['2:24.53','2:26.95','2:29.37','2:31.79','2:34.22','2:39.07','2:43.92','2:48.78','2:53.63','2:58.49','3:03.34','3:08.19','3:13.05','3:17.90','3:22.76'],
+    },
+    'バタフライ': {
+      '50m': [26.44,26.87,27.31,27.74,28.18,29.06,29.95,30.83,31.72,32.61,33.49,34.38,35.26,36.15,37.04],
+      '100m': ['58.59','59.62','1:00.66','1:01.70','1:02.74','1:04.65','1:06.56','1:08.47','1:10.38','1:12.29','1:14.20','1:16.11','1:18.02','1:19.93','1:21.85'],
+      '200m': ['2:09.34','2:11.37','2:13.40','2:15.43','2:17.47','2:21.89','2:26.32','2:30.75','2:35.18','2:39.61','2:44.04','2:48.47','2:52.90','2:57.33','3:01.76'],
+    },
+    '個人メドレー': {
+      '100m': ['59.58','1:00.80','1:02.02','1:03.24','1:04.47','1:06.24','1:08.02','1:09.80','1:11.58','1:13.36','1:15.14','1:16.92','1:18.70','1:20.48','1:22.26'],
+      '200m': ['2:12.09','2:14.14','2:16.19','2:18.24','2:20.29','2:24.78','2:29.28','2:33.78','2:38.28','2:42.78','2:47.28','2:51.78','2:56.28','3:00.78','3:05.28'],
+      '400m': ['4:38.29','4:42.40','4:46.52','4:50.63','4:54.75','5:04.41','5:14.08','5:23.75','5:33.42','5:43.09','5:52.75','6:02.42','6:12.09','6:21.76','6:31.43'],
+    },
+  },
+  13: { // 13歳
+    '自由形': {
+      '50m': [25.59,25.94,26.29,26.64,26.99,27.96,28.93,29.90,30.87,31.84,32.81,33.78,34.75,35.72,36.70],
+      '100m': ['55.67','56.43','57.20','57.96','58.73','1:00.83','1:02.93','1:05.03','1:07.13','1:09.24','1:11.34','1:13.44','1:15.54','1:17.64','1:19.75'],
+      '200m': ['2:00.18','2:01.85','2:03.53','2:05.21','2:06.89','2:11.49','2:16.10','2:20.71','2:25.31','2:29.92','2:34.53','2:39.13','2:43.74','2:48.35','2:52.96'],
+      '400m': ['4:13.28','4:16.43','4:19.59','4:22.75','4:25.91','4:35.94','4:45.98','4:56.02','5:06.06','5:16.10','5:26.14','5:36.18','5:46.22','5:56.26','6:06.30'],
+      '800m': ['8:39.50','8:44.28','8:49.07','8:53.85','8:58.64','9:20.22','9:41.80','10:03.38','10:24.96','10:46.55','11:08.13','11:29.71','11:51.29','12:12.87','12:34.46'],
+      '1500m': ['16:35.54','16:44.70','16:53.87','17:03.04','17:12.21','17:53.57','18:34.93','19:16.29','19:57.65','20:39.01','21:20.37','22:01.73','22:43.09','23:24.45','24:05.81'],
+    },
+    '背泳ぎ': {
+      '50m': [28.33,28.84,29.35,29.86,30.38,31.37,32.36,33.35,34.34,35.34,36.33,37.32,38.31,39.30,40.30],
+      '100m': ['1:00.71','1:01.74','1:02.78','1:03.81','1:04.85','1:06.98','1:09.12','1:11.26','1:13.39','1:15.53','1:17.67','1:19.80','1:21.94','1:24.08','1:26.22'],
+      '200m': ['2:11.00','2:13.17','2:15.35','2:17.52','2:19.70','2:24.45','2:29.21','2:33.97','2:38.73','2:43.49','2:48.25','2:53.01','2:57.77','3:02.53','3:07.29'],
+    },
+    '平泳ぎ': {
+      '50m': [31.70,32.05,32.40,32.75,33.11,34.36,35.62,36.87,38.13,39.38,40.64,41.89,43.15,44.40,45.66],
+      '100m': ['1:08.79','1:09.64','1:10.50','1:11.36','1:12.22','1:14.86','1:17.51','1:20.16','1:22.80','1:25.45','1:28.10','1:30.74','1:33.39','1:36.04','1:38.69'],
       '200m': ['2:26.95','2:28.77','2:30.59','2:32.41','2:34.24','2:39.85','2:45.47','2:51.08','2:56.70','3:02.31','3:07.93','3:13.54','3:19.16','3:24.77','3:30.39'],
     },
     'バタフライ': {
-      '50m':  [26.44,26.87,27.31,27.74,28.18,29.06,29.95,30.83,31.72,32.61,33.49,34.38,35.26,36.15,37.04],
-      '100m': ['58.59','59.62','1:00.66','1:01.70','1:02.74','1:04.65','1:06.56','1:08.47','1:10.41','1:12.29','1:14.20','1:16.11','1:18.02','1:19.93','1:21.85'],
-      '200m': ['2:11.37','2:13.44','2:15.51','2:17.58','2:19.66','2:24.55','2:29.44','2:34.33','2:39.23','2:44.12','2:49.01','2:53.90','2:58.79','3:03.68','3:08.57'],
+      '50m': [26.87,27.27,27.67,28.07,28.47,29.46,30.46,31.45,32.45,33.45,34.44,35.44,36.43,37.43,38.43],
+      '100m': ['59.62','1:00.56','1:01.51','1:02.45','1:03.40','1:05.55','1:07.70','1:09.85','1:12.01','1:14.16','1:16.31','1:18.47','1:20.62','1:22.77','1:24.93'],
+      '200m': ['2:11.37','2:13.44','2:15.51','2:17.58','2:19.66','2:24.55','2:29.44','2:34.34','2:39.23','2:44.13','2:49.02','2:53.91','2:58.81','3:03.70','3:08.60'],
     },
     '個人メドレー': {
-      '200m': ['2:12.09','2:14.14','2:16.19','2:18.24','2:20.29','2:24.78','2:29.28','2:33.78','2:38.28','2:42.78','2:47.28','2:51.78','2:56.28','3:00.78','3:05.28'],
+      '100m': ['1:00.80','1:01.84','1:02.88','1:03.92','1:04.97','1:07.00','1:09.04','1:11.08','1:13.12','1:15.16','1:17.19','1:19.23','1:21.27','1:23.31','1:25.35'],
+      '200m': ['2:14.14','2:15.95','2:17.76','2:19.57','2:21.38','2:26.46','2:31.55','2:36.64','2:41.72','2:46.81','2:51.90','2:56.98','3:02.07','3:07.16','3:12.25'],
       '400m': ['4:42.40','4:46.32','4:50.25','4:54.17','4:58.10','5:08.90','5:19.71','5:30.51','5:41.32','5:52.12','6:02.93','6:13.73','6:24.54','6:35.34','6:46.15'],
-    }
+    },
   },
-  12: { // 11〜12歳
+  12: { // 12歳
     '自由形': {
-      '50m':  [25.94,26.38,26.83,27.27,27.72,28.76,29.80,30.84,31.88,32.93,33.97,35.01,36.05,37.09,38.14],
+      '50m': [25.94,26.38,26.83,27.27,27.72,28.76,29.80,30.84,31.88,32.93,33.97,35.01,36.05,37.09,38.14],
       '100m': ['56.43','57.50','58.57','59.64','1:00.71','1:02.92','1:05.14','1:07.35','1:09.57','1:11.79','1:14.00','1:16.22','1:18.43','1:20.65','1:22.87'],
       '200m': ['2:01.85','2:04.20','2:06.56','2:08.92','2:11.28','2:16.12','2:20.96','2:25.80','2:30.65','2:35.49','2:40.33','2:45.18','2:50.02','2:54.86','2:59.71'],
       '400m': ['4:16.43','4:21.09','4:25.76','4:30.43','4:35.10','4:45.65','4:56.20','5:06.75','5:17.30','5:27.85','5:38.40','5:48.95','5:59.50','6:10.05','6:20.60'],
       '800m': ['8:44.28','8:52.52','9:00.76','9:09.00','9:17.25','9:39.91','10:02.58','10:25.25','10:47.92','11:10.59','11:33.25','11:55.92','12:18.59','12:41.26','13:03.93'],
-      '1500m':['16:44.70','17:00.49','17:16.28','17:32.07','17:47.87','18:31.31','19:14.75','19:58.19','20:41.63','21:25.08','22:08.52','22:51.96','23:35.40','24:18.84','25:02.29'],
+      '1500m': ['16:44.70','17:00.49','17:16.28','17:32.07','17:47.87','18:31.31','19:14.75','19:58.19','20:41.63','21:25.08','22:08.52','22:51.96','23:35.40','24:18.84','25:02.29'],
     },
     '背泳ぎ': {
-      '50m':  [28.84,29.40,29.97,30.54,31.11,32.18,33.26,34.33,35.41,36.49,37.56,38.64,39.71,40.79,41.87],
+      '50m': [28.84,29.40,29.97,30.54,31.11,32.18,33.26,34.33,35.41,36.49,37.56,38.64,39.71,40.79,41.87],
       '100m': ['1:01.74','1:03.09','1:04.45','1:05.80','1:07.16','1:09.40','1:11.64','1:13.88','1:16.13','1:18.37','1:20.61','1:22.86','1:25.10','1:27.34','1:29.59'],
       '200m': ['2:13.17','2:16.38','2:19.59','2:22.80','2:26.01','2:30.86','2:35.72','2:40.58','2:45.44','2:50.30','2:55.16','3:00.02','3:04.88','3:09.74','3:14.60'],
     },
     '平泳ぎ': {
-      '50m':  [32.05,32.68,33.32,33.95,34.59,35.87,37.16,38.44,39.73,41.02,42.30,43.59,44.87,46.16,47.45],
+      '50m': [32.05,32.68,33.32,33.95,34.59,35.87,37.16,38.44,39.73,41.02,42.30,43.59,44.87,46.16,47.45],
       '100m': ['1:09.64','1:10.93','1:12.22','1:13.51','1:14.81','1:17.58','1:20.35','1:23.12','1:25.90','1:28.67','1:31.44','1:34.22','1:36.99','1:39.76','1:42.54'],
       '200m': ['2:28.77','2:31.28','2:33.79','2:36.30','2:38.82','2:44.79','2:50.77','2:56.75','3:02.73','3:08.71','3:14.68','3:20.66','3:26.64','3:32.62','3:38.60'],
     },
     'バタフライ': {
-      '50m':  [27.27,27.85,28.43,29.01,29.60,30.63,31.66,32.69,33.73,34.76,35.79,36.83,37.86,38.89,39.93],
+      '50m': [27.27,27.85,28.43,29.01,29.60,30.63,31.66,32.69,33.73,34.76,35.79,36.83,37.86,38.89,39.93],
       '100m': ['1:00.56','1:01.80','1:03.04','1:04.28','1:05.53','1:07.80','1:10.07','1:12.34','1:14.61','1:16.89','1:19.16','1:21.43','1:23.70','1:25.97','1:28.25'],
       '200m': ['2:13.44','2:16.89','2:20.35','2:23.81','2:27.27','2:32.13','2:37.00','2:41.87','2:46.74','2:51.61','2:56.48','3:01.35','3:06.22','3:11.09','3:15.96'],
     },
     '個人メドレー': {
+      '100m': ['1:01.84','1:03.14','1:04.45','1:05.76','1:07.07','1:09.23','1:11.39','1:13.55','1:15.71','1:17.87','1:20.03','1:22.19','1:24.35','1:26.51','1:28.68'],
       '200m': ['2:15.95','2:18.45','2:20.95','2:23.45','2:25.95','2:31.33','2:36.71','2:42.09','2:47.47','2:52.85','2:58.23','3:03.61','3:08.99','3:14.37','3:19.76'],
       '400m': ['4:46.32','4:51.67','4:57.02','5:02.37','5:07.73','5:19.15','5:30.58','5:42.01','5:53.44','6:04.87','6:16.29','6:27.72','6:39.15','6:50.58','7:02.01'],
-    }
+    },
   },
-  10: { // 9〜10歳
+  11: { // 11歳
     '自由形': {
-      '50m':  [29.40,29.87,30.35,30.82,31.30,32.69,34.08,35.47,36.86,38.25,39.64,41.03,42.42,43.81,45.21],
-      '100m': ['1:04.34','1:05.38','1:06.42','1:07.46','1:08.51','1:11.57','1:14.63','1:17.69','1:20.75','1:23.81','1:26.87','1:29.93','1:32.99','1:36.05','1:39.12'],
-      '200m': ['2:19.36','2:21.62','2:23.88','2:26.14','2:28.41','2:35.17','2:41.94','2:48.71','2:55.48','3:02.25','3:09.01','3:15.78','3:22.55','3:29.32','3:36.09'],
+      '50m': [26.38,26.88,27.39,27.90,28.41,29.57,30.73,31.89,33.05,34.21,35.37,36.53,37.69,38.85,40.01],
+      '100m': ['57.50','58.67','59.84','1:01.01','1:02.19','1:04.66','1:07.14','1:09.61','1:12.09','1:14.57','1:17.04','1:19.52','1:21.99','1:24.47','1:26.95'],
+      '200m': ['2:04.20','2:06.83','2:09.46','2:12.09','2:14.73','2:20.11','2:25.49','2:30.87','2:36.25','2:41.64','2:47.02','2:52.40','2:57.78','3:03.16','3:08.55'],
+      '400m': ['4:21.09','4:26.39','4:31.70','4:37.01','4:42.32','4:54.02','5:05.72','5:17.42','5:29.12','5:40.82','5:52.52','6:04.22','6:15.92','6:27.62','6:39.32'],
+      '800m': ['8:52.52','9:02.35','9:12.19','9:22.03','9:31.87','9:56.93','10:21.99','10:47.05','11:12.11','11:37.18','12:02.24','12:27.30','12:52.36','13:17.42','13:42.49'],
+      '1500m': ['17:00.49','17:19.33','17:38.18','17:57.03','18:15.88','19:03.91','19:51.94','20:39.97','21:28.00','22:16.03','23:04.06','23:52.09','24:40.12','25:28.15','26:16.18'],
     },
     '背泳ぎ': {
-      '50m':  [33.19,33.78,34.38,34.97,35.57,36.99,38.41,39.84,41.26,42.69,44.11,45.53,46.96,48.38,49.81],
-      '100m': ['1:12.04','1:13.34','1:14.64','1:15.94','1:17.25','1:20.24','1:23.23','1:26.22','1:29.21','1:32.20','1:35.19','1:38.18','1:41.17','1:44.16','1:47.15'],
+      '50m': [29.40,29.99,30.58,31.17,31.76,32.97,34.19,35.41,36.62,37.84,39.06,40.27,41.49,42.71,43.93],
+      '100m': ['1:03.09','1:04.56','1:06.03','1:07.50','1:08.98','1:11.48','1:13.98','1:16.48','1:18.98','1:21.49','1:23.99','1:26.49','1:28.99','1:31.49','1:34.00'],
+      '200m': ['2:16.38','2:19.77','2:23.17','2:26.57','2:29.97','2:35.39','2:40.81','2:46.23','2:51.65','2:57.07','3:02.49','3:07.91','3:13.33','3:18.75','3:24.18'],
     },
     '平泳ぎ': {
-      '50m':  [37.19,37.92,38.66,39.40,40.14,41.73,43.32,44.91,46.51,48.10,49.69,51.29,52.88,54.47,56.07],
-      '100m': ['1:20.66','1:22.25','1:23.85','1:25.45','1:27.05','1:30.48','1:33.92','1:37.36','1:40.80','1:44.24','1:47.68','1:51.12','1:54.56','1:58.00','2:01.44'],
+      '50m': [32.68,33.36,34.05,34.73,35.42,36.85,38.29,39.72,41.16,42.60,44.03,45.47,46.90,48.34,49.78],
+      '100m': ['1:10.93','1:12.40','1:13.88','1:15.35','1:16.83','1:19.90','1:22.98','1:26.05','1:29.13','1:32.21','1:35.28','1:38.36','1:41.43','1:44.51','1:47.59'],
+      '200m': ['2:31.28','2:34.23','2:37.19','2:40.14','2:43.10','2:49.72','2:56.35','3:02.97','3:09.60','3:16.23','3:22.85','3:29.48','3:36.10','3:42.73','3:49.36'],
     },
     'バタフライ': {
-      '50m':  [31.52,32.01,32.50,32.99,33.48,34.90,36.32,37.74,39.16,40.58,42.00,43.42,44.84,46.26,47.69],
-      '100m': ['1:10.26','1:11.35','1:12.45','1:13.55','1:14.65','1:17.76','1:20.87','1:23.98','1:27.09','1:30.20','1:33.31','1:36.42','1:39.53','1:42.64','1:45.75'],
+      '50m': [27.85,28.46,29.08,29.70,30.32,31.47,32.63,33.79,34.95,36.11,37.26,38.42,39.58,40.74,41.90],
+      '100m': ['1:01.80','1:03.25','1:04.70','1:06.15','1:07.61','1:10.10','1:12.60','1:15.10','1:17.60','1:20.10','1:22.59','1:25.09','1:27.59','1:30.09','1:32.59'],
+      '200m': ['2:16.89','2:20.65','2:24.42','2:28.18','2:31.95','2:37.31','2:42.68','2:48.04','2:53.41','2:58.77','3:04.14','3:09.50','3:14.87','3:20.23','3:25.60'],
     },
     '個人メドレー': {
-      '200m': ['2:35.89','2:38.17','2:40.45','2:42.73','2:45.01','2:50.99','2:56.97','3:02.96','3:08.94','3:14.92','3:20.90','3:26.89','3:32.87','3:38.85','3:44.83'],
-    }
+      '100m': ['1:03.14','1:04.54','1:05.95','1:07.35','1:08.76','1:11.18','1:13.61','1:16.04','1:18.47','1:20.90','1:23.32','1:25.75','1:28.18','1:30.61','1:33.04'],
+      '200m': ['2:18.45','2:21.24','2:24.03','2:26.82','2:29.61','2:35.60','2:41.60','2:47.60','2:53.60','2:59.60','3:05.59','3:11.59','3:17.59','3:23.59','3:29.59'],
+      '400m': ['4:51.67','4:57.61','5:03.55','5:09.49','5:15.44','5:28.17','5:40.90','5:53.63','6:06.37','6:19.10','6:31.83','6:44.57','6:57.30','7:10.03','7:22.77'],
+    },
+  },
+  10: { // 10歳
+    '自由形': {
+      '50m': [27.90,28.40,28.90,29.40,29.90,31.06,32.22,33.38,34.54,35.71,36.87,38.03,39.19,40.35,41.52],
+      '100m': ['1:01.01','1:02.12','1:03.23','1:04.34','1:05.45','1:08.00','1:10.56','1:13.12','1:15.68','1:18.24','1:20.79','1:23.35','1:25.91','1:28.47','1:31.03'],
+      '200m': ['2:12.09','2:14.51','2:16.94','2:19.36','2:21.79','2:27.45','2:33.12','2:38.79','2:44.45','2:50.12','2:55.79','3:01.45','3:07.12','3:12.79','3:18.46'],
+      '400m': ['4:37.01','4:42.03','4:47.06','4:52.08','4:57.11','5:09.63','5:22.16','5:34.68','5:47.21','5:59.74','6:12.26','6:24.79','6:37.31','6:49.84','7:02.37'],
+      '800m': ['9:22.03','9:31.97','9:41.92','9:51.87','10:01.82','10:29.21','10:56.60','11:23.99','11:51.38','12:18.77','12:46.16','13:13.55','13:40.94','14:08.33','14:35.72'],
+      '1500m': ['17:57.03','18:16.09','18:35.15','18:54.21','19:13.27','20:05.58','20:57.90','21:50.22','22:42.53','23:34.85','24:27.17','25:19.48','26:11.80','27:04.12','27:56.44'],
+    },
+    '背泳ぎ': {
+      '50m': [31.17,31.84,32.52,33.19,33.87,35.05,36.24,37.43,38.61,39.80,40.99,42.17,43.36,44.55,45.74],
+      '100m': ['1:07.50','1:09.01','1:10.53','1:12.04','1:13.56','1:16.04','1:18.53','1:21.01','1:23.50','1:25.98','1:28.47','1:30.95','1:33.44','1:35.92','1:38.41'],
+      '200m': ['2:26.57','2:29.90','2:33.24','2:36.58','2:39.92','2:45.39','2:50.86','2:56.33','3:01.80','3:07.27','3:12.74','3:18.21','3:23.68','3:29.15','3:34.63'],
+    },
+    '平泳ぎ': {
+      '50m': [34.73,35.55,36.37,37.19,38.01,39.35,40.70,42.05,43.40,44.75,46.09,47.44,48.79,50.14,51.49],
+      '100m': ['1:15.35','1:17.12','1:18.89','1:20.66','1:22.44','1:25.34','1:28.25','1:31.16','1:34.07','1:36.98','1:39.88','1:42.79','1:45.70','1:48.61','1:51.52'],
+      '200m': ['2:40.14','2:43.85','2:47.57','2:51.28','2:55.00','3:01.45','3:07.91','3:14.37','3:20.83','3:27.29','3:33.75','3:40.21','3:46.67','3:53.13','3:59.59'],
+    },
+    'バタフライ': {
+      '50m': [29.70,30.30,30.91,31.52,32.13,33.29,34.46,35.63,36.79,37.96,39.13,40.29,41.46,42.63,43.80],
+      '100m': ['1:06.15','1:07.52','1:08.89','1:10.26','1:11.64','1:14.18','1:16.73','1:19.28','1:21.83','1:24.38','1:26.92','1:29.47','1:32.02','1:34.57','1:37.12'],
+      '200m': ['2:28.18','2:31.38','2:34.59','2:37.79','2:41.00','2:46.42','2:51.85','2:57.27','3:02.70','3:08.12','3:13.55','3:18.97','3:24.40','3:29.82','3:35.25'],
+    },
+    '個人メドレー': {
+      '100m': ['1:07.35','1:08.77','1:10.19','1:11.61','1:13.04','1:15.48','1:17.93','1:20.38','1:22.82','1:25.27','1:27.72','1:30.16','1:32.61','1:35.06','1:37.51'],
+      '200m': ['2:26.82','2:29.84','2:32.87','2:35.89','2:38.92','2:44.98','2:51.04','2:57.10','3:03.16','3:09.22','3:15.28','3:21.34','3:27.40','3:33.46','3:39.53'],
+      '400m': ['5:09.49','5:15.88','5:22.27','5:28.66','5:35.06','5:48.25','6:01.44','6:14.63','6:27.82','6:41.01','6:54.20','7:07.39','7:20.58','7:33.77','7:46.97'],
+    },
+  },
+  9: { // 9歳
+    '自由形': {
+      '50m': [29.40,29.87,30.35,30.82,31.30,32.69,34.08,35.47,36.86,38.25,39.64,41.03,42.42,43.81,45.21],
+      '100m': ['1:04.34','1:05.38','1:06.42','1:07.46','1:08.51','1:11.57','1:14.63','1:17.69','1:20.75','1:23.81','1:26.87','1:29.93','1:32.99','1:36.05','1:39.12'],
+      '200m': ['2:19.36','2:21.62','2:23.88','2:26.14','2:28.41','2:35.17','2:41.94','2:48.71','2:55.48','3:02.25','3:09.01','3:15.78','3:22.55','3:29.32','3:36.09'],
+      '400m': ['4:52.08','4:56.80','5:01.53','5:06.25','5:10.98','5:25.87','5:40.76','5:55.65','6:10.54','6:25.43','6:40.32','6:55.21','7:10.10','7:24.99','7:39.88'],
+      '800m': ['9:51.87','10:01.38','10:10.89','10:20.40','10:29.91','11:02.26','11:34.62','12:06.97','12:39.33','13:11.68','13:44.04','14:16.39','14:48.75','15:21.10','15:53.46'],
+      '1500m': ['18:54.21','19:12.43','19:30.65','19:48.87','20:07.09','21:08.90','22:10.72','23:12.54','24:14.36','25:16.18','26:17.99','27:19.81','28:21.63','29:23.45','30:25.27'],
+    },
+    '背泳ぎ': {
+      '50m': [33.19,33.78,34.38,34.97,35.57,36.99,38.41,39.84,41.26,42.69,44.11,45.53,46.96,48.38,49.81],
+      '100m': ['1:12.04','1:13.34','1:14.64','1:15.94','1:17.25','1:20.24','1:23.23','1:26.22','1:29.21','1:32.20','1:35.19','1:38.18','1:41.17','1:44.16','1:47.15'],
+      '200m': ['2:36.58','2:39.42','2:42.26','2:45.10','2:47.94','2:54.51','3:01.09','3:07.66','3:14.24','3:20.81','3:27.39','3:33.96','3:40.54','3:47.11','3:53.69'],
+    },
+    '平泳ぎ': {
+      '50m': [37.19,37.92,38.66,39.40,40.14,41.73,43.32,44.91,46.51,48.10,49.69,51.29,52.88,54.47,56.07],
+      '100m': ['1:20.66','1:22.25','1:23.85','1:25.45','1:27.05','1:30.48','1:33.92','1:37.36','1:40.80','1:44.24','1:47.68','1:51.12','1:54.56','1:58.00','2:01.44'],
+      '200m': ['2:51.28','2:54.65','2:58.03','3:01.40','3:04.78','3:12.39','3:20.00','3:27.61','3:35.22','3:42.83','3:50.44','3:58.05','4:05.66','4:13.27','4:20.88'],
+    },
+    'バタフライ': {
+      '50m': [31.52,32.01,32.50,32.99,33.48,34.90,36.32,37.74,39.16,40.58,42.00,43.42,44.84,46.26,47.69],
+      '100m': ['1:10.26','1:11.35','1:12.45','1:13.55','1:14.65','1:17.76','1:20.87','1:23.98','1:27.09','1:30.20','1:33.31','1:36.42','1:39.53','1:42.64','1:45.75'],
+      '200m': ['2:37.79','2:40.28','2:42.77','2:45.26','2:47.76','2:54.42','3:01.08','3:07.74','3:14.40','3:21.07','3:27.73','3:34.39','3:41.05','3:47.71','3:54.38'],
+    },
+    '個人メドレー': {
+      '100m': ['1:11.61','1:12.66','1:13.72','1:14.77','1:15.83','1:18.86','1:21.90','1:24.93','1:27.97','1:31.00','1:34.04','1:37.07','1:40.11','1:43.14','1:46.18'],
+      '200m': ['2:35.89','2:38.17','2:40.45','2:42.73','2:45.01','2:52.41','2:59.81','3:07.21','3:14.62','3:22.02','3:29.42','3:36.83','3:44.23','3:51.63','3:59.04'],
+      '400m': ['5:28.66','5:33.46','5:38.27','5:43.08','5:47.89','6:03.94','6:20.00','6:36.05','6:52.11','7:08.16','7:24.22','7:40.27','7:56.33','8:12.38','8:28.44'],
+    },
   },
   8: { // 8歳以下
     '自由形': {
-      '50m':  [29.90,31.29,32.68,34.08,35.29,36.87,38.05,39.19,40.35,41.52,43.81,44.96,46.34,47.72,49.11],
-      '100m': ['1:05.45','1:08.51','1:11.57','1:14.63','1:17.69','1:20.79','1:23.68','1:25.91','1:28.47','1:31.03','1:35.67','1:38.66','1:41.66','1:44.66','1:47.15'],
+      '50m': [29.90,31.29,32.68,34.07,35.47,36.83,38.19,39.56,40.92,42.29,43.65,45.01,46.38,47.74,49.11],
+      '100m': ['1:05.45','1:08.51','1:11.57','1:14.63','1:17.69','1:20.68','1:23.68','1:26.68','1:29.67','1:32.67','1:35.67','1:38.66','1:41.66','1:44.66','1:47.66'],
+      '200m': ['2:21.79','2:28.52','2:35.25','2:41.98','2:48.71','2:55.31','3:01.91','3:08.51','3:15.11','3:21.72','3:28.32','3:34.92','3:41.52','3:48.12','3:54.73'],
+      '400m': ['4:57.11','5:11.74','5:26.38','5:41.01','5:55.65','6:10.04','6:24.43','6:38.82','6:53.21','7:07.60','7:21.99','7:36.38','7:50.77','8:05.16','8:19.56'],
+      '800m': ['10:01.82','10:33.10','11:04.39','11:35.68','12:06.97','12:37.84','13:08.72','13:39.60','14:10.48','14:41.36','15:12.23','15:43.11','16:13.99','16:44.87','17:15.75'],
+      '1500m': ['19:13.27','20:13.08','21:12.90','22:12.72','23:12.54','24:11.56','25:10.59','26:09.61','27:08.64','28:07.66','29:06.69','30:05.71','31:04.74','32:03.76','33:02.79'],
     },
     '背泳ぎ': {
-      '50m':  [33.87,35.36,36.85,38.10,39.49,40.99,42.41,43.36,44.55,43.93,48.25,49.71,51.17,52.63,54.10],
-      '100m': ['1:13.56','1:16.72','1:19.89','1:23.13','1:26.01','1:29.99','1:33.44','1:34.99','1:37.92','1:38.41','1:44.23','1:47.27','1:50.31','1:53.35','1:56.39'],
+      '50m': [33.87,35.36,36.85,38.34,39.84,41.26,42.69,44.11,45.54,46.97,48.39,49.82,51.24,52.67,54.10],
+      '100m': ['1:13.56','1:16.72','1:19.89','1:23.05','1:26.22','1:29.23','1:32.25','1:35.27','1:38.28','1:41.30','1:44.32','1:47.33','1:50.35','1:53.37','1:56.39'],
+      '200m': ['2:39.92','2:46.85','2:53.79','3:00.72','3:07.66','3:14.27','3:20.89','3:27.51','3:34.13','3:40.75','3:47.37','3:53.99','4:00.61','4:07.23','4:13.85'],
     },
     '平泳ぎ': {
-      '50m':  [38.01,39.73,41.46,42.80,44.52,46.09,47.44,48.79,50.14,51.49,54.35,55.99,57.63,59.27,'1:00.91'],
-      '100m': ['1:22.44','1:26.17','1:29.90','1:32.81','1:36.52','1:40.88','1:44.51','1:47.43','1:50.47','1:51.52','1:57.75','2:01.29','2:04.83','2:08.37','2:11.91'],
+      '50m': [38.01,39.73,41.46,43.18,44.91,46.51,48.11,49.71,51.31,52.91,54.51,56.11,57.71,59.31,'1:00.91'],
+      '100m': ['1:22.44','1:26.17','1:29.90','1:33.63','1:37.36','1:40.81','1:44.27','1:47.72','1:51.18','1:54.63','1:58.09','2:01.54','2:05.00','2:08.45','2:11.91'],
+      '200m': ['2:55.00','3:03.15','3:11.30','3:19.45','3:27.61','3:35.18','3:42.76','3:50.33','3:57.91','4:05.49','4:13.06','4:20.64','4:28.21','4:35.79','4:43.37'],
     },
     'バタフライ': {
-      '50m':  [32.13,33.53,34.93,36.26,37.65,39.13,40.52,41.46,42.63,43.80,46.14,47.55,48.97,50.38,51.80],
-      '100m': ['1:11.64','1:14.72','1:17.83','1:20.87','1:23.91','1:27.09','1:30.10','1:32.02','1:34.57','1:37.12','1:42.48','1:45.58','1:48.67','1:51.77','1:54.87'],
+      '50m': [32.13,33.53,34.93,36.33,37.74,39.14,40.55,41.95,43.36,44.77,46.17,47.58,48.98,50.39,51.80],
+      '100m': ['1:11.64','1:14.72','1:17.81','1:20.89','1:23.98','1:27.06','1:30.15','1:33.24','1:36.33','1:39.42','1:42.51','1:45.60','1:48.69','1:51.78','1:54.87'],
+      '200m': ['2:41.00','2:47.68','2:54.37','3:01.05','3:07.74','3:14.42','3:21.11','3:27.79','3:34.48','3:41.16','3:47.85','3:54.53','4:01.22','4:07.90','4:14.59'],
     },
     '個人メドレー': {
-      '200m': ['2:41.00','2:47.68','2:54.37','2:58.61','3:05.70','3:14.32','3:20.49','3:25.07','3:29.82','3:39.53','3:50.07','3:57.46','4:04.86','4:12.25','4:19.65'],
-    }
+      '100m': ['1:13.04','1:16.01','1:18.98','1:21.95','1:24.93','1:27.97','1:31.01','1:34.05','1:37.09','1:40.13','1:43.17','1:46.21','1:49.25','1:52.29','1:55.33'],
+      '200m': ['2:38.92','2:45.99','2:53.06','3:00.13','3:07.21','3:14.45','3:21.69','3:28.94','3:36.18','3:43.43','3:50.67','3:57.91','4:05.16','4:12.40','4:19.65'],
+      '400m': ['5:35.06','5:50.30','6:05.55','6:20.80','6:36.05','6:51.67','7:07.30','7:22.92','7:38.55','7:54.17','8:09.80','8:25.42','8:41.05','8:56.67','9:12.30'],
+    },
   },
 };
 
@@ -3942,12 +4486,10 @@ function strokeStoreKey(stroke) {
 function getStdData(sex, age) {
   const data = sex === '男子' ? MALE_AGE_DATA : FEMALE_AGE_DATA;
   if (!age || age >= 19) return data[19];
-  if (age >= 17) return data[18];
-  if (age >= 15) return data[16];
-  if (age >= 13) return data[14];
-  if (age >= 11) return data[12];
-  if (age >= 9)  return data[10];
-  return data[8];
+  if (age >= 17) return data[18];   // 17〜18歳
+  if (age >= 15) return data[16];   // 15〜16歳
+  if (age >= 9)  return data[age];  // 9〜14歳は単年区分
+  return data[8];                   // 8歳以下
 }
 
 // =====================================================================
@@ -4075,16 +4617,34 @@ async function sbLoadAll() {
 }
 
 function rebuildBestTimes() {
-  // 全選手のbestTimesをraceデータから再構築
+  // bestTimesを再構築：
+  // ・手入力ベスト（raceIdなし）は保持する ← レース記録に紐づかないデータを消さない
+  // ・レース由来エントリ（raceIdあり）はクリアして最新のPBレースから再構築
   athletes.forEach(function(a) {
-    if (!a.bestTimes) a.bestTimes = {};
+    var old = a.bestTimes || {};
+    var kept = {};
+    Object.keys(old).forEach(function(st) {
+      Object.keys(old[st] || {}).forEach(function(d) {
+        var e = old[st][d];
+        if (e && e.time && !e.raceId) {  // 手入力ベストは保持
+          if (!kept[st]) kept[st] = {};
+          kept[st][d] = e;
+        }
+      });
+    });
+    a.bestTimes = kept;
   });
   var pbRaces = races.filter(function(r){ return r.isPB; });
   pbRaces.forEach(function(r) {
     var a = athletes.find(function(x){ return x.id === r.athleteId; });
     if (!a) return;
     if (!a.bestTimes[r.stroke]) a.bestTimes[r.stroke] = {};
-    a.bestTimes[r.stroke][r.distance] = { time:r.time, date:r.date, raceId:r.id };
+    // 既存エントリ（手入力含む）と比較して速い方を採用
+    var existing = a.bestTimes[r.stroke][r.distance];
+    var exSec = existing ? (existing.totalSec || parseTime(existing.time)) : Infinity;
+    if (!existing || r.totalSec < exSec) {
+      a.bestTimes[r.stroke][r.distance] = { time:r.time, date:r.date, raceId:r.id, totalSec:r.totalSec };
+    }
   });
 }
 
@@ -4231,23 +4791,26 @@ function renderFullBestTimes(mode) {
   });
 
   var rows = list.map(function(a, idx) {
-    var age   = calcAge(a.birthday);
+    var age   = calcAge(a.birthday);       // 表示用（実年齢）
+    var gradeAge = (_gradeJudgeMode === 'actual')
+      ? age                                // 実年齢判定モード
+      : calcGradeAge(a.birthday);          // 年度末年齢判定（公式・デフォルト）
     var grade = getBestGrade(a);
     var sb = 'position:sticky;z-index:2;background:'+stickyBg(idx)+';font-size:'+fs+';';
     var nameTd  = '<td style="'+sb+'left:'+L0+'px;min-width:'+mwL+';font-weight:700;color:var(--white);cursor:pointer;padding:'+pd+';" onclick="openAthleteDetail(\''+a.id+'\')">'+a.name+'<\/td>';
     var sexTd   = '<td style="'+sb+'left:'+L1+'px;min-width:'+mwS+';text-align:center;padding:'+pd+';">'+(a.sex==='\u7537\u5b50'?'\u2642':'\u2640')+'<\/td>';
-    var gradeTd = '<td style="'+sb+'left:'+L2+'px;min-width:'+mwS+';text-align:center;padding:'+pd+';">'+(a.grade||'-')+'<\/td>';
+    var gradeTd = '<td style="'+sb+'left:'+L2+'px;min-width:'+mwS+';text-align:center;padding:'+pd+';">'+(a.grade||'-')+'<br><span style="font-size:0.72rem;color:var(--muted);">'+(age??'-')+'歳<\/span><\/td>';
     var topTd   = '<td style="'+sb+'left:'+L3+'px;min-width:'+mwG+';text-align:center;padding:'+pd+';">'+(grade ? gradeBadgeHtml(grade) : '<span style="color:var(--muted)">-<\/span>')+'<\/td>';
     var timeTds = allCols.map(function(col, i) {
       var c  = strokeColors[col.stroke];
       var bl = (i===0 || allCols[i-1].stroke !== col.stroke) ? 'border-left:2px solid '+c+'22;' : '';
       var entry = a.bestTimes?.[col.stroke]?.[col.dist];
       var t = entry?.time;
-      var g = t ? getGradeForTime(a.sex, age, col.stroke, col.dist, t) : null;
+      var g = t ? getGradeForTime(a.sex, gradeAge, col.stroke, col.dist, t) : null;
       if (t) {
         return '<td style="text-align:center;'+rowBg(idx)+bl+'cursor:pointer;padding:'+pd+';" onclick="openBestEntryModal(\''+a.id+'\',\''+col.stroke+'\',\''+col.dist+'\')">'
           + '<div style="font-family:\'Rajdhani\',monospace;font-size:'+fst+';font-weight:800;color:var(--accent);">'+t+'<\/div>'
-          + (g ? '<div style="font-size:'+fsg+';margin-top:1px;">'+gradeBadgeHtml(g)+'<\/div>' : '')
+          + (g ? '<div style="margin-top:2px;">'+gradeBadgeHtml(g)+'<\/div>' : '')
           + '<\/td>';
       }
       return '<td style="text-align:center;'+rowBg(idx)+bl+'cursor:pointer;color:var(--muted);font-size:'+fs+';padding:'+pd+';" onclick="openBestEntryModal(\''+a.id+'\',\''+col.stroke+'\',\''+col.dist+'\')">\u2014<\/td>';
@@ -4259,7 +4822,7 @@ function renderFullBestTimes(mode) {
     ? 'border-collapse:collapse;width:100%;table-layout:fixed;font-size:'+fs+';'
     : 'border-collapse:collapse;width:auto;font-size:'+fs+';';
 
-  el.innerHTML = '<table style="'+tblStyle+'">'
+  el.innerHTML = '<table class="'+(isCompact?'compact-table':'')+'" style="'+tblStyle+'">'
     + '<thead style="position:sticky;top:0;z-index:4;">'
     + '<tr>'+th1+'<\/tr><tr>'+th2+'<\/tr>'
     + '<\/thead><tbody>'+rows+'<\/tbody><\/table>';
@@ -4289,8 +4852,42 @@ function calcAge(birthday) {
   return age;
 }
 
+// 指定日時点の満年齢（レース当日年齢の判定用）
+function calcAgeOnDate(birthday, dateStr) {
+  if (!birthday || !dateStr) return null;
+  const b = new Date(birthday);
+  const d = new Date(dateStr);
+  let age = d.getFullYear() - b.getFullYear();
+  const m = d.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && d.getDate() < b.getDate())) age--;
+  return age;
+}
+
+// 資格級判定年齢：閲覧日（今日）時点の実年齢で判定（デフォルト）
+// _gradeJudgeMode が 'fiscal' のときは年度末年齢で判定
+// ※レース出場判定（出場可フィルター）はレース当日年齢で別途判定（calcAgeOnDate使用）
+function recordGradeAge(birthday, dateStr) {
+  if (_gradeJudgeMode === 'fiscal') return calcGradeAge(birthday);
+  return calcAge(birthday);  // 閲覧日の実年齢
+}
+
+// 資格級判定用年齢：年度末（翌年3月31日）時点での満年齢
+// 日本水泳連盟の年齢区分は「その年度内に迎える年齢」
+function calcGradeAge(birthday) {
+  if (!birthday) return null;
+  const b = new Date(birthday);
+  // 現在の年度末（翌年3月31日）
+  const today = new Date();
+  const fiscalYear = today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1;
+  const fiscalEnd = new Date(fiscalYear + 1, 2, 31); // 翌年3月31日
+  let age = fiscalEnd.getFullYear() - b.getFullYear();
+  const m = fiscalEnd.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && fiscalEnd.getDate() < b.getDate())) age--;
+  return age;
+}
+
 function getAgeGroup(age, sex) {
-  if (!age) return 19;
+  if (age === null || age === undefined) return null; // 誕生日未登録
   if (age <= 8) return 8;
   if (age >= 19) return 19;
   return age;
@@ -4300,7 +4897,12 @@ function getGradeForTime(sex, age, stroke, distance, timeStr) {
   const timeSec = parseTime(timeStr);
   if (!isFinite(timeSec)) return null;
 
-  const stdData = getStdData(sex, age);
+  // 年度年齢で判定（誕生日未登録の場合はnull）
+  const gradeAge = typeof age === 'number' ? age : null;
+  const ageGroup = getAgeGroup(gradeAge, sex);
+  if (ageGroup === null) return null; // 誕生日未登録は資格級表示しない
+
+  const stdData = getStdData(sex, ageGroup);
   if (!stdData || !stdData[stroke] || !stdData[stroke][distance]) return null;
   const standards = stdData[stroke][distance]; // index 0 = 15級, 14 = 1級
 
@@ -4315,13 +4917,12 @@ function getGradeForTime(sex, age, stroke, distance, timeStr) {
 
 function getBestGrade(athlete) {
   let best = 0;
-  const age = calcAge(athlete.birthday);
   for (const stroke of ALL_STROKES) {
     const storeKey = strokeStoreKey(stroke);
     for (const d of STROKE_DIST_MAP[stroke]) {
       const t = athlete.bestTimes?.[storeKey]?.[d];
       if (t) {
-        const g = getGradeForTime(athlete.sex, age, storeKey, d, t.time);
+        const g = getGradeForTime(athlete.sex, recordGradeAge(athlete.birthday, t.date), storeKey, d, t.time);
         if (g && g > best) best = g;
       }
     }
@@ -4366,6 +4967,7 @@ function showView(name) {
     dashboard:     'hnav-dashboard',
     'sys-manual':  'hnav-sys-manual',
     'fi-manual':   'hnav-fi-manual',
+    'schedule-builder': 'hnav-schedule-builder',
   };
   if (hnavMap[name]) document.getElementById(hnavMap[name])?.classList.add('active');
 
@@ -4384,6 +4986,7 @@ function showView(name) {
   if (name === 'race-entry') renderRaceEntryView();
   if (name === 'sys-manual') renderManual(SYS_MANUAL, 'sys-manual-content');
   if (name === 'fi-manual')  renderManual(FI_MANUAL,  'fi-manual-content');
+  if (name === 'schedule-builder') sbInit();
   if (name === 'race-view')  renderRaceHistory();
   if (name === 'grades')     renderGradeSummary();
   if (name === 'dashboard')  renderDashboard();
@@ -4397,6 +5000,20 @@ function setActive(el) {
 
 // ラベル表示順
 const SORT_ORDER = ['sex','birthday','kana'];
+
+// 資格級の年齢判定モード:
+// 'actual'=閲覧日（今日）の実年齢（デフォルト） / 'fiscal'=年度末年齢
+var _gradeJudgeMode = localStorage.getItem('grade_judge_mode') || 'actual';
+if (_gradeJudgeMode === 'record') _gradeJudgeMode = 'actual';  // 旧モードの移行
+var _GRADE_MODE_LABEL = { actual: '級: 実年齢（今日）', fiscal: '級: 年度末年齢' };
+
+function toggleGradeJudgeMode() {
+  _gradeJudgeMode = _gradeJudgeMode === 'actual' ? 'fiscal' : 'actual';
+  localStorage.setItem('grade_judge_mode', _gradeJudgeMode);
+  var btn = document.getElementById('grade-judge-btn');
+  if (btn) btn.textContent = _GRADE_MODE_LABEL[_gradeJudgeMode];
+  renderAthleteTable();
+}
 
 function toggleSort(key, btn) {
   if (sortKeys.includes(key)) {
@@ -4467,6 +5084,9 @@ function searchAthletes(q) {
 // =====================
 
 function renderAthleteTable() {
+  // 判定モードボタンのラベル同期
+  var gjBtn = document.getElementById('grade-judge-btn');
+  if (gjBtn) gjBtn.textContent = _GRADE_MODE_LABEL[_gradeJudgeMode] || '級: 実年齢（今日）';
   const empty = document.getElementById('empty-athletes');
   if (!empty) return;
 
@@ -4855,20 +5475,52 @@ function onCardSplitInput(cid, si, li, lapCount) {
 }
 
 function onCardLapKeydown(e, cid, si, li, lapCount) {
+  const cur = document.getElementById(`sc-lap-${cid}-${si}-${li}`);
+  // 空欄でBackspace → 前のラップへ
   if (e.key === 'Backspace') {
-    const inp = document.getElementById(`sc-lap-${cid}-${si}-${li}`);
-    if (inp?.value === '' && li > 0) {
+    if (cur?.value === '' && li > 0) {
       e.preventDefault();
       const prev = document.getElementById(`sc-lap-${cid}-${si}-${li-1}`);
       prev?.focus();
-      prev?.setSelectionRange(prev.value.length, prev.value.length);
+      prev?.select();
+    }
+    return;
+  }
+  // Enter / ↓ → 次のラップへ。最終ラップなら次のスロット・次の選手の最初の入力欄へ
+  if (e.key === 'Enter' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (li < lapCount - 1) {
+      const next = document.getElementById(`sc-lap-${cid}-${si}-${li+1}`);
+      next?.focus(); next?.select();
+    } else {
+      // 画面上の全lap-inputから現在位置の次を探す
+      const all = Array.from(document.querySelectorAll('.lap-input'));
+      const idx = all.indexOf(cur);
+      if (idx >= 0 && idx < all.length - 1) { all[idx+1].focus(); all[idx+1].select(); }
+      else cur?.blur();
+    }
+    return;
+  }
+  // ↑ → 前のラップへ
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (li > 0) {
+      const prev = document.getElementById(`sc-lap-${cid}-${si}-${li-1}`);
+      prev?.focus(); prev?.select();
+    } else {
+      const all = Array.from(document.querySelectorAll('.lap-input'));
+      const idx = all.indexOf(cur);
+      if (idx > 0) { all[idx-1].focus(); all[idx-1].select(); }
     }
   }
-  if (e.key === 'Enter' && li < lapCount - 1) {
-    e.preventDefault();
-    document.getElementById(`sc-lap-${cid}-${si}-${li+1}`)?.focus();
-  }
 }
+
+// lap-inputはフォーカス時に全選択（タップ位置を気にせず上書き入力できる）
+document.addEventListener('focusin', function(e) {
+  if (e.target && e.target.classList && e.target.classList.contains('lap-input')) {
+    setTimeout(function(){ try { e.target.select(); } catch(_){} }, 0);
+  }
+});
 
 // ── 選手セレクト更新 ──
 function updateRaceAthleteSelect() {
@@ -4955,7 +5607,8 @@ function submitSingleSlot(cid, si) {
   renderRaceHistory();
   renderAthleteTable();
 
-  const g = getGradeForTime(a.sex, calcAge(a.birthday), slot.stroke, slot.distance, formatTime(splits[splits.length-1]));
+  const raceDateVal = document.getElementById('race-date') ? document.getElementById('race-date').value : null;
+  const g = getGradeForTime(a.sex, recordGradeAge(a.birthday, raceDateVal), slot.stroke, slot.distance, formatTime(splits[splits.length-1]));
   showNotification(
     isPB
       ? `🏆 ${a.name} ${slot.stroke}${slot.distance} PB更新！${g ? '（'+g+'級）' : ''}`
@@ -5199,12 +5852,12 @@ function renderRaceHistory() {
 
     const participantRows = Object.entries(athMap).map(([aid, ath]) => {
       const athlete = athletes.find(a => a.id === aid);
-      const age     = calcAge(athlete?.birthday);
+      const age     = calcGradeAge(athlete?.birthday);
       const hasPB   = ath.races.some(r => r.isPB);
       const hasSB   = ath.races.some(r => r.isSB);
 
       const chips = ath.races.map(r => {
-        const g = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
+        const g = getGradeForTime(athlete?.sex, recordGradeAge(athlete?.birthday, r.date), r.stroke, r.distance, r.time);
         const flag = r.isPB
           ? '<span class="pb-flag">🏆 PB</span>'
           : r.isSB
@@ -5225,7 +5878,7 @@ function renderRaceHistory() {
           ${hasPB ? '<span class="tag-pb-mark" style="margin-right:4px;">PB</span>' : hasSB ? '<span class="tag-pb-mark" style="margin-right:4px;background:rgba(255,180,0,0.15);color:#f0a000;">SB</span>' : ''}
           ${ath.name}
           <span style="font-size:0.72rem;color:var(--muted);font-weight:400;margin-left:6px;">
-            ${athlete?.sex || ''} ${age ?? '-'}歳 ${athlete?.grade || ''}
+            ${athlete?.sex || ''} ${athlete?.grade || ''} ${age ?? '-'}歳
           </span>
         </div>
         <div class="meet-participant-events">${chips}</div>
@@ -5337,7 +5990,7 @@ function openMeetModal(key) {
   document.getElementById('mp-body').innerHTML =
     Object.entries(athMap).map(([aid, ath], aidx) => {
       const athlete = athletes.find(a => a.id === aid);
-      const age     = calcAge(athlete?.birthday);
+      const age     = calcGradeAge(athlete?.birthday);
       const hasPB   = ath.races.some(r => r.isPB);
 
       // レースIDを保存（インデックス経由で参照）
@@ -5345,7 +5998,7 @@ function openMeetModal(key) {
 
       // 種目チップ（✏️ 再入力ボタン付き）
       const chips = ath.races.map((r, ridx) => {
-        const g = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
+        const g = getGradeForTime(athlete?.sex, recordGradeAge(athlete?.birthday, r.date), r.stroke, r.distance, r.time);
         return `<span class="participant-event-chip ${r.isPB?'pb':''}">
           ${r.stroke.replace('個人メドレー','IM')} ${r.distance}
           <span style="font-family:'Rajdhani',monospace;font-weight:800;margin-left:4px;">${r.time}</span>
@@ -5477,7 +6130,7 @@ function openPersonalMeet(meetKey, athleteId) {
   // グローバルに保存
   _PM.races   = myRaces;
   _PM.athlete = athlete;
-  _PM.age     = calcAge(athlete.birthday);
+  _PM.age     = calcGradeAge(athlete.birthday);
   _PM.meetKey = meetKey;
   _pmRaceIds  = myRaces.map(r => r.id);
 
@@ -5593,7 +6246,7 @@ function buildPersonalMeetBody(myRaces, athlete, age) {
     <div style="display:flex;gap:12px;min-width:max-content;">`;
 
   myRaces.forEach(r => {
-    const g       = getGradeForTime(athlete.sex, age, r.stroke, r.distance, r.time);
+    const g       = getGradeForTime(athlete.sex, recordGradeAge(athlete.birthday, r.date), r.stroke, r.distance, r.time);
     const prev    = athlete.bestTimes?.[r.stroke]?.[r.distance];
     const prevSec = prev ? parseTime(prev.time) : null;
     const diff    = prevSec ? r.totalSec - prevSec : null;
@@ -5622,7 +6275,7 @@ function buildPersonalMeetBody(myRaces, athlete, age) {
 
   // ── 各種目詳細（縦並び） ──
   myRaces.forEach(r => {
-    const g         = getGradeForTime(athlete.sex, age, r.stroke, r.distance, r.time);
+    const g         = getGradeForTime(athlete.sex, recordGradeAge(athlete.birthday, r.date), r.stroke, r.distance, r.time);
     const laps      = r.lapData || [];
     const totalM    = distToM(r.distance);
     const halfM     = totalM / 2;
@@ -5764,13 +6417,13 @@ function printPersonalMeet() {
   const myRaces = _pmRaceIds.map(id => races.find(r => r.id === id)).filter(Boolean);
   if (!myRaces.length) return;
   const athlete = athletes.find(a => a.id === myRaces[0].athleteId);
-  const age     = calcAge(athlete?.birthday);
+  const age     = calcGradeAge(athlete?.birthday);
   const grade   = getBestGrade(athlete);
   const r0      = myRaces[0];
   const now     = new Date().toLocaleDateString('ja-JP');
 
   let cards = myRaces.map(r => {
-    const g        = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
+    const g        = getGradeForTime(athlete?.sex, recordGradeAge(athlete?.birthday, r.date), r.stroke, r.distance, r.time);
     const laps     = r.lapData || [];
     const halfM    = distToM(r.distance) / 2;
     const minLap   = laps.length ? Math.min(...laps.map(l=>l.lapSec)) : null;
@@ -5946,6 +6599,57 @@ function renderRaceEntryView() {
   updateRaceAthleteSelect();
   updateVenueList();
   renderAthleteCards();
+  renderRaceSchedulePicker();
+}
+
+// スケジュールのraceイベントをプルダウンに反映
+function renderRaceSchedulePicker() {
+  var sel = document.getElementById('race-schedule-picker');
+  if (!sel) return;
+  // 全月の登録済みレースを日付順で表示（スケジュールタブの選択月に依存しない）
+  var raceEvs = sbEvents.filter(function(ev){ return ev.type === 'race' && ev.month; })
+                        .map(function(ev) {
+                          var mp = ev.month.split('-').map(Number);
+                          var dateStr = mp[0] + '-' + String(mp[1]).padStart(2,'0') + '-' + String(ev.day).padStart(2,'0');
+                          return { ev: ev, dateStr: dateStr, yr: mp[0], mo: mp[1] };
+                        })
+                        .sort(function(a,b){ return a.dateStr.localeCompare(b.dateStr); });
+  sel.innerHTML = '<option value="">── スケジュールから選択 ──</option>'
+    + raceEvs.map(function(x) {
+        var ev = x.ev;
+        return '<option value="' + x.dateStr + '|' + ev.name.replace(/"/g,'&quot;') + '">'
+          + x.yr + '/' + x.mo + '/' + ev.day + ' ' + ev.name + (ev.venue ? ' @' + ev.venue : '') + '</option>';
+      }).join('');
+  var wrap = document.getElementById('race-schedule-picker-wrap');
+  if (wrap) wrap.style.display = raceEvs.length > 0 ? 'flex' : 'none';
+}
+
+function onRaceSchedulePick() {
+  var sel = document.getElementById('race-schedule-picker');
+  if (!sel || !sel.value) return;
+  var parts = sel.value.split('|');
+  var dateStr  = parts[0];
+  var meetName = parts.slice(1).join('|');
+  var dateEl = document.getElementById('race-date');
+  var meetEl = document.getElementById('race-meet');
+  if (dateEl) dateEl.value = dateStr;
+  if (meetEl) meetEl.value = meetName;
+  // イベントに会場・プールサイズが登録されていれば反映
+  var evDay = parseInt(dateStr.split('-')[2]);
+  var evMonth = dateStr.substring(0, 7);
+  var srcEv = sbEvents.find(function(e){ return e.type==='race' && e.day===evDay && e.name===meetName && e.month===evMonth; });
+  if (srcEv) {
+    var venueEl = document.getElementById('race-venue');
+    var poolEl  = document.getElementById('race-pool');
+    if (venueEl && srcEv.venue) venueEl.value = srcEv.venue;
+    if (poolEl  && srcEv.pool)  poolEl.value  = srcEv.pool;
+    // 出場可能選手パネルを表示
+    _raceEntryEligEv = srcEv;
+    _raceEntryEligDate = dateStr;
+    renderRaceEligPanel();
+  }
+  updateSessionBadge && updateSessionBadge();
+  sel.value = '';  // 選択後リセット
 }
 
 function filterRaces(val) { renderRaceHistory(); }
@@ -5959,8 +6663,8 @@ function openRaceDetail(raceId) {
 
   // ── athlete 変数を正しく取得 ──
   const athlete  = athletes.find(a => a.id === r.athleteId);
-  const age      = calcAge(athlete?.birthday);
-  const g        = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
+  const age      = calcGradeAge(athlete?.birthday);
+  const g        = getGradeForTime(athlete?.sex, recordGradeAge(athlete?.birthday, r.date), r.stroke, r.distance, r.time);
   const laps     = r.lapData || [];
   const avgLap   = laps.length ? r.totalSec / laps.length : 0;
   const maxLapSec = laps.length ? Math.max(...laps.map(l => l.lapSec)) : 1;
@@ -6100,12 +6804,1046 @@ function openRaceDetail(raceId) {
 // =====================================================================
 // ラップ比較テーブル（横軸=通過距離、縦軸=単位別行）
 // =====================================================================
-// 仕様書・取扱説明書（ここを書き換えると仕様書が自動更新される）
+// スケジュールビルダー
+// =====================================================================
+// スケジュールビルダーのデフォルトテンプレート
+// =====================================================================
+// 日本の祝日データ（2024〜2028年度対応）
+// =====================================================================
+const JP_HOLIDAYS = {
+  // 2024年
+  '2024-01-01':'元日', '2024-01-08':'成人の日', '2024-02-11':'建国記念の日',
+  '2024-02-12':'建国記念の日 振替', '2024-02-23':'天皇誕生日',
+  '2024-03-20':'春分の日', '2024-04-29':'昭和の日', '2024-05-03':'憲法記念日',
+  '2024-05-04':'みどりの日', '2024-05-05':'こどもの日', '2024-05-06':'こどもの日 振替',
+  '2024-07-15':'海の日', '2024-08-11':'山の日', '2024-08-12':'山の日 振替',
+  '2024-09-16':'敬老の日', '2024-09-22':'秋分の日', '2024-09-23':'秋分の日 振替',
+  '2024-10-14':'スポーツの日', '2024-11-03':'文化の日', '2024-11-04':'文化の日 振替',
+  '2024-11-23':'勤労感謝の日',
+  // 2025年
+  '2025-01-01':'元日', '2025-01-13':'成人の日', '2025-02-11':'建国記念の日',
+  '2025-02-23':'天皇誕生日', '2025-02-24':'天皇誕生日 振替',
+  '2025-03-20':'春分の日', '2025-04-29':'昭和の日', '2025-05-03':'憲法記念日',
+  '2025-05-04':'みどりの日', '2025-05-05':'こどもの日', '2025-05-06':'こどもの日 振替',
+  '2025-07-21':'海の日', '2025-08-11':'山の日', '2025-09-15':'敬老の日',
+  '2025-09-23':'秋分の日', '2025-10-13':'スポーツの日', '2025-11-03':'文化の日',
+  '2025-11-23':'勤労感謝の日', '2025-11-24':'勤労感謝の日 振替',
+  // 2026年
+  '2026-01-01':'元日', '2026-01-12':'成人の日', '2026-02-11':'建国記念の日',
+  '2026-02-23':'天皇誕生日', '2026-03-20':'春分の日', '2026-04-29':'昭和の日',
+  '2026-05-03':'憲法記念日', '2026-05-04':'みどりの日', '2026-05-05':'こどもの日',
+  '2026-05-06':'こどもの日 振替', '2026-07-20':'海の日', '2026-08-11':'山の日',
+  '2026-09-21':'敬老の日', '2026-09-22':'国民の休日', '2026-09-23':'秋分の日',
+  '2026-10-12':'スポーツの日', '2026-11-03':'文化の日', '2026-11-23':'勤労感謝の日',
+  // 2027年
+  '2027-01-01':'元日', '2027-01-11':'成人の日', '2027-02-11':'建国記念の日',
+  '2027-02-23':'天皇誕生日', '2027-03-21':'春分の日', '2027-03-22':'春分の日 振替',
+  '2027-04-29':'昭和の日', '2027-05-03':'憲法記念日', '2027-05-04':'みどりの日',
+  '2027-05-05':'こどもの日', '2027-07-19':'海の日', '2027-08-11':'山の日',
+  '2027-09-20':'敬老の日', '2027-09-23':'秋分の日', '2027-10-11':'スポーツの日',
+  '2027-11-03':'文化の日', '2027-11-23':'勤労感謝の日',
+  // 2028年
+  '2028-01-01':'元日', '2028-01-10':'成人の日', '2028-02-11':'建国記念の日',
+  '2028-02-23':'天皇誕生日', '2028-03-20':'春分の日', '2028-04-29':'昭和の日',
+  '2028-05-03':'憲法記念日', '2028-05-04':'みどりの日', '2028-05-05':'こどもの日',
+  '2028-07-17':'海の日', '2028-08-11':'山の日', '2028-09-18':'敬老の日',
+  '2028-09-22':'秋分の日', '2028-10-09':'スポーツの日', '2028-11-03':'文化の日',
+  '2028-11-23':'勤労感謝の日',
+};
+
+function getHoliday(yr, mo, d) {
+  var key = yr + '-' + String(mo).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  return JP_HOLIDAYS[key] || null;
+}
+
+const SB_DEFAULTS = {
+  month:       '',  // 空 = 当月自動
+  // 曜日別設定（0=日, 1=月, ..., 6=土）
+  dowOff:      { 0:true, 1:true, 2:false, 3:false, 4:false, 5:false, 6:false }, // 月曜デフォルトOFF
+  dowAm:       { 0:'', 1:'', 2:'–', 3:'–', 4:'–', 5:'–', 6:'6:30–8:30' },
+  dowDry:      { 0:'', 1:'', 2:'17:45–18:20', 3:'17:45–18:20', 4:'17:45–18:20', 5:'17:45–18:20', 6:'17:45–18:15' },
+  dowPm:       { 0:'', 1:'', 2:'18:25–20:30', 3:'18:25–20:30', 4:'18:25–20:30', 5:'18:25–20:30', 6:'18:20–20:00' },
+  // 後方互換用（旧設定がある場合フォールバック）
+  weekdayAm:   '–',
+  weekdayDry:  '17:45–18:20',
+  weekdayPm:   '18:25–20:30',
+  satAm:       '6:30–8:30',
+  satDry:      '17:45–18:15',
+  satPm:       '18:20–20:00',
+  msgTitle:    '',
+  message:     '遅刻せずに練習に来る。ごはんをちゃんと食べる。夜、決まった時間に寝る。そういう地味で当たり前のことを気分が乗らない日も誰も見ていない日もずっと続けている。ただそれだけです。水泳のタイムは正直です。一日頑張ったくらいでは上がらないけれど毎日の積み重ねは半年後・一年後に必ず形になります。今日の一回、今からの一本、この一瞬を大切にしてください。',
+  notes:       '大会スケジュール等の都合で練習日や時間を変更する場合がございます\nお休みするときは、自分でプールに連絡を入れましょう\n体調を崩さないように、日々健康管理をおこないましょう\n続けられる選手が、最後に勝つ！',
+};
+
+var sbEvents  = [];
+var sbOverrides = {};  // 日別調整 { day: {off:true} | {off:false, am:'', dry:'', pm:''} }
+var sbAbsents = [];
+
+// localStorage保存
+function sbSave() {
+  // 曜日別設定を収集
+  var dowOff = {}, dowAm = {}, dowDry = {}, dowPm = {};
+  [1,2,3,4,5,6].forEach(function(d) {
+    var offEl = document.getElementById('sb-dow-off-' + d);
+    dowOff[d] = offEl ? offEl.checked : (d===0||d===1);
+    dowAm[d]  = sbVal('sb-dow-am-'  + d);
+    dowDry[d] = sbVal('sb-dow-dry-' + d);
+    dowPm[d]  = sbVal('sb-dow-pm-'  + d);
+  });
+  dowOff[0] = true; // 日曜は常にOFF
+  var data = {
+    month:      sbVal('sb-inp-month'),
+    dowOff:     dowOff,
+    dowAm:      dowAm,
+    dowDry:     dowDry,
+    dowPm:      dowPm,
+    msgTitle:   sbVal('sb-inp-msg-title'),
+    message:    sbVal('sb-inp-message'),
+    notes:      sbVal('sb-inp-notes'),
+    events:     sbEvents,
+    absents:    sbAbsents,
+    overrides:  sbOverrides,
+  };
+  localStorage.setItem('sb_settings', JSON.stringify(data));
+  sbBackupPush(data);
+}
+
+// ── スケジュール自動バックアップ（直近10世代・5分間隔で1世代） ─────────
+function sbBackupPush(data) {
+  try {
+    var backups = JSON.parse(localStorage.getItem('sb_backups') || '[]');
+    var now = Date.now();
+    // 直近バックアップから5分以内なら最新世代を上書き（保存連打で世代を浪費しない）
+    if (backups.length > 0 && now - backups[backups.length-1].ts < 5*60*1000) {
+      backups[backups.length-1] = { ts: now, data: data };
+    } else {
+      backups.push({ ts: now, data: data });
+    }
+    if (backups.length > 10) backups = backups.slice(-10);
+    localStorage.setItem('sb_backups', JSON.stringify(backups));
+  } catch(e) { /* 容量超過などは無視 */ }
+}
+
+// バックアップ一覧を表示（コンソール用）
+function sbListBackups() {
+  var backups = JSON.parse(localStorage.getItem('sb_backups') || '[]');
+  backups.forEach(function(b, i) {
+    var d = new Date(b.ts);
+    var evCount = (b.data.events || []).length;
+    console.log('[' + i + '] ' + d.toLocaleString('ja-JP') + ' — イベント' + evCount + '件');
+  });
+  if (backups.length === 0) console.log('バックアップなし');
+  return backups.length;
+}
+
+// 指定世代から復元（コンソール用）: sbRestoreBackup(0) など
+function sbRestoreBackup(i) {
+  var backups = JSON.parse(localStorage.getItem('sb_backups') || '[]');
+  if (!backups[i]) { console.log('バックアップ[' + i + ']がありません'); return; }
+  localStorage.setItem('sb_settings', JSON.stringify(backups[i].data));
+  location.reload();
+}
+
+// localStorage読み込み
+function sbLoad() {
+  var today = new Date();
+  var defaultMonth = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
+  try {
+    var saved = localStorage.getItem('sb_settings');
+    if (saved) {
+      var data = JSON.parse(saved);
+      sbEvents  = data.events  || [];
+      // 旧データ移行: monthを持たないイベントは保存時の対象月に帰属させる
+      var migrateMonth = data.month || defaultMonth;
+      sbEvents.forEach(function(ev){
+        if (!ev.month) ev.month = migrateMonth;
+        if (ev.certDate) ev.certDate = sbNormalizeDate(ev.certDate);  // 年入力ミスの救済（0026→2026）
+      });
+      sbAbsents = data.absents || [];
+      sbOverrides = data.overrides || {};
+      // 旧データ（weekdayAm等）から曜日別データに変換
+      var dowOff = data.dowOff ? Object.assign({},data.dowOff) : Object.assign({},SB_DEFAULTS.dowOff);
+      var dowAm  = data.dowAm  ? Object.assign({},data.dowAm)  : {};
+      var dowDry = data.dowDry ? Object.assign({},data.dowDry) : {};
+      var dowPm  = data.dowPm  ? Object.assign({},data.dowPm)  : {};
+      if (!data.dowDry) {
+        var wkd = data.weekdayDry || SB_DEFAULTS.weekdayDry;
+        var wkp = data.weekdayPm  || SB_DEFAULTS.weekdayPm;
+        var wka = data.weekdayAm  || '';
+        [2,3,4,5].forEach(function(d){ dowDry[d]=wkd; dowPm[d]=wkp; dowAm[d]=wka; });
+        dowDry[6] = data.satDry || SB_DEFAULTS.satDry;
+        dowPm[6]  = data.satPm  || SB_DEFAULTS.satPm;
+        dowAm[6]  = data.satAm  || SB_DEFAULTS.satAm;
+      }
+      return {
+        month:   data.month || defaultMonth,
+        dowOff:  dowOff,
+        dowAm:   dowAm,
+        dowDry:  dowDry,
+        dowPm:   dowPm,
+        msgTitle: data.msgTitle || SB_DEFAULTS.msgTitle,
+        message:  data.message  || SB_DEFAULTS.message,
+        notes:    data.notes    || SB_DEFAULTS.notes,
+      };
+    }
+  } catch(e) {}
+  // 初回起動時はデフォルト
+  sbEvents  = [];
+  sbAbsents = [];
+  sbOverrides = {};
+  return Object.assign({}, SB_DEFAULTS, { month: defaultMonth });
+}
+const SB_DOW_JA    = ['日','月','火','水','木','金','土'];
+const SB_TYPE_LABEL = { race:'試合', training:'強化練', bd:'誕生日', off:'OFF', other:'その他' };
+const SB_BADGE_CLS  = { race:'badge-race', bd:'badge-bd', off:'badge-off', other:'badge-other' };
+const SB_DOT_CLS    = { race:'dot-race', bd:'dot-bd', off:'dot-off', other:'dot-other' };
+const SB_TYPE_CLS   = { race:'type-race', bd:'type-bd', off:'type-off', other:'type-other' };
+
+function sbVal(id) { var el=document.getElementById(id); return el?el.value:''; }
+
+function sbRenderEventList() {
+  var el = document.getElementById('sb-event-list');
+  var al = document.getElementById('sb-absent-list');
+  if (!el || !al) return;
+  var evStyle = 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;';
+  var curMonth = sbVal('sb-inp-month') || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+  // 当月のイベントのみ表示（元配列のインデックスを保持して削除・出場可ボタンに使う）
+  var monthEvs = sbEvents.map(function(ev,i){ return {ev:ev, idx:i}; })
+                         .filter(function(x){ return x.ev.month === curMonth; })
+                         .sort(function(a,b){ return a.ev.day - b.ev.day; });
+  // 他の月に登録されているイベントの件数（移行ミスやうっかり登録を見つけられるように）
+  var otherMonths = {};
+  sbEvents.forEach(function(ev){
+    if (ev.month && ev.month !== curMonth) otherMonths[ev.month] = (otherMonths[ev.month]||0) + 1;
+  });
+  var otherHint = '';
+  var omKeys = Object.keys(otherMonths).sort();
+  if (omKeys.length > 0) {
+    otherHint = '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1);">'
+      + '<div style="font-size:10px;color:#5a7a9a;margin-bottom:4px;">他の月のイベント（タップで移動）</div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:4px;">'
+      + omKeys.map(function(mk){
+          var mp = mk.split('-');
+          return '<button data-jumpmonth="' + mk + '" class="sb-month-jump" '
+            + 'style="background:rgba(0,200,224,0.1);border:1px solid rgba(0,200,224,0.25);border-radius:5px;color:#00c8e0;font-size:11px;font-weight:700;padding:3px 9px;cursor:pointer;">'
+            + parseInt(mp[1]) + '\u6708 \u00d7' + otherMonths[mk] + '</button>';
+        }).join('')
+      + '</div></div>';
+  }
+  el.innerHTML = (monthEvs.length === 0
+    ? '<p style="font-size:12px;color:#5a6a80;">なし</p>'
+    : monthEvs.map(function(x){
+        var ev = x.ev, i = x.idx;
+        var tCls = {race:'background:rgba(255,80,80,.25);color:#ff9090;',training:'background:rgba(120,200,80,.2);color:#90d860;',bd:'background:rgba(240,192,64,.2);color:#f0c040;',off:'background:rgba(90,106,128,.3);color:#b0bcd0;',other:'background:rgba(0,200,224,.2);color:#00c8e0;'};
+        var entryBtn = ev.type === 'race'
+          ? '<button data-sbday="'+ev.day+'" data-sbname="'+ev.name.replace(/"/g,'&quot;')+'" class="sb-entry-btn" '
+            + 'style="background:rgba(0,200,224,0.15);border:1px solid rgba(0,200,224,0.3);border-radius:5px;color:#00c8e0;font-size:10px;font-weight:700;padding:2px 7px;cursor:pointer;white-space:nowrap;margin-right:4px;">→ 入力</button>'
+          : '';
+        return '<div style="'+evStyle+'">'
+          +'<div style="flex:1;">'
+          +'<div style="font-size:11px;color:#00c8e0;font-weight:700;display:flex;align-items:center;gap:6px;">'
+          +'<select data-evmove="'+i+'" class="sb-ev-month-sel" style="background:#1a2a4a;border:1px solid rgba(255,255,255,0.15);border-radius:4px;color:#00c8e0;font-size:10px;font-weight:700;padding:1px 3px;outline:none;cursor:pointer;">'+sbMonthOptions(ev.month)+'</select>'
+          +'<span>'+ev.day+'日'+(ev.scope==='am'?' <span style="color:#f0c040;">AM</span>':ev.scope==='pm'?' <span style="color:#f0c040;">PM</span>':'')+'</span>'
+          +'</div>'
+          +'<div style="font-size:12px;color:#fff;margin-top:2px;">'+ev.name+(ev.venue?' <span style="color:#5a8aaa;font-size:10px;">@'+ev.venue+(ev.pool?'・'+ev.pool+'m':'')+'</span>':'')+((ev.gmin||ev.gmax)?' <span style="color:#90d860;font-size:10px;">['+(ev.gmin?ev.gmin+'級':'')+'〜'+(ev.gmax?ev.gmax+'級':'')+']</span>':'')+(ev.certDate?' <span style="color:#f0c040;font-size:10px;">認定'+ev.certDate.substring(5).replace('-','/')+'</span>':'')+'</div>'
+          +'</div>'
+          +entryBtn
+          +'<span style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;'+tCls[ev.type]+'">'+SB_TYPE_LABEL[ev.type]+'</span>'
+          +'<button onclick="sbRemoveEvent('+i+')" style="background:none;border:none;color:#5a6a80;cursor:pointer;font-size:16px;padding:0 2px;">×</button>'
+          +'</div>';
+      }).join('')) + otherHint;
+  // 月移動セレクトのchange処理（イベントを別の月へ移動）
+  el.onchange = function(e) {
+    var sel = e.target.closest('.sb-ev-month-sel');
+    if (!sel) return;
+    var idx = parseInt(sel.dataset.evmove);
+    var newMonth = sel.value;
+    if (sbEvents[idx] && newMonth && sbEvents[idx].month !== newMonth) {
+      // 移動先の月の日数を超えていたら末日にクランプ
+      var mp = newMonth.split('-').map(Number);
+      var dim = new Date(mp[0], mp[1], 0).getDate();
+      if (sbEvents[idx].day > dim) sbEvents[idx].day = dim;
+      sbEvents[idx].month = newMonth;
+      sbSave();
+      sbRenderEventList();
+      sbRenderPreview();
+      showNotification('📅 「' + sbEvents[idx].name + '」を ' + mp[1] + '月に移動しました');
+    }
+  };
+  // data属性経由でraceイベントの「→入力」ボタン・月ジャンプのクリック処理
+  el.onclick = function(e) {
+    var jumpBtn = e.target.closest('.sb-month-jump');
+    if (jumpBtn) {
+      sbJumpToMonth(jumpBtn.dataset.jumpmonth);
+      return;
+    }
+    var btn = e.target.closest('.sb-entry-btn');
+    if (btn) {
+      sbGoToRaceEntry(parseInt(btn.dataset.sbday), btn.dataset.sbname);
+      return;
+    }
+  };
+  al.innerHTML = sbAbsents.length === 0
+    ? '<p style="font-size:12px;color:#5a6a80;">なし</p>'
+    : sbAbsents.sort(function(a,b){return a.day-b.day;}).map(function(a,i){
+        return '<div style="'+evStyle+'">'
+          +'<div style="flex:1;font-size:11px;color:#00c8e0;font-weight:700;">'+a.day+'日('+a.dow+')</div>'
+          +'<button onclick="sbRemoveAbsent('+i+')" style="background:none;border:none;color:#5a6a80;cursor:pointer;font-size:16px;padding:0 2px;">×</button>'
+          +'</div>';
+      }).join('');
+}
+
+function sbAddEvent() {
+  var day  = parseInt(sbVal('sb-new-ev-day'));
+  var type = sbVal('sb-new-ev-type');
+  var name = sbVal('sb-new-ev-name').trim();
+  var scope = sbVal('sb-new-ev-scope') || 'all';
+  var disp  = sbVal('sb-new-ev-disp') || 'partial';
+  if (!day || !name) { alert('日とイベント名を入力してください'); return; }
+  var monthVal = sbVal('sb-inp-month') || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+  var ev = { day:day, month:monthVal, type:type, name:name, scope:scope, disp:disp };
+  if (type === 'race') {
+    ev.venue = sbVal('sb-new-ev-venue').trim();
+    ev.pool  = sbVal('sb-new-ev-pool') || '50';
+    ev.gmin  = sbVal('sb-new-ev-gmin') ? parseInt(sbVal('sb-new-ev-gmin')) : null;
+    ev.gmax  = sbVal('sb-new-ev-gmax') ? parseInt(sbVal('sb-new-ev-gmax')) : null;
+    ev.certDate = sbNormalizeDate(sbVal('sb-new-ev-certdate')) || null;  // 資格級認定日（正規化・未設定=レース当日）
+    // 大会名・会場名を履歴にメモリー（レース結果入力と共通）
+    saveVenueToHistory(ev.venue, ev.name);
+    sbUpdateVenueDatalists();
+  }
+  sbEvents.push(ev);
+  document.getElementById('sb-new-ev-day').value = '';
+  document.getElementById('sb-new-ev-name').value = '';
+  var vEl = document.getElementById('sb-new-ev-venue');
+  if (vEl) vEl.value = '';
+  var cdEl = document.getElementById('sb-new-ev-certdate');
+  if (cdEl) cdEl.value = '';
+  sbSave(); sbRenderEventList(); sbRenderPreview();
+  // 連続登録しやすいように「日」へフォーカスを戻す
+  var dayEl = document.getElementById('sb-new-ev-day');
+  if (dayEl) dayEl.focus();
+  if (typeof showNotification === 'function') showNotification('✅ ' + ev.name + ' を追加しました');
+}
+function sbRemoveEvent(i) { sbEvents.splice(i,1); sbSave(); sbRenderEventList(); sbRenderPreview(); }
+
+// 月移動セレクト用のoption生成（イベントの月の前後1年度分）
+function sbMonthOptions(currentMonth) {
+  var parts = (currentMonth || '2026-06').split('-').map(Number);
+  var fy = parts[1] >= 4 ? parts[0] : parts[0] - 1;  // 年度
+  var opts = '';
+  // 前年度3月〜翌年度4月までカバー（年度+前後少し）
+  var list = [];
+  for (var offset = -1; offset <= 1; offset++) {
+    var y = fy + offset;
+    for (var m = 4; m <= 15; m++) {
+      var yy = m <= 12 ? y : y + 1;
+      var mm = m <= 12 ? m : m - 12;
+      list.push(yy + '-' + String(mm).padStart(2, '0'));
+    }
+  }
+  list = list.filter(function(v, i, arr){ return arr.indexOf(v) === i; }).sort();
+  list.forEach(function(mv) {
+    var p = mv.split('-').map(Number);
+    var sel = mv === currentMonth ? ' selected' : '';
+    opts += '<option value="' + mv + '"' + sel + '>' + p[0] + '/' + p[1] + '</option>';
+  });
+  return opts;
+}
+
+// 指定月にジャンプ（他月イベントのヒントから使用）
+function sbJumpToMonth(monthVal) {
+  var inp = document.getElementById('sb-inp-month');
+  if (!inp || !monthVal) return;
+  inp.value = monthVal;
+  sbMonthDisplay();
+  sbSave();
+  sbRenderPreview();
+}
+
+// 日付文字列の年を正規化（"0026-07-12" → "2026-07-12" のような入力ミスを救済）
+function sbNormalizeDate(d) {
+  if (!d || typeof d !== 'string') return null;
+  var m = d.match(/^(\d{1,4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  var y = parseInt(m[1]);
+  if (y < 100) y += 2000;          // 26 → 2026, 0026 → 2026
+  else if (y < 1000) y += 2000;    // 026 → 2026相当の救済
+  if (y < 2000 || y > 2100) return null;  // それでも異常なら無効
+  return y + '-' + m[2] + '-' + m[3];
+}
+
+// ── 出場可能選手の判定（レース当日 or 認定日年齢の資格級でフィルター） ──
+var _raceEntryEligEv = null;        // 入力画面で選択中の大会イベント
+var _raceEntryEligDate = null;      // レース日（YYYY-MM-DD）
+var _eligCache = {};                // athleteId → 出場可能種目リスト
+
+function sbComputeEligible(ev, raceDateStr) {
+  // 認定日は正規化して使用。無効な日付（年入力ミス等）はレース当日にフォールバック
+  var certNorm = sbNormalizeDate(ev.certDate);
+  var dateStr = certNorm || raceDateStr;
+  var isCustomCert = !!certNorm;
+  var gmin = ev.gmin || null;
+  var gmax = ev.gmax || null;
+
+  var results = [];
+  athletes.forEach(function(a) {
+    var ageOnDay = calcAgeOnDate(a.birthday, dateStr);
+    if (ageOnDay === null || ageOnDay < 0 || ageOnDay > 100) return;  // 異常値は除外
+    var evts = [];
+    var bt = a.bestTimes || {};
+    Object.keys(bt).forEach(function(stroke) {
+      Object.keys(bt[stroke] || {}).forEach(function(dist) {
+        var t = bt[stroke][dist] && bt[stroke][dist].time;
+        if (!t) return;
+        var g = getGradeForTime(a.sex, ageOnDay, stroke, dist, t);
+        if (g === null || g === undefined) return;
+        if (gmin !== null && g < gmin) return;
+        if (gmax !== null && g > gmax) return;
+        evts.push({ stroke: stroke, dist: dist, time: t, grade: g });
+      });
+    });
+    if (evts.length > 0) {
+      evts.sort(function(x, y) { return y.grade - x.grade; });
+      results.push({ athlete: a, ageOnDay: ageOnDay, events: evts });
+    }
+  });
+  results.sort(function(x, y) {
+    return (x.athlete.kana || x.athlete.name).localeCompare(y.athlete.kana || y.athlete.name, 'ja');
+  });
+  return { results: results, dateStr: dateStr, isCustomCert: isCustomCert, gmin: gmin, gmax: gmax };
+}
+
+// 入力画面の出場可能選手パネルを描画
+function renderRaceEligPanel() {
+  var panel = document.getElementById('race-elig-panel');
+  if (!panel) return;
+  if (!_raceEntryEligEv || !_raceEntryEligDate) { panel.style.display = 'none'; return; }
+
+  var ev = _raceEntryEligEv;
+  var comp = sbComputeEligible(ev, _raceEntryEligDate);
+  _eligCache = {};
+  comp.results.forEach(function(r) { _eligCache[r.athlete.id] = r; });
+
+  var certLabel = comp.isCustomCert ? '認定日 ' + comp.dateStr + ' 時点の年齢で判定' : 'レース当日年齢で判定';
+  var condText = (comp.gmin || comp.gmax)
+    ? '参加資格: ' + (comp.gmin ? comp.gmin + '級' : '') + '〜' + (comp.gmax ? comp.gmax + '級' : '') + '（' + certLabel + '）'
+    : '資格級指定なし（' + certLabel + '）';
+
+  var html = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">'
+    + '<span style="font-size:13px;font-weight:700;color:#90d860;">👥 出場可能選手</span>'
+    + '<span style="font-size:11px;color:var(--muted);">' + condText + '</span>'
+    + '<span style="font-size:11px;color:var(--muted);">タップでエントリーに追加 →</span>'
+    + '<button onclick="closeRaceEligPanel()" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;">×</button>'
+    + '</div>';
+
+  if (comp.results.length === 0) {
+    html += '<div style="font-size:12px;color:var(--muted);padding:8px 0;">該当する選手・種目がありません</div>';
+  } else {
+    html += '<div style="display:flex;flex-direction:column;gap:6px;">'
+      + comp.results.map(function(r) {
+          var a = r.athlete;
+          var added = athleteCards.some(function(c){ return c.athleteId === a.id; });
+          return '<div style="display:flex;align-items:center;gap:10px;background:var(--tap-bg);border-radius:8px;padding:8px 12px;flex-wrap:wrap;">'
+            + '<button data-eligaid="' + a.id + '" class="race-elig-add-btn" ' + (added ? 'disabled' : '')
+            + ' style="background:' + (added ? 'rgba(120,200,80,0.1)' : '#5cb840') + ';color:' + (added ? '#90d860' : '#fff')
+            + ';border:none;border-radius:6px;font-size:12px;font-weight:700;padding:5px 12px;cursor:' + (added ? 'default' : 'pointer') + ';white-space:nowrap;">'
+            + (added ? '✓ 追加済' : '＋ 追加') + '</button>'
+            + '<span style="font-weight:700;font-size:13px;">' + (a.sex==='男子'?'♂':'♀') + ' ' + a.name
+            + ' <span style="font-size:11px;color:var(--muted);font-weight:400;">' + (comp.isCustomCert?'認定日':'当日') + r.ageOnDay + '歳</span></span>'
+            + '<span style="display:flex;flex-wrap:wrap;gap:4px;">'
+            + r.events.map(function(e2) {
+                return '<span style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.25);border-radius:5px;padding:2px 7px;font-size:11px;">'
+                  + e2.stroke + e2.dist + ' <strong style="font-family:Rajdhani,monospace;">' + e2.time + '</strong> ' + e2.grade + '級</span>';
+              }).join('')
+            + '</span></div>';
+        }).join('')
+      + '</div>';
+  }
+
+  panel.innerHTML = html;
+  panel.style.display = 'block';
+  panel.onclick = function(e) {
+    var btn = e.target.closest('.race-elig-add-btn');
+    if (btn && !btn.disabled) addEligAthleteCard(btn.dataset.eligaid);
+  };
+}
+
+function closeRaceEligPanel() {
+  _raceEntryEligEv = null;
+  _raceEntryEligDate = null;
+  var panel = document.getElementById('race-elig-panel');
+  if (panel) panel.style.display = 'none';
+}
+
+// 出場可能選手をエントリーカードに追加（出場可能種目を最大3枠まで自動セット）
+function addEligAthleteCard(athleteId) {
+  var r = _eligCache[athleteId];
+  if (!r) return;
+  if (athleteCards.some(function(c){ return c.athleteId === athleteId; })) return;  // 重複防止
+  var slots = r.events.slice(0, MAX_SLOTS).map(function(e2) {
+    return { stroke: e2.stroke, distance: e2.dist };
+  });
+  // 空カード（選手未選択）が1枚だけある場合はそれを置き換える
+  if (athleteCards.length === 1 && !athleteCards[0].athleteId) {
+    athleteCards[0] = { cardId: athleteCards[0].cardId, athleteId: athleteId, slots: slots };
+  } else {
+    athleteCards.push({ cardId: ++cardCounter, athleteId: athleteId, slots: slots });
+  }
+  renderAthleteCards();
+  renderRaceEligPanel();  // 追加済表示に更新
+  showNotification('✅ ' + r.athlete.name + ' をエントリーに追加しました（' + slots.length + '種目）');
+}
+
+// スケジュールのraceイベントからレース入力へ遷移
+function sbGoToRaceEntry(day, meetName) {
+  var monthVal = sbVal('sb-inp-month') || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+  var parts = monthVal.split('-').map(Number);
+  var dateStr = parts[0] + '-' + String(parts[1]).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+
+  showView('race-entry');
+
+  // DOM更新後にセット
+  setTimeout(function() {
+    var dateEl = document.getElementById('race-date');
+    var meetEl = document.getElementById('race-meet');
+    if (dateEl) { dateEl.value = dateStr; }
+    if (meetEl) { meetEl.value = meetName; }
+    // イベントに会場・プールサイズが登録されていれば反映
+    var srcEv = sbEvents.find(function(e){ return e.type==='race' && e.day===day && e.name===meetName && e.month===monthVal; });
+    if (srcEv) {
+      var venueEl = document.getElementById('race-venue');
+      var poolEl  = document.getElementById('race-pool');
+      if (venueEl && srcEv.venue) venueEl.value = srcEv.venue;
+      if (poolEl  && srcEv.pool)  poolEl.value  = srcEv.pool;
+      // 出場可能選手パネルを表示
+      _raceEntryEligEv = srcEv;
+      _raceEntryEligDate = dateStr;
+      renderRaceEligPanel();
+    }
+    updateSessionBadge && updateSessionBadge();
+    // スケジュールバナーを表示
+    var banner = document.getElementById('race-entry-schedule-banner');
+    if (banner) {
+      banner.style.display = 'flex';
+      banner.innerHTML = '<span style="font-size:13px;">📅 <strong>' + parts[1] + '月' + day + '日 ' + meetName + '</strong> のレース入力</span>'
+        + '<button onclick="document.getElementById(&quot;race-entry-schedule-banner&quot;).style.display=&quot;none&quot;" '
+        + 'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0 0 0 8px;">×</button>';
+    }
+    // プルダウンも更新
+    renderRaceSchedulePicker();
+  }, 50);
+}
+
+function sbAddAbsent() {
+  var day = parseInt(sbVal('sb-new-abs-day'));
+  var dow = sbVal('sb-new-abs-dow').trim();
+  if (!day) { alert('日を入力してください'); return; }
+  sbAbsents.push({ day:day, dow:dow||'?' });
+  document.getElementById('sb-new-abs-day').value = '';
+  document.getElementById('sb-new-abs-dow').value = '';
+  sbSave(); sbRenderEventList(); sbRenderPreview();
+}
+function sbRemoveAbsent(i) { sbAbsents.splice(i,1); sbSave(); sbRenderEventList(); sbRenderPreview(); }
+
+function sbPrint() {
+  var prev = document.getElementById('sb-preview-root');
+  if (!prev) return;
+  var win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">'
+    + '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">'
+    + '<style>body{margin:0;padding:10mm;font-family:"Noto Sans JP",sans-serif;background:#fff;}'
+    + document.getElementById('sb-print-styles').innerHTML
+    + '@media print{@page{margin:8mm;}}</style></head><body>'
+    + prev.innerHTML + '</body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(function(){ win.print(); }, 500);
+}
+
+function sbRenderPreview() {
+  var root = document.getElementById('sb-preview-root');
+  if (!root) return;
+
+  var monthVal  = sbVal('sb-inp-month') || '2026-06';
+  var parts     = monthVal.split('-').map(Number);
+  var yr = parts[0], mo = parts[1];
+  var daysInMonth = new Date(yr, mo, 0).getDate();
+  var firstDow    = new Date(yr, mo-1, 1).getDay();
+  var monthLabel  = yr+'.'+String(mo).padStart(2,'0');
+  var monthJa     = yr+'\u5e74'+mo+'\u6708';
+
+  // 曜日別設定を読み込み
+  var dowOffMap = {}, dowAmMap = {}, dowDryMap = {}, dowPmMap = {};
+  [0,1,2,3,4,5,6].forEach(function(dow) {
+    var offEl = document.getElementById('sb-dow-off-' + dow);
+    dowOffMap[dow] = dow === 0 ? true : (offEl ? offEl.checked : !!(SB_DEFAULTS.dowOff[dow]));
+    dowAmMap[dow]  = sbVal('sb-dow-am-'  + dow) || '';
+    dowDryMap[dow] = sbVal('sb-dow-dry-' + dow) || '';
+    dowPmMap[dow]  = sbVal('sb-dow-pm-'  + dow) || '';
+  });
+  var msgTitle = sbVal('sb-inp-msg-title');
+  var message  = sbVal('sb-inp-message');
+  var notes    = sbVal('sb-inp-notes').split('\n').filter(function(l){return l.trim();});
+
+  var evMap = {};
+  sbEvents.forEach(function(ev){
+    if (ev.month !== monthVal) return;  // 当月のイベントのみ反映
+    if(!evMap[ev.day]) evMap[ev.day]=[];
+    evMap[ev.day].push(ev);
+  });
+  var absMap = {};
+  sbAbsents.forEach(function(a){ absMap[a.day]=a; });
+
+  var rows = '';
+  for (var d = 1; d <= daysInMonth; d++) {
+    var dow   = (firstDow + d - 1) % 7;
+    var dowJa = SB_DOW_JA[dow];
+    var isSat = dow===6, isSun = dow===0, isMon = dow===1;
+    var isWeekday = !isSat && !isSun;
+    var evs = evMap[d] || [];
+    var isRace = evs.some(function(e){return e.type==='race';});
+    var isBd   = evs.some(function(e){return e.type==='bd';});
+    var isDowOffEarly = dowOffMap[dow]; // 曜日OFF（日曜・月曜等）
+    var isOff  = evs.some(function(e){return e.type==='off';}) || isDowOffEarly;
+    var holiday = getHoliday(yr, mo, d);
+    var isHoliday = !!holiday;
+    var isRed = isSun || isHoliday; // 赤文字対象（日曜＋祝日）
+
+
+    var rowBg = isRace   ? 'border-left:4px solid #e84040;background:#fff5f5;'
+              : isBd     ? 'border-left:4px solid #f0c040;background:#fffbee;'
+              : isHoliday && !isSun && !isSat ? 'border-left:4px solid #e84040;background:#fff8f8;opacity:0.85;'
+              : isOff && !isSat ? 'opacity:0.5;' : '';
+
+    var bc = {race:'background:#ffe0e0;color:#c00;',training:'background:#e4f6da;color:#3a7a20;',bd:'background:#fff3c0;color:#a06000;',off:'background:#e8edf5;color:#667;',other:'background:#e0f6fa;color:#007a90;'};
+    function evBadge(ev) {
+      return '<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%;'+bc[ev.type]+'">'+ev.name+'</span>';
+    }
+    // 左イベント枠：祝日＋誕生日
+    var evBadgesLeft = '';
+    if (holiday) {
+      evBadgesLeft += '<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;background:#ffe0e0;color:#c00;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">' + holiday + '</span>';
+    }
+    evBadgesLeft += evs.filter(function(ev){ return ev.type==='bd'; }).map(evBadge).join('');
+    // 右枠：試合・強化練・その他・OFF
+    var evBadgesRight = evs.filter(function(ev){ return ev.type==='race' || ev.type==='training' || ev.type==='other' || ev.type==='off'; }).map(evBadge).join('');
+
+    var isDowOff = dowOffMap[dow];
+    var dAm  = dowAmMap[dow]  || '';
+    var dDry = dowDryMap[dow] || '';
+    var dPm  = dowPmMap[dow]  || '';
+
+    // 日別調整（最優先）：OFF指定 or 時間上書き
+    var ovr = sbOverrides[d];
+    var ovrOff = false;
+    if (ovr) {
+      if (ovr.off) {
+        ovrOff = true;
+      } else {
+        dAm  = ovr.am  || '';
+        dDry = ovr.dry || '';
+        dPm  = ovr.pm  || '';
+        isDowOff = false;  // 時間指定があれば曜日OFF・祝日OFFを解除
+      }
+    }
+
+    // AM/PM別の状態判定（race/offイベントのscope・disp対応）
+    var amState = null, pmState = null;
+    // race優先で判定
+    evs.filter(function(e){return e.type==='race';}).forEach(function(ev2){
+      var sc = ev2.scope || 'all';
+      var lbl = ev2.disp === 'all' ? 'RACE' : 'RACE / OFF';  // 全員出場ならRACEのみ
+      if ((sc === 'all' || sc === 'am') && !amState) amState = lbl;
+      if ((sc === 'all' || sc === 'pm') && !pmState) pmState = lbl;
+    });
+    evs.filter(function(e){return e.type==='off';}).forEach(function(ev2){
+      var sc = ev2.scope || 'all';
+      if ((sc === 'all' || sc === 'am') && !amState) amState = 'OFF';
+      if ((sc === 'all' || sc === 'pm') && !pmState) pmState = 'OFF';
+    });
+
+    var grayPill = function(label) {
+      return '<span style="font-size:13px;font-weight:700;background:#f0f0f0;color:#999;border-radius:5px;padding:4px 14px;letter-spacing:1px;">' + label + '</span>';
+    };
+
+    var hasTimeOvr = ovr && !ovr.off;
+    var tc = '';
+    if (ovrOff || ((isDowOff || isHoliday) && !hasTimeOvr)) {
+      var offLabel = (isHoliday && !isDowOff && !ovrOff) ? holiday : 'OFF';
+      tc = '<div style="flex:3.6;display:flex;align-items:center;justify-content:center;padding:4px 6px;border-right:1px solid #f0f3f8;">' + grayPill(offLabel) + '</div>';
+    } else if (amState && pmState && amState === pmState) {
+      // AM/PM同一状態 → 全幅で1つ表示
+      tc = '<div style="flex:3.6;display:flex;align-items:center;justify-content:center;padding:4px 6px;border-right:1px solid #f0f3f8;">' + grayPill(amState) + '</div>';
+    } else {
+      var amPill = dAm && dAm !== '–' && dAm !== '-'
+        ? '<span style="font-size:13px;font-weight:700;background:#e0f9f2;color:#0a7a50;border-radius:5px;padding:4px 10px;">' + dAm + '</span>' : '';
+      var dryPill = dDry && dDry !== '–' && dDry !== '-'
+        ? '<span style="font-size:13px;font-weight:700;background:#fef3e0;color:#b06000;border-radius:5px;padding:4px 10px;font-style:italic;">' + dDry + '</span>' : '';
+      var pmPill = dPm && dPm !== '–' && dPm !== '-'
+        ? '<span style="font-size:13px;font-weight:700;background:#e8f0ff;color:#1a5aff;border-radius:5px;padding:4px 10px;">' + dPm + '</span>' : '';
+      // AMセル
+      var amCell = '<div style="flex:1.2;display:flex;align-items:center;justify-content:center;padding:4px 6px;border-right:1px solid #f0f3f8;">' + (amState ? grayPill(amState) : amPill) + '</div>';
+      // PMセル（Dry+Swim）：pmState時は2列分を1つにまとめる
+      var pmCells;
+      if (pmState) {
+        pmCells = '<div style="flex:2.4;display:flex;align-items:center;justify-content:center;padding:4px 6px;border-right:1px solid #f0f3f8;">' + grayPill(pmState) + '</div>';
+      } else {
+        pmCells = '<div style="flex:1.2;display:flex;align-items:center;justify-content:center;padding:4px 6px;border-right:1px solid #f0f3f8;">' + dryPill + '</div>'
+                + '<div style="flex:1.2;display:flex;align-items:center;justify-content:center;padding:4px 6px;border-right:1px solid #f0f3f8;">' + pmPill + '</div>';
+      }
+      tc = amCell + pmCells;
+    }
+
+    rows += '<tr><td style="padding:0;border-bottom:1px solid #e8edf5;">'
+      +'<div style="display:flex;align-items:stretch;min-height:34px;'+rowBg+'">'
+      // 日付（最小）
+      +'<div style="flex:0 0 70px;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 6px;background:#fafbfe;border-right:2px solid #e2e8f4;">'
+      +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:700;color:'+(isSat?'#1a5aff':isRed?'#e84040':'#0a2a60')+';line-height:1;">'+d+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:'+(isSat?'#1a5aff':isRed?'#e84040':'#8898aa')+';">'+dowJa+'</div>'
+      +'</div>'
+      // イベント枠（大）：祝日・誕生日
+      +'<div style="flex:2;display:flex;align-items:center;justify-content:center;gap:4px;padding:4px 8px;border-right:1px solid #f0f3f8;overflow:hidden;">'+evBadgesLeft+'</div>'
+      // AM / PM(Dry) / PM(Swim)
+      +tc
+      // Race・強化練・その他枠（大）
+      +'<div style="flex:2;display:flex;align-items:center;justify-content:center;gap:4px;padding:4px 8px;overflow:hidden;">'+evBadgesRight+'</div>'
+      +'</div></td></tr>';
+  }
+
+  var allEvsSorted = sbEvents.slice().sort(function(a,b){return a.day-b.day;});
+  var evChips = allEvsSorted.map(function(ev){
+    var dc={race:'background:#e84040;',training:'background:#5cb840;',bd:'background:#f0c040;',other:'background:#00c8e0;',off:'background:#b0bcd0;'};
+    return '<div style="display:flex;align-items:center;gap:6px;font-size:12px;">'
+      +'<span style="width:8px;height:8px;border-radius:50%;display:inline-block;'+dc[ev.type||'other']+'"></span>'
+      +'<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700;color:#0a2a60;">'+mo+'/'+ev.day+'</span>'
+      +'<span style="color:#334;">'+ev.name+'</span></div>';
+  }).join('');
+
+  var absentHtml = sbAbsents.length > 0
+    ? '<div style="background:#fff8e0;border-top:1px solid #ffe58a;padding:8px 20px;font-size:11px;color:#8a6000;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">'
+      +'<strong style="color:#664400;">【リーダー不在日】</strong>'
+      +sbAbsents.sort(function(a,b){return a.day-b.day;}).map(function(a){return mo+'\u6708'+a.day+'\u65e5('+a.dow+')';}).join('\u3000\u3000')
+      +'</div>' : '';
+
+  var notesHtml = notes.length > 0
+    ? '<div style="background:#fafbfe;border-top:1px solid #e8edf5;padding:12px 20px;font-size:10.5px;color:#667;line-height:1.8;">'
+      +'<ul style="padding-left:16px;">'+notes.map(function(n){return '<li>'+n+'</li>';}).join('')+'</ul></div>' : '';
+
+  var msgHtml = message.trim()
+    ? '<div style="background:linear-gradient(135deg,#0a2a60 0%,#1a3a7a 100%);padding:18px 24px;color:rgba(255,255,255,.85);font-size:11.5px;line-height:1.85;white-space:pre-wrap;border-top:2px solid rgba(255,255,255,.1);">'
+      +(msgTitle?'<div style="font-size:13px;font-weight:700;letter-spacing:1px;margin-bottom:8px;">'+msgTitle+'</div>':'')
+      +message.trim()+'</div>' : '';
+
+  root.innerHTML = '<div style="background:#fff;color:#111;border-radius:12px;overflow:hidden;max-width:860px;margin:0 auto;font-family:\'Noto Sans JP\',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.5);">'
+    +'<div style="background:linear-gradient(135deg,#0a2a60 0%,#1a5aff 60%,#00c8e0 100%);padding:20px 28px 16px;display:flex;align-items:flex-end;justify-content:space-between;">'
+    +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:52px;font-weight:800;color:rgba(255,255,255,.15);line-height:1;letter-spacing:-1px;">'+monthLabel+'</div>'
+    +'<div style="text-align:right;">'
+    +'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:2px;text-transform:uppercase;">Expert Schedule</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;">TX MYRICA SWIM TEAM</div>'
+    +'</div></div>'
+    +'<div>'
+    +'<div style="background:#f0f4fa;display:flex;gap:0;border-bottom:2px solid #dde4f0;font-size:11px;color:#446;font-weight:700;">'
+    +'<div style="flex:0 0 70px;text-align:center;padding:5px 4px;border-right:1px solid #dde4f0;">\u65e5\u4ed8</div>'
+    +'<div style="flex:2;text-align:center;padding:5px 4px;border-right:1px solid #dde4f0;">\u30a4\u30d9\u30f3\u30c8</div>'
+    +'<div style="flex:1.2;text-align:center;padding:5px 4px;border-right:1px solid #dde4f0;">AM</div>'
+    +'<div style="flex:1.2;text-align:center;padding:5px 4px;border-right:1px solid #dde4f0;">PM (Dry)</div>'
+    +'<div style="flex:1.2;text-align:center;padding:5px 4px;border-right:1px solid #dde4f0;">PM (Swim)</div>'
+    +'<div style="flex:2;text-align:center;padding:5px 4px;">Race\u30fb\u5f37\u5316\u7df4\u30fb\u305d\u306e\u4ed6</div>'
+    +'</div>'
+    +'<table style="width:100%;border-collapse:collapse;"><tbody>'+rows+'</tbody></table>'
+    +'</div>'
+    +notesHtml
+    +msgHtml
+    +absentHtml
+    +(allEvsSorted.length>0?'<div style="background:#f8faff;border-top:2px solid #dde4f0;padding:14px 20px;display:flex;gap:16px;flex-wrap:wrap;"><div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#8898aa;text-transform:uppercase;width:100%;margin-bottom:4px;">📅 '+monthJa+' \u30ec\u30fc\u30b9\u30fb\u30a4\u30d9\u30f3\u30c8\u4e88\u5b9a</div>'+evChips+'</div>':'')
+    +'</div>';
+}
+
+function sbResetTemplate() {
+  if (!confirm('練習時間・メッセージ・注意書きをテンプレートに戻しますか？\nイベント・不在日はそのまま保持されます。')) return;
+  var today = new Date();
+  var defaultMonth = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
+  var fields = {
+    'sb-inp-weekday-am':  SB_DEFAULTS.weekdayAm,
+    'sb-inp-weekday-dry': SB_DEFAULTS.weekdayDry,
+    'sb-inp-weekday-pm':  SB_DEFAULTS.weekdayPm,
+    'sb-inp-sat-am':      SB_DEFAULTS.satAm,
+    'sb-inp-sat-dry':     SB_DEFAULTS.satDry,
+    'sb-inp-sat-pm':      SB_DEFAULTS.satPm,
+    'sb-inp-msg-title':   SB_DEFAULTS.msgTitle,
+    'sb-inp-message':     SB_DEFAULTS.message,
+    'sb-inp-notes':       SB_DEFAULTS.notes,
+  };
+  Object.keys(fields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = fields[id];
+  });
+  sbSave();
+  sbRenderPreview();
+}
+
+
+// ── イベント種別トグル＆会場履歴 ──────────────────────────────────────
+function sbEvTypeToggle() {
+  var type = sbVal('sb-new-ev-type');
+  var raceFields = document.getElementById('sb-ev-race-fields');
+  var nameLabel = document.getElementById('sb-new-ev-name-label');
+  if (raceFields) raceFields.style.display = type === 'race' ? 'block' : 'none';
+  if (nameLabel) nameLabel.textContent = type === 'race' ? '大会名' : 'イベント名';
+}
+
+function sbUpdateVenueDatalists() {
+  var vdl = document.getElementById('sb-venue-datalist');
+  var mdl = document.getElementById('sb-meet-datalist');
+  if (vdl) vdl.innerHTML = getVenueHistory().map(function(v){return '<option value="'+v+'">';}).join('');
+  if (mdl) mdl.innerHTML = getMeetHistory().map(function(v){return '<option value="'+v+'">';}).join('');
+}
+
+// ── 日別調整 ──────────────────────────────────────────────────────────
+function sbOvrModeToggle() {
+  var mode = sbVal('sb-ovr-mode');
+  var fields = document.getElementById('sb-ovr-time-fields');
+  if (fields) fields.style.display = mode === 'time' ? 'block' : 'none';
+}
+
+function sbAddOverride() {
+  var day = parseInt(sbVal('sb-ovr-day'));
+  if (!day) { alert('日を選択してください'); return; }
+  var mode = sbVal('sb-ovr-mode');
+  if (mode === 'off') {
+    sbOverrides[day] = { off: true };
+  } else {
+    sbOverrides[day] = {
+      off: false,
+      am:  sbVal('sb-ovr-am').trim(),
+      dry: sbVal('sb-ovr-dry').trim(),
+      pm:  sbVal('sb-ovr-pm').trim(),
+    };
+  }
+  document.getElementById('sb-ovr-day').value = '';
+  document.getElementById('sb-ovr-am').value = '';
+  document.getElementById('sb-ovr-dry').value = '';
+  document.getElementById('sb-ovr-pm').value = '';
+  sbSave(); sbRenderOverrideList(); sbRenderPreview();
+}
+
+function sbRemoveOverride(day) {
+  delete sbOverrides[day];
+  sbSave(); sbRenderOverrideList(); sbRenderPreview();
+}
+
+function sbRenderOverrideList() {
+  var el = document.getElementById('sb-override-list');
+  if (!el) return;
+  var days = Object.keys(sbOverrides).map(Number).sort(function(a,b){return a-b;});
+  if (days.length === 0) { el.innerHTML = '<div style="font-size:11px;color:#5a7a9a;">なし</div>'; return; }
+  el.innerHTML = days.map(function(d) {
+    var o = sbOverrides[d];
+    var desc = o.off ? '<span style="color:#ff9090;font-weight:700;">OFF</span>'
+      : [o.am?('AM '+o.am):'', o.dry?('Dry '+o.dry):'', o.pm?('Swim '+o.pm):''].filter(Boolean).join(' / ') || '(\u6642\u9593\u306a\u3057)';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:4px;">'
+      + '<span style="font-size:11px;color:#00c8e0;font-weight:700;min-width:32px;">' + d + '\u65e5</span>'
+      + '<span style="font-size:11px;color:#fff;flex:1;">' + desc + '</span>'
+      + '<button data-ovrday="' + d + '" class="sb-ovr-del" style="background:none;border:none;color:#5a6a80;cursor:pointer;font-size:16px;padding:0 2px;">\u00d7</button>'
+      + '</div>';
+  }).join('');
+  el.onclick = function(e) {
+    var btn = e.target.closest('.sb-ovr-del');
+    if (btn) sbRemoveOverride(parseInt(btn.dataset.ovrday));
+  };
+}
+
+// ── イベント日プルダウン更新 ──────────────────────────────────────────
+function sbUpdateDayOptions() {
+  var monthVal = sbVal('sb-inp-month') || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+  var parts = monthVal.split('-').map(Number);
+  var daysInMonth = new Date(parts[0], parts[1], 0).getDate();
+  var dowJa = ['日','月','火','水','木','金','土'];
+  var opts = '<option value="">--</option>';
+  for (var d = 1; d <= daysInMonth; d++) {
+    var dow = new Date(parts[0], parts[1]-1, d).getDay();
+    opts += '<option value="' + d + '">' + d + '日(' + dowJa[dow] + ')</option>';
+  }
+  ['sb-new-ev-day', 'sb-ovr-day'].forEach(function(id) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    var cur = sel.value;
+    sel.innerHTML = opts;
+    if (cur && parseInt(cur) <= daysInMonth) sel.value = cur;
+  });
+}
+
+// ── 曜日OFFトグル ─────────────────────────────────────────────────────
+function sbDowToggle(dow) {
+  var offEl    = document.getElementById('sb-dow-off-' + dow);
+  var fieldsEl = document.getElementById('sb-dow-fields-' + dow);
+  if (!offEl || !fieldsEl) return;
+  fieldsEl.style.display = offEl.checked ? 'none' : 'block';
+}
+
+// ── 月スライド＋クイック選択 ──────────────────────────────────────────
+function sbMonthDisplay() {
+  var val = sbVal('sb-inp-month') || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+  var parts = val.split('-').map(Number);
+  var disp = document.getElementById('sb-month-display');
+  if (disp) disp.textContent = parts[0] + '年 ' + String(parts[1]).padStart(2,'0') + '月';
+  sbMonthGridRender();
+  sbUpdateDayOptions();
+  sbRenderEventList();  // 月切替でイベントリストも当月分に更新
+}
+// グリッド表示中の年度（nullなら選択月から自動算出）
+var _sbGridFiscalYear = null;
+
+function sbFiscalYearOf(yr, mo) {
+  // 4月始まり年度：1〜3月は前年扱い
+  return mo >= 4 ? yr : yr - 1;
+}
+
+function sbFiscalShift(delta) {
+  if (_sbGridFiscalYear === null) {
+    var selVal = sbVal('sb-inp-month') || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+    var p = selVal.split('-').map(Number);
+    _sbGridFiscalYear = sbFiscalYearOf(p[0], p[1]);
+  }
+  _sbGridFiscalYear += delta;
+  sbMonthGridRender();
+}
+
+function sbMonthGridRender() {
+  var grid = document.getElementById('sb-month-grid');
+  if (!grid) return;
+  var today = new Date();
+  var nowVal = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0');
+  var selVal = sbVal('sb-inp-month') || nowVal;
+  var selParts = selVal.split('-').map(Number);
+
+  // 表示年度：手動切替がなければ選択月の年度
+  var fy = _sbGridFiscalYear !== null ? _sbGridFiscalYear : sbFiscalYearOf(selParts[0], selParts[1]);
+
+  // 年度ラベル更新
+  var fyLabel = document.getElementById('sb-fiscal-label');
+  if (fyLabel) fyLabel.textContent = fy + '年度（' + fy + '.4〜' + (fy+1) + '.3）';
+
+  // 年度の12ヶ月（4月〜翌3月）
+  var months = [];
+  for (var i = 0; i < 12; i++) {
+    var mo = 4 + i;
+    var yr = fy;
+    if (mo > 12) { mo -= 12; yr++; }
+    months.push({ yr: yr, mo: mo });
+  }
+
+  grid.innerHTML = months.map(function(m) {
+    var v = m.yr + '-' + String(m.mo).padStart(2,'0');
+    var isNow = v === nowVal;
+    var isSel = v === selVal;
+    var label = String(m.mo) + '月';
+    var yearLabel = (m.mo === 1) ? '<div style="font-size:8px;opacity:0.7;line-height:1;">' + m.yr + '</div>' : '';
+    var bg   = isSel  ? '#00c8e0'
+             : isNow  ? 'rgba(0,200,224,0.2)'
+             : 'rgba(255,255,255,0.06)';
+    var color = isSel ? '#0a1628' : '#fff';
+    var border = isNow && !isSel ? '1px solid #00c8e0' : '1px solid transparent';
+    var fw = isSel ? '800' : '600';
+    return '<button data-sbmonth="' + v + '" style="'
+      + 'background:' + bg + ';border:' + border + ';border-radius:7px;'
+      + 'color:' + color + ';font-family:Barlow Condensed,sans-serif;'
+      + 'font-size:13px;font-weight:' + fw + ';padding:6px 2px;cursor:pointer;'
+      + 'display:flex;flex-direction:column;align-items:center;justify-content:center;'
+      + 'line-height:1.2;transition:background 0.12s;">'
+      + yearLabel
+      + label
+      + '</button>';
+  }).join('');
+  // data属性経由でクリックイベント
+  grid.onclick = function(e) {
+    var btn = e.target.closest('[data-sbmonth]');
+    if (btn) {
+      _sbGridFiscalYear = null;  // 月を選んだら選択月の年度に追従
+      sbMonthSelect(btn.dataset.sbmonth);
+    }
+  };
+}
+function sbMonthSelect(val) {
+  var el = document.getElementById('sb-inp-month');
+  if (!el) return;
+  el.value = val;
+  sbMonthDisplay();
+  sbSave();
+  sbRenderPreview();
+}
+function sbMonthShift(delta) {
+  var el = document.getElementById('sb-inp-month');
+  if (!el) return;
+  var val = el.value || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+  var parts = val.split('-').map(Number);
+  var yr = parts[0], mo = parts[1];
+  mo += delta;
+  if (mo > 12) { mo = 1; yr++; }
+  if (mo < 1)  { mo = 12; yr--; }
+  el.value = yr + '-' + String(mo).padStart(2,'0');
+  _sbGridFiscalYear = null;  // グリッドを選択月の年度に追従させる
+  sbMonthDisplay();
+  sbSave();
+  sbRenderPreview();
+}
+function sbMonthFromPicker() {
+  sbMonthDisplay();
+  sbSave();
+  sbRenderPreview();
+}
+
+function sbInit() {
+  var d = sbLoad();
+  // フォームに値をセット
+  var fields = {
+    'sb-inp-month':     d.month,
+    'sb-inp-msg-title': d.msgTitle,
+    'sb-inp-message':   d.message,
+    'sb-inp-notes':     d.notes,
+  };
+  Object.keys(fields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = fields[id];
+  });
+
+  // 曜日別設定をフォームに反映
+  [1,2,3,4,5,6].forEach(function(dow) {
+    var offEl = document.getElementById('sb-dow-off-' + dow);
+    if (offEl) offEl.checked = !!(d.dowOff && d.dowOff[dow]);
+    var amEl  = document.getElementById('sb-dow-am-'  + dow);
+    var dryEl = document.getElementById('sb-dow-dry-' + dow);
+    var pmEl  = document.getElementById('sb-dow-pm-'  + dow);
+    if (amEl)  amEl.value  = (d.dowAm  && d.dowAm[dow]  !== undefined) ? d.dowAm[dow]  : SB_DEFAULTS.dowAm[dow]  || '';
+    if (dryEl) dryEl.value = (d.dowDry && d.dowDry[dow] !== undefined) ? d.dowDry[dow] : SB_DEFAULTS.dowDry[dow] || '';
+    if (pmEl)  pmEl.value  = (d.dowPm  && d.dowPm[dow]  !== undefined) ? d.dowPm[dow]  : SB_DEFAULTS.dowPm[dow]  || '';
+    sbDowToggle(dow);  // OFF状態に応じてフォーム表示切替
+  });
+
+  // 入力変更時に自動保存＋プレビュー更新
+  ['sb-inp-month','sb-inp-msg-title','sb-inp-message','sb-inp-notes'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.oninput  = function() { sbSave(); sbRenderPreview(); };
+      el.onchange = function() { sbSave(); sbRenderPreview(); };
+    }
+  });
+
+  sbMonthDisplay();  // スライド式月表示を更新
+  sbRenderEventList();
+  sbRenderOverrideList();
+  sbUpdateVenueDatalists();
+  sbEvTypeToggle();
+  sbRenderPreview();
+}
+
+
 // =====================================================================
 const SYS_MANUAL = {
   title: 'システム仕様書・取扱説明書',
   subtitle: 'SwimTrack Pro — TX MYRICA SWIM TEAM',
-  lastUpdated: '2026-05-26',
+  lastUpdated: '2026-06-11',
   sections: [
     { id:'sm-overview', title:'1. システム概要', content:`
       <table style="width:100%;border-collapse:collapse;font-size:0.95rem;">
@@ -6135,7 +7873,10 @@ const SYS_MANUAL = {
       <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
         <li><strong>通常表示</strong>：全18種目を横スクロールで閲覧。タイムをタップして編集</li>
         <li><strong>全種目閲覧</strong>：フォントを縮小して1画面で全員比較</li>
-        <li><strong>資格級自動表示</strong>：タイム入力に連動して日本水泳連盟の資格級を自動表示</li>
+        <li><strong>資格級自動表示</strong>：タイム入力に連動して日本水泳連盟の資格級を自動表示。<strong>閲覧日（今日）時点の実年齢で判定</strong>。レース結果・レース比較・選手詳細・印刷も同様</li>
+        <li><strong>級判定モード切替</strong>：ベストタイム表の「級: 実年齢（今日） / 年度末年齢」ボタンで判定基準を切替可能（設定は端末に保存）</li>
+        <li><strong>レース出場判定</strong>：スケジュールの「👥 出場可」フィルターのみレース当日年齢で判定（参加資格の公式ルール）</li>
+        <li><strong>年齢別基準表</strong>：資格級タブ → 男子/女子基準表 → 年齢区分ボタン（8歳以下/9歳/10歳/11歳/12歳/13歳/14歳/15-16歳/17-18歳/19歳以上の10区分）で各年齢の基準タイムを閲覧可能</li>
         <li><strong>PBフラグ</strong>：レース日付の時系列で最速タイムを自動判定</li>
       </ul>` },
     { id:'sm-roster', title:'5. 選手一覧', content:`
@@ -6179,7 +7920,43 @@ const SYS_MANUAL = {
         <li>右上の「⤢」ボタンで全画面表示に切り替え可能</li>
         <li>「⊡」ボタンでスライドパネルに戻る。閉じると自動でリセット</li>
       </ul>` },
-    { id:'sm-update', title:'11. アプリ更新手順', content:`
+    { id:'sm-schedule', title:'11. スケジュール作成', content:`
+      <p>月間練習スケジュールを作成・印刷するツール。左サイドバーで設定すると右側プレビューに即時反映されます。</p>
+      <h4 style="margin:14px 0 6px;color:var(--accent);">対象月の選択</h4>
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:6px;">
+        <li><strong>‹ ›ボタン</strong>：1ヶ月ずつ前後に移動</li>
+        <li><strong>年度グリッド</strong>：4月〜翌3月の12ヶ月をワンタップ選択。年度セレクタ（‹ 2026年度 ›）で過去・未来の年度に切替可能</li>
+      </ul>
+      <h4 style="margin:14px 0 6px;color:var(--accent);">曜日別練習時間</h4>
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:6px;">
+        <li>月〜土の各曜日にAM / Dry Swim / Swimの時間を個別設定</li>
+        <li>OFFチェックで練習なし表示（月曜はデフォルトOFF・日曜は常時OFF）</li>
+      </ul>
+      <h4 style="margin:14px 0 6px;color:var(--accent);">日別調整（曜日設定より優先）</h4>
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:6px;">
+        <li>特定日をOFFにしたり、その日だけ特別な練習時間を設定可能</li>
+        <li>祝日や曜日OFFの日でも時間指定すれば練習表示になる（特別練習対応）</li>
+      </ul>
+      <h4 style="margin:14px 0 6px;color:var(--accent);">イベント・特記日</h4>
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:6px;">
+        <li>種別：🏁試合（Race枠）／💪強化練・📌その他・🔴OFF日（Race枠）／🎂誕生日（イベント枠）</li>
+        <li><strong>時間帯</strong>：終日 / AMのみ / PMのみ → AM試合・PM通常練習などのパターンに対応</li>
+        <li><strong>出場形態（試合）</strong>：一部出場 → RACE / OFF表示、全員出場 → RACE表示</li>
+        <li><strong>試合登録時</strong>：大会名・会場名・プールサイズ（50m/25m）を登録可能。会場名は履歴からワンタップ選択（レース結果入力と共通メモリー）</li>
+        <li><strong>→ 入力ボタン</strong>：試合イベントからレース結果入力へ。日付・大会名・会場・プールサイズが自動セット</li>
+        <li><strong>参加資格級フィルター</strong>：試合に参加資格級（下限〜上限）を設定可能。「→ 入力」でレース結果入力に移動すると、画面上部に<strong>出場可能選手パネル</strong>が表示される（レース当日年齢で判定）。「＋追加」タップで選手と出場可能種目（最大3種目）がエントリーに自動セットされる</li>
+        <li><strong>資格級認定日オプション</strong>：例外の大会用に認定日を指定可能。設定すると出場判定がその日付時点の年齢で行われる（未設定＝レース当日）</li>
+      </ul>
+      <h4 style="margin:14px 0 6px;color:var(--accent);">プレビュー・印刷</h4>
+      <ul style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:6px;">
+        <li>6枠構成：日付 / イベント / AM / PM (Dry) / PM (Swim) / Race・強化練・その他</li>
+        <li>祝日は自動表示（2024〜2028年対応）。日曜・祝日は赤文字</li>
+        <li>下部：注意事項 → 月間コラム → リーダー不在日 → レース・イベント予定の順</li>
+        <li>🖨 印刷ボタンでA4印刷用ウィンドウを起動</li>
+        <li>設定は端末のlocalStorageに保存（端末ごとに保持）</li>
+        <li><strong>自動バックアップ</strong>：保存のたびに直近10世代をバックアップ。誤削除時はブラウザのコンソール（開発メニュー）で <code>sbListBackups()</code> で一覧確認、<code>sbRestoreBackup(番号)</code> で復元可能</li>
+      </ul>` },
+    { id:'sm-update', title:'12. アプリ更新手順', content:`
       <ol style="margin:0 0 0 18px;display:flex;flex-direction:column;gap:8px;">
         <li>Claudeのチャットで修正を依頼</li>
         <li>「swim best times」をダウンロード（ファイル名変更不要）</li>
@@ -6918,7 +8695,7 @@ function printBestTimes() {
     return `<tr>
       <td class="ps-name-cell">${a.name}<br><span style="font-size:8px;color:#666">${a.kana||''}</span></td>
       <td style="text-align:center;font-size:9px;">${a.sex}</td>
-      <td style="text-align:center;font-size:9px;">${a.grade||'-'}</td>
+      <td style="text-align:center;font-size:9px;">${a.grade||'-'}<br><span style="font-size:8px;color:var(--muted);">${calcAge(a.birthday)??'- '}歳</span></td>
       <td style="text-align:center;font-size:9px;">${age??'-'}</td>
       <td class="ps-grade-cell">${grade ? grade+'級' : '—'}</td>
       ${tds}
@@ -6986,12 +8763,12 @@ function printRaceAll() {
 
   const rows = list.map(r => {
     const ath = athletes.find(a => a.id === r.athleteId);
-    const g   = getGradeForTime(ath?.sex, calcAge(ath?.birthday), r.stroke, r.distance, r.time);
+    const g   = getGradeForTime(ath?.sex, recordGradeAge(ath?.birthday, r.date), r.stroke, r.distance, r.time);
     return `<tr class="${r.isPB ? 'ps-pb-row' : ''}">
       <td>${r.date}</td>
       <td style="font-weight:700">${r.athleteName}</td>
       <td style="text-align:center">${ath?.sex||''}</td>
-      <td style="text-align:center">${ath?.grade||'-'}</td>
+      <td style="text-align:center">${ath?.grade||'-'}<br><span style="font-size:0.72rem;color:var(--muted);">${calcAge(ath?.birthday)??'-'}歳</span></td>
       <td style="text-align:center">${r.stroke}</td>
       <td style="text-align:center">${r.distance}</td>
       <td class="ps-time-mono" style="text-align:center">${r.time}</td>
@@ -7030,6 +8807,7 @@ function printRacePersonal() {
 
   const ath   = athletes.find(a => a.id === athleteId);
   const age   = calcAge(ath?.birthday);
+  const gradeAge = calcGradeAge(ath?.birthday); // 資格級判定用
   const grade = getBestGrade(ath);
   const fy    = _currentFiscalYear;
   let list = races.filter(r => r.athleteId === athleteId);
@@ -7043,7 +8821,7 @@ function printRacePersonal() {
 
   // レースカード（スプリット付き）
   const cards = list.map(r => {
-    const g        = getGradeForTime(ath?.sex, age, r.stroke, r.distance, r.time);
+    const g        = getGradeForTime(ath?.sex, recordGradeAge(ath?.birthday, r.date), r.stroke, r.distance, r.time);
     const laps     = r.lapData || [];
     const minLap   = laps.length ? Math.min(...laps.map(l=>l.lapSec)) : null;
     const maxLap   = laps.length ? Math.max(...laps.map(l=>l.lapSec)) : null;
@@ -7125,8 +8903,8 @@ function printRaceDetail() {
   if (!r) { alert('対象のレース記録が見つかりません'); return; }
 
   const athlete   = athletes.find(a => a.id === r.athleteId);
-  const age       = calcAge(athlete?.birthday);
-  const g         = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
+  const age       = calcGradeAge(athlete?.birthday);
+  const g         = getGradeForTime(athlete?.sex, recordGradeAge(athlete?.birthday, r.date), r.stroke, r.distance, r.time);
   const laps      = r.lapData || [];
   const avgLap    = laps.length ? r.totalSec / laps.length : 0;
   const minLapSec = laps.length ? Math.min(...laps.map(l => l.lapSec)) : 0;
@@ -7235,7 +9013,8 @@ function renderGradeSummary() {
     </tr></thead><tbody>`;
 
   for (const a of athletes) {
-    const age = calcAge(a.birthday);
+    const age = calcAge(a.birthday);           // 表示用（実年齢）
+    const gradeAge = calcGradeAge(a.birthday); // 資格級判定用（年度末年齢）
     const topGrade = getBestGrade(a);
     html += `<tr>
       <td class="athlete-name" style="cursor:pointer" onclick="openAthleteDetail('${a.id}')">${a.name}</td>
@@ -7244,8 +9023,9 @@ function renderGradeSummary() {
       <td>${gradeBadgeHtml(topGrade)}</td>
       ${strokes.flatMap(s => distMap[s].map(d => {
         const sk = strokeStoreKey(s);
-        const t = a.bestTimes?.[sk]?.[d]?.time;
-        const g = t ? getGradeForTime(a.sex, age, sk, d, t) : null;
+        const bte = a.bestTimes?.[sk]?.[d];
+        const t = bte?.time;
+        const g = t ? getGradeForTime(a.sex, recordGradeAge(a.birthday, bte?.date), sk, d, t) : null;
         return `<td>${t ? `<span class="time-chip" style="font-size:12px">${t}</span><br>${gradeBadgeHtml(g)}` : '<span style="color:var(--muted);font-size:11px">-</span>'}</td>`;
       })).join('')}
     </tr>`;
@@ -7255,17 +9035,50 @@ function renderGradeSummary() {
   container.innerHTML = html;
 }
 
+// 基準表の年齢区分（選択状態）
+let _gradeRefAge = '19';
+const GRADE_AGE_BRACKETS = [
+  { key:'8',  label:'8歳以下' },
+  { key:'9',  label:'9歳' },
+  { key:'10', label:'10歳' },
+  { key:'11', label:'11歳' },
+  { key:'12', label:'12歳' },
+  { key:'13', label:'13歳' },
+  { key:'14', label:'14歳' },
+  { key:'16', label:'15-16歳' },
+  { key:'18', label:'17-18歳' },
+  { key:'19', label:'19歳以上' },
+];
+
+function setGradeRefAge(age) {
+  _gradeRefAge = String(age);
+  renderGradeRefTable('男子');
+  renderGradeRefTable('女子');
+}
+
 function renderGradeRefTable(sex) {
   const containerId = sex === '男子' ? 'grade-male-table' : 'grade-female-table';
   const container = document.getElementById(containerId);
-  const stdData = sex === '男子' ? MALE_AGE_DATA[19] : FEMALE_AGE_DATA[19];
+  const ageData = sex === '男子' ? MALE_AGE_DATA : FEMALE_AGE_DATA;
+  const stdData = ageData[_gradeRefAge] || ageData[19];
   // 年度自動計算（4月以降は当年、1〜3月は前年）
   const now = new Date();
   const fiscalYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
   const strokes = ['自由形','背泳ぎ','平泳ぎ','バタフライ','個人メドレー'];
+  const curLabel = (GRADE_AGE_BRACKETS.find(b => b.key === _gradeRefAge) || {}).label || '19歳以上';
 
-  let html = `<div style="margin-bottom:12px;font-size:12px;color:var(--muted)">
-    ${fiscalYear}年度 日本水泳連盟 資格級基準表（19歳以上）
+  // 年齢区分セレクタ
+  let html = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+    ${GRADE_AGE_BRACKETS.map(b => `
+      <button onclick="setGradeRefAge('${b.key}')" style="
+        background:${b.key === _gradeRefAge ? 'var(--accent)' : 'var(--tap-bg)'};
+        color:${b.key === _gradeRefAge ? '#0a1628' : 'var(--text)'};
+        border:1px solid ${b.key === _gradeRefAge ? 'var(--accent)' : 'var(--border)'};
+        border-radius:20px;font-size:13px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all 0.15s;
+      ">${b.label}</button>`).join('')}
+  </div>
+  <div style="margin-bottom:12px;font-size:12px;color:var(--muted)">
+    ${fiscalYear}年度 日本水泳連盟 資格級基準表（${curLabel}）｜ 年度末（翌3/31時点）の満年齢で区分
   </div>`;
 
   for (const stroke of strokes) {
@@ -7512,7 +9325,8 @@ function cmpShowResult() {
     .filter(Boolean);
 
   const athlete = athletes.find(a => a.id === _cmpAthleteId);
-  const age     = calcAge(athlete?.birthday);
+  const age     = calcAge(athlete?.birthday);       // 表示用
+  const gradeAge = calcGradeAge(athlete?.birthday); // 資格級判定用
 
   // 全データ（同選手・同種目）
   _cmpAllRaces = races.filter(r =>
@@ -7550,7 +9364,8 @@ function cmpShowResult() {
 function cmpRenderTable(racesToShow) {
   recalcPbSb();
   const athlete     = athletes.find(a => a.id === _cmpAthleteId);
-  const age         = calcAge(athlete?.birthday);
+  const age         = calcAge(athlete?.birthday);       // 表示用
+  const gradeAge    = calcGradeAge(athlete?.birthday);  // 資格級判定用
   const sortedRaces = cmpSortRaces(racesToShow);
   const bestSec     = Math.min(...sortedRaces.map(r => r.totalSec));
   const worstSec    = Math.max(...sortedRaces.map(r => r.totalSec));
@@ -7560,7 +9375,7 @@ function cmpRenderTable(racesToShow) {
   // ① サマリーテーブル
   const summaryRows = sortedRaces.map((r, rowIdx) => {
     const rowColor = CMP_PALETTE[rowIdx % CMP_PALETTE.length];
-    const g        = getGradeForTime(athlete?.sex, age, r.stroke, r.distance, r.time);
+    const g        = getGradeForTime(athlete?.sex, recordGradeAge(athlete?.birthday, r.date), r.stroke, r.distance, r.time);
     const isBest   = r.totalSec === bestSec;
     const isWorst  = r.totalSec === worstSec && sortedRaces.length > 1;
     const diffBest = r.totalSec - bestSec;
@@ -9245,7 +11060,7 @@ function openDashDetail(type, id) {
     const current = athlete?.bestTimes?.[item.stroke]?.[item.distance]?.time;
     const pct = calcGoalPct(item.baseline, current, item.goalTime);
     const achieved = current && parseTime(current) <= parseTime(item.goalTime);
-    const age = calcAge(athlete?.birthday);
+    const age = calcGradeAge(athlete?.birthday);
     const g = current ? getGradeForTime(athlete?.sex, age, item.stroke, item.distance, item.goalTime) : null;
     body = `
       <div class="dd-section" style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end">
@@ -10031,7 +11846,8 @@ function saveBestEntry() {
   openAthleteDetail(_beAthleteId);
   renderAthleteTable();
 
-  const g = getGradeForTime(a.sex, calcAge(a.birthday), _beStroke, _beDistance, time);
+  const beEntry = a.bestTimes?.[_beStroke]?.[_beDistance];
+  const g = getGradeForTime(a.sex, recordGradeAge(a.birthday, beEntry && beEntry.date), _beStroke, _beDistance, time);
   showNotification(isPB
     ? `🏆 ${a.name} ${_beStroke}${_beDistance} PB更新！ ${time}${g ? '（'+g+'級）' : ''}`
     : `✅ ${a.name} ${_beStroke}${_beDistance} のベストタイムを登録しました`
@@ -10052,6 +11868,7 @@ function openAthleteDetail(id) {
   if (fn) fn.style.display = 'flex';
   if (fc) fc.style.display = 'none';
   const age = calcAge(a.birthday);
+  const gradeAge = calcGradeAge(a.birthday); // 資格級判定用
   const grade = getBestGrade(a);
   document.getElementById('detail-modal-title').textContent = a.name;
   document.getElementById('detail-modal-subtitle').textContent =
@@ -10084,7 +11901,7 @@ function openAthleteDetail(id) {
       const entry   = a.bestTimes?.[storeKey]?.[dist];
       const timeStr = entry?.time;
       const dateStr = entry?.date;
-      const g       = timeStr ? getGradeForTime(a.sex, age, storeKey, dist, timeStr) : null;
+      const g       = timeStr ? getGradeForTime(a.sex, recordGradeAge(a.birthday, dateStr), storeKey, dist, timeStr) : null;
       const pbRace  = races.find(r => r.athleteId === id && r.stroke === storeKey && r.distance === dist && r.lapData?.length);
 
       if (timeStr) {
@@ -10125,7 +11942,7 @@ function openAthleteDetail(id) {
     html += `<div class="section-divider"></div>`;
     html += `<div class="events-title">直近のレース記録 <span style="font-size:11px;color:var(--muted);font-weight:400;text-transform:none">（タップで詳細）</span></div>`;
     html += myRaces.map(r => {
-      const rg     = getGradeForTime(a.sex, age, r.stroke, r.distance, r.time);
+      const rg     = getGradeForTime(a.sex, recordGradeAge(a.birthday, r.date), r.stroke, r.distance, r.time);
       const hasLap = r.lapData?.length > 0;
       const fi     = hasLap ? calcFatigueIndex(r.lapData, distToM(r.distance)) : null;      const fiColor = fi===null?'var(--muted)':fi>1.05?'#ef5350':fi<0.98?'#2563eb':'#51cf66';
       const fiLabel = fi===null?'':fi>1.05?'後半失速':fi<0.98?'前半抑え':'良好';
